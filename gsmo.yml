@@ -1,0 +1,5 @@
+pip:
+  - pandas
+  - plotly
+  - kaleido
+  - tabula-py
