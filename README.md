@@ -1,8 +1,12 @@
 # PATH ridership stats
 
-![](img/weekdays.png)
+Jan 2012 – Sept 2022:
+![PATH ridership over time, stacked by station](img/weekdays.png)
 
-## Steps
+Jan 2020 – Sept 2022:
+![PATH ridership over time, stacked by station](img/weekdays_2020:.png)
+
+## Methods
 
 ### 1. Download "PATH Ridership Reports (By Month)"
 From https://www.panynj.gov/path/en/about/stats.html
