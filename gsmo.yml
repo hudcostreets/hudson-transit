@@ -3,3 +3,4 @@ pip:
   - plotly
   - kaleido
   - tabula-py
+openpyxl
