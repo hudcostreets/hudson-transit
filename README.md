@@ -1,10 +1,10 @@
 # PATH ridership stats
 Clean, visualize Port Authority data https://www.panynj.gov/path/en/about/stats.html
 
-Jan 2012 – Sept 2022:
+### Jan 2012 – Sept 2022:
 ![PATH ridership over time, stacked by station](img/weekdays.png)
 
-Jan 2020 – Sept 2022:
+### Jan 2020 – Sept 2022:
 ![PATH ridership over time, stacked by station](img/weekdays_2020:.png)
 
 Cleaned data:
@@ -33,6 +33,6 @@ See:
 - See [`months.ipynb`](months.ipynb)
 - Output [`data/all.pqt`], [`data/all.xlsx`], [`img/weekdays.png`](img/weekdays.png)
 
-[`data/all.pqt`](data/all.pqt)
-[`data/all.xlsx`](data/all.xlsx)
+[`data/all.pqt`]: data/all.pqt
+[`data/all.xlsx`]: data/all.xlsx
 [Tabula]: https://tabula.technology/
