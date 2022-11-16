@@ -1,5 +1,5 @@
 # PATH ridership stats
-Clean, visualize Port Authority data https://www.panynj.gov/path/en/about/stats.html
+Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/stats.html
 
 ### Jan 2012 – Sept 2022:
 ![PATH ridership over time, stacked by station](img/weekdays.png)
