@@ -1,0 +1,7 @@
+fastparquet
+jupyter
+kaleido
+pandas
+plotly
+openpyxl
+tabula-py
