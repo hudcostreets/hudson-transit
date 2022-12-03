@@ -27,24 +27,41 @@ Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/
 
 ## Methods
 
-### 1. Download "PATH Ridership Reports (By Month)"
+### PATH Monthly Data
+
+#### 1. Download "PATH Ridership Reports (By Month)"
 - from https://www.panynj.gov/path/en/about/stats.html
 - to [`data/`](data/)
 
-### 2. Use [Tabula] to extract tables
+#### 2. Use [Tabula] to extract tables
 
 ![Selecting tables from a "PATH Ridership Report"](img/tabula-screenshot.png)
 
 Resulting templates in [`templates/`](templates).
 
-### 3. Process each year's data, output `.pqt`s
+#### 3. Process each year's data, output `.pqt`s
 See:
 - [`monthly.ipynb`](monthly.ipynb)
 - outputs in [`data/*.pqt`](data/)
 
-### 4. Combine all years' data
+#### 4. Combine all years' data
 - See [`months.ipynb`](months.ipynb)
 - Output [`data/all.pqt`], [`data/all.xlsx`], [`img/weekdays.png`](img/weekdays.png)
+
+### Bridge & Tunnel Data
+
+Merge per-year PDFs into one:
+```bash
+/opt/homebrew/bin/gs \
+  -o merged.pdf \
+  -sDEVICE=pdfwrite \
+  -dPDFFitPage \
+  -g12984x10033 \
+  -dPDFSETTINGS=/prepress \ 
+  traffic-e-zpass-usage-20*
+```
+cf. [SO](https://stackoverflow.com/a/28455147/544236).
+
 
 [`data/all.pqt`]: data/all.pqt
 [`data/all.xlsx`]: data/all.xlsx
