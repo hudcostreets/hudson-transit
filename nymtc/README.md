@@ -13,5 +13,5 @@ Reports are also mirrored [here][gdrive] in [Hudson County Complete Streets]' Go
 ![](nj-ny-day_pct.png)
 
 [NYMTC HBT reports]: https://www.nymtc.org/en-us/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel
-[Hudson County Complete Streets]: hudcostreets.org
+[Hudson County Complete Streets]: https://hudcostreets.org
 [gdrive]: https://drive.google.com/drive/folders/16YYlcHoCA3scyvCNXfBKEf0P_41IRpJS
