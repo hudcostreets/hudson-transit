@@ -2,7 +2,7 @@
 Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/stats.html
 
 - [Cleaned data](#data)
-    - [Jan 2012 – Feb 2023](#weekdays)
+    - [Jan 2012 – Apr 2023](#weekdays)
     - [Closer look at 2020-Present](#weekdays_2020)
     - [Weekends only](#weekends)
     - [Weekends (2020-Present)](#weekdays_2020)
@@ -23,7 +23,7 @@ Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/
 - [`data/all.xlsx`]
 - [Google Sheet](https://docs.google.com/spreadsheets/d/1u84kVHEjvqByCu8Jb78D9f7TXbahoOe0/edit)
 
-### Jan 2012 – Feb 2023 <a id="weekdays"></a>
+### Jan 2012 – Apr 2023 <a id="weekdays"></a>
 ![PATH weekday ridership over time, stacked by station](img/weekdays.png)
 
 ### Closer look at 2020-Present <a id="weekdays_2020"></a>
