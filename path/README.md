@@ -2,7 +2,7 @@
 Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/stats.html
 
 - [Cleaned data](#data)
-    - [Jan 2012 – Apr 2023](#weekdays)
+    - [Jan 2012 – Oct 2023](#weekdays)
     - [Closer look at 2020-Present](#weekdays_2020)
     - [Weekends only](#weekends)
     - [Weekends (2020-Present)](#weekdays_2020)
@@ -23,7 +23,7 @@ Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/
 - [`data/all.xlsx`]
 - [Google Sheet](https://docs.google.com/spreadsheets/d/1u84kVHEjvqByCu8Jb78D9f7TXbahoOe0/edit)
 
-### Jan 2012 – Apr 2023 <a id="weekdays"></a>
+### Jan 2012 – Oct 2023 <a id="weekdays"></a>
 ![PATH weekday ridership over time, stacked by station](img/weekdays.png)
 
 ### Closer look at 2020-Present <a id="weekdays_2020"></a>
@@ -47,6 +47,11 @@ Cleaned + Plotted Port Authority data from https://www.panynj.gov/path/en/about/
 ### Weekdays vs. Weekends, compared to 2019 <a id="week_end_cmp_pct"></a>
 ![](img/vs_2019.png)
 
+As of October 2023:
+- weekday ridership was 62% of 2019
+- weekend ridership was 90% of 2019
+
+Service remains down in both cases, so it's not apples to apples.
 
 ## Methods <a id="methods"></a>
 
