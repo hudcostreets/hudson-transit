@@ -1,7 +1,9 @@
 fastparquet
+iRe.py
 jupyter
 kaleido
 pandas
+papermill
 plotly
 openpyxl
 tabula-py

@@ -61,18 +61,18 @@ Service remains down in both cases, so it's not apples to apples.
 - from https://www.panynj.gov/path/en/about/stats.html
 - to [`data/`](data/)
 
-#### 2. Use [Tabula] to extract tables <a id="use-tabula"></a>
+#### 1b. Use [Tabula] to extract tables <a id="use-tabula"></a>
+
+This only has to be done once, the resulting templates are saved in [`templates/`](templates).
 
 ![Selecting tables from a "PATH Ridership Report"](img/tabula-screenshot.png)
 
-Resulting templates in [`templates/`](templates).
-
-#### 3. Process each year's data, output `.pqt`s <a id="process-data"></a>
+#### 2. Process each year's data, output `.pqt`s <a id="process-data"></a>
 See:
 - [`monthly.ipynb`](monthly.ipynb)
 - outputs in [`data/*.pqt`](data/)
 
-#### 4. Combine all years' data <a id="combine-data"></a>
+#### 3. Combine all years' data <a id="combine-data"></a>
 - See [`months.ipynb`](months.ipynb)
 - Output [`data/all.pqt`], [`data/all.xlsx`], [`img/weekdays.png`](img/weekdays.png)
 
