@@ -58,8 +58,13 @@ Service remains down in both cases, so it's not apples to apples.
 ### PATH Monthly Data <a id="path-data"></a>
 
 #### 1. Download "PATH Ridership Reports (By Month)" <a id="download-data"></a>
-- from https://www.panynj.gov/path/en/about/stats.html
-- to [`data/`](data/)
+From [www.panynj.gov/path/en/about/stats.html](https://www.panynj.gov/path/en/about/stats.html), to [`data/`](data/):
+
+```bash
+y=2024
+name=$y-PATH-Monthly-Ridership-Report.pdf
+wget -O $name https://www.panynj.gov/content/dam/path/about/statistics/$name
+```
 
 #### 1b. Use [Tabula] to extract tables <a id="use-tabula"></a>
 
@@ -71,6 +76,14 @@ This only has to be done once, the resulting templates are saved in [`templates/
 See:
 - [`monthly.ipynb`](monthly.ipynb)
 - outputs in [`data/*.pqt`](data/)
+
+```bash
+y=2024
+m=3
+papermill -p year $y -p last_month $m -p template 2023-PATH-Monthly-Ridership-Report.tabula-template.json monthly.ipynb out/monthly-$y.ipynb
+```
+
+
 
 #### 3. Combine all years' data <a id="combine-data"></a>
 - See [`months.ipynb`](months.ipynb)
