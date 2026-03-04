@@ -1,0 +1,1322 @@
+[
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 111310
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 111590
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 222900
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 111455
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 123182
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 234637
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 192349
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 196954
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 389303
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 90623
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 91129
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 181752
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15233
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13836
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 29069
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 122182
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 123355
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 245537
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 116797
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 131852
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 248649
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 214609
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 241565
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 456174
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 97090
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 97287
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 194377
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 16997
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 17890
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 34887
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 128822
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 124921
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 253743
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 112890
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 126253
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 239143
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 215478
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 215629
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 431107
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 105413
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 95392
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 200805
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 18264
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 17572
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 35836
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 136898
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 132736
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 269634
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 115008
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 124817
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 239825
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 219336
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 215171
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 434507
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 100102
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 97297
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 197399
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19731
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 16170
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 35901
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 137310
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 132635
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 269945
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 111688
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 124127
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 235815
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 217485
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 207487
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 424972
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 101072
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 95668
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 196740
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19876
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 16464
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 36340
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 140020
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 133427
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 273447
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 111030
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 123710
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 234740
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 212146
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 196921
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 409067
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 107613
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 104578
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 212191
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19408
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 17412
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 36820
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 30939
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 29699
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 60638
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 92103
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 105844
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 197947
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 57543
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 53793
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 111336
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19808
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 20350
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 40158
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 3362
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 3297
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 6659
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 61206
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 58139
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 119345
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 117295
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 116253
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 233548
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 95076
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 87057
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 182133
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 42033
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 42481
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 84514
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 9238
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 8599
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 17837
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 81807
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 78310
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 160117
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 119498
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 118220
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 237718
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 148627
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 125422
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 274049
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 59213
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 61493
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 120706
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 12839
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 11937
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 24776
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 93166
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 91314
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 184480
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 118358
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 123865
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 242223
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 154610
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 146150
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 300760
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 91023
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 86772
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 177795
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 14403
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13284
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 27687
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 102162
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 99183
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "PATH",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 201345
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 120307
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 123570
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "AUTO",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 243877
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 176985
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 158144
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "BUS",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 335129
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 98252
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 91166
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "RAIL",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 189418
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15163
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13406
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "mode": "FERRY",
+    "direction": "total",
+    "time_period": "24hr",
+    "passengers": 28569
+  }
+]
