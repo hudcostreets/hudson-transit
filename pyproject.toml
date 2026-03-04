@@ -1,0 +1,18 @@
+[project]
+name = "hudson-transit"
+version = "0.1.0"
+description = "Extract and visualize NYMTC Hub Bound Travel data"
+requires-python = ">=3.11"
+dependencies = [
+    "click",
+    "openpyxl",
+    "pandas",
+    "utz",
+]
+
+[project.scripts]
+extract = "extract:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
