@@ -1,10 +1,11 @@
 import Plot from 'react-plotly.js'
 import type { ModeRecord } from '../lib/types'
 import { DAY_MODES } from '../lib/types'
-import { DAY_MODE_COLORS } from '../lib/colors'
+import { useColors } from '../lib/ColorContext'
 import { recoveryPct } from '../lib/transform'
 
 export default function RecoveryLine({ data }: { data: ModeRecord[] }) {
+  const { dayMode } = useColors()
   const { years, series } = recoveryPct(data, 2019)
   return (
     <Plot
@@ -14,11 +15,10 @@ export default function RecoveryLine({ data }: { data: ModeRecord[] }) {
         x: years,
         y: series[mode],
         mode: 'lines+markers' as const,
-        marker: { color: DAY_MODE_COLORS[mode], size: 8 },
-        line: { color: DAY_MODE_COLORS[mode], width: 2 },
+        marker: { color: dayMode[mode], size: 8 },
+        line: { color: dayMode[mode], width: 2 },
       }))}
       layout={{
-        title: { text: 'Recovery from COVID: NJ\u2192NY mode volumes as % of 2019 level' },
         xaxis: { dtick: 1, title: { text: '' } },
         yaxis: {
           title: { text: '% of 2019 volume' },
@@ -34,7 +34,7 @@ export default function RecoveryLine({ data }: { data: ModeRecord[] }) {
           y1: 1,
           line: { color: '#888', width: 1, dash: 'dash' },
         }],
-        margin: { t: 50, l: 70, r: 20, b: 40 },
+        margin: { t: 10, l: 70, r: 20, b: 40 },
         autosize: true,
       }}
       useResizeHandler

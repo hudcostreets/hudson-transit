@@ -1,4 +1,4 @@
-/** Shared 4-column legend layout for peak hour charts */
+/** Shared legend layouts for peak hour charts */
 
 export const PEAK_BAR_LEGEND_ORDER = [
   'Lincoln (Autos)', 'PATH (Uptown)',   'Holland (Autos)', 'Ferry',
@@ -10,6 +10,7 @@ export const PEAK_SCATTER_LEGEND_ORDER = [
   'Amtrak / NJ Transit', 'PATH (Downtown)', 'Lincoln (Autos)', 'Holland (Bus)',
 ]
 
+/** 4-column legend below chart (for scatter) */
 export function peakLegendLayout(
   order: string[],
   { y0 = -0.05, dy = -0.05, x0 = 0, dx = 0.25 } = {},
@@ -27,10 +28,12 @@ export function peakLegendLayout(
   return layout
 }
 
-/** Map trace name to its legend group index (1-based) */
-export function traceLegendKey(name: string, order: string[]): string {
-  const idx = order.indexOf(name)
-  if (idx === -1) return 'legend'
-  const n = idx + 1
-  return `legend${n === 1 ? '' : n}`
+/** Single horizontal legend above the bar chart, aligned with external title */
+export const PEAK_BAR_LEGEND = {
+  orientation: 'h' as const,
+  yanchor: 'bottom' as const,
+  y: 1.02,
+  xanchor: 'center' as const,
+  x: 0.5,
+  font: { size: 11 },
 }

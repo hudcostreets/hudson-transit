@@ -1,30 +1,29 @@
 import Plot from 'react-plotly.js'
 import type { CrossingRecord } from '../lib/types'
-import { CROSSING_COLORS } from '../lib/colors'
+import { useColors } from '../lib/ColorContext'
 import { crossingSeriesArrays, toPercentages } from '../lib/transform'
-import { peakLegendLayout, PEAK_BAR_LEGEND_ORDER } from './peak-legend'
+import { PEAK_BAR_LEGEND } from './peak-legend'
 
 export default function PeakPctBar({ data }: { data: CrossingRecord[] }) {
+  const { crossing } = useColors()
   const { years, series, labels } = crossingSeriesArrays(data)
   const pct = toPercentages(years, series, labels)
   return (
     <Plot
-      data={labels.map((label, i) => ({
+      data={labels.map(label => ({
         type: 'bar' as const,
         name: label,
         x: years,
         y: pct[label],
-        marker: { color: CROSSING_COLORS[label] },
-        legend: `legend${i + 1 === 1 ? '' : i + 1}`,
+        marker: { color: crossing[label] },
       }))}
       layout={{
-        title: { text: 'NJ\u2192NY passengers, by mode/location<br><sub>8-9am, Fall business day</sub>' },
         xaxis: { dtick: 1, title: { text: '' } },
-        yaxis: { title: { text: '% Passengers' }, tickformat: ',.0%', range: [0, 1] },
+        yaxis: { title: { text: '% Passengers' }, tickformat: ',.0%' },
         hovermode: 'x',
-        margin: { t: 75, l: 60, r: 10, b: 90 },
+        margin: { t: 40, l: 60, r: 10, b: 40 },
         autosize: true,
-        ...peakLegendLayout(PEAK_BAR_LEGEND_ORDER),
+        legend: PEAK_BAR_LEGEND,
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}

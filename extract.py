@@ -8,11 +8,11 @@
 import json
 from glob import glob
 from math import nan
-from os.path import basename, dirname, exists, join
+from os.path import basename, join
 from pathlib import Path
 
 from click import group, option
-from pandas import ExcelFile, concat, read_excel
+from pandas import read_excel
 
 
 def discover_years(base: str = ".") -> dict[int, Path]:

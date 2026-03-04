@@ -40,12 +40,40 @@ header {
       font-size: 0.9rem;
       &:hover { background: #f0f4f8; }
     }
+
+    .nav-separator {
+      width: 1px;
+      background: #ddd;
+      align-self: stretch;
+    }
+
+    .scheme-select {
+      font-size: 0.85rem;
+      padding: 0.2rem 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      color: #555;
+    }
   }
 }
 
 main {
   section {
     padding: 1rem 0;
+
+    h2 {
+      margin: 1.5rem 0 0.25rem;
+      font-size: 1.3rem;
+      text-align: center;
+    }
+
+    .chart-subtitle {
+      text-align: center;
+      color: #666;
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+    }
   }
 }
 
