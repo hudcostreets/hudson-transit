@@ -1,30 +1,21 @@
 import { useState } from 'react'
-import modesData from './data/modes.json'
 import crossingsData from './data/crossings.json'
-import type { ModeRecord, CrossingRecord } from './lib/types'
+import type { CrossingRecord } from './lib/types'
 import { COLOR_SCHEMES } from './lib/colors'
 import { ColorContext } from './lib/ColorContext'
 import UnifiedChart from './components/UnifiedChart'
-import DayBar from './components/DayBar'
-import DayPctBar from './components/DayPctBar'
 import RecoveryLine from './components/RecoveryLine'
-import Toggle from './components/Toggle'
 import './App.scss'
 
-const modes = modesData as ModeRecord[]
 const crossings = crossingsData as CrossingRecord[]
 
 const NAV = [
   { id: 'crossings', label: 'Crossings' },
-  { id: 'day', label: '24hr' },
   { id: 'recovery', label: 'Recovery' },
 ]
 
-const UNIT_OPTIONS = ['#', '%']
-
 function App() {
   const [schemeIdx, setSchemeIdx] = useState(0)
-  const [dayUnit, setDayUnit] = useState('#')
   const scheme = COLOR_SCHEMES[schemeIdx]
 
   return (
@@ -57,18 +48,9 @@ function App() {
             <h2>NJ Sector passengers by mode/crossing</h2>
             <UnifiedChart data={crossings} />
           </section>
-          <section id="day">
-            <h2>NJ&rarr;NY crossings on a Fall business day</h2>
-            <Toggle options={UNIT_OPTIONS} value={dayUnit} onChange={setDayUnit} />
-            {dayUnit === '#'
-              ? <DayBar data={modes} />
-              : <DayPctBar data={modes} />
-            }
-          </section>
           <section id="recovery">
             <h2>Recovery from COVID</h2>
-            <p className="chart-subtitle">NJ&rarr;NY mode volumes as % of 2019 level</p>
-            <RecoveryLine data={modes} />
+            <RecoveryLine data={crossings} />
           </section>
         </main>
         <footer>

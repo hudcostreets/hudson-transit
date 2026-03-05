@@ -1,12 +1,3 @@
-export interface ModeRecord {
-  year: number
-  sector: string
-  mode: string
-  direction: string
-  time_period: string
-  passengers: number
-}
-
 export interface CrossingRecord {
   year: number
   sector: string
@@ -21,10 +12,6 @@ export type ViewMode = 'scatter' | 'bar' | 'pct'
 export type Direction = 'entering' | 'leaving'
 export type TimePeriod = 'peak_1hr' | 'peak_period' | '24hr'
 export type Granularity = 'crossing' | 'mode'
-
-export type DayMode = 'AUTO' | 'BUS' | 'PATH' | 'RAIL' | 'FERRY'
-
-export const DAY_MODES: DayMode[] = ['AUTO', 'BUS', 'PATH', 'RAIL', 'FERRY']
 
 export interface CrossingLabel {
   crossing: string

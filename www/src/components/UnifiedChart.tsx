@@ -4,9 +4,25 @@ import type { Data, Layout } from 'plotly.js'
 import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } from '../lib/types'
 import { useColors } from '../lib/ColorContext'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
-import { JITTER, buildCanonicalAnnotations } from './scatter-config'
+import { CANONICAL_JITTER, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX } from './JitteredPlot'
 import Toggle from './Toggle'
+
+const SS_KEY = 'unified-chart'
+
+function useSS<T>(key: string, initial: T): [T, (v: T) => void] {
+  const [val, setVal] = useState<T>(() => {
+    try {
+      const stored = sessionStorage.getItem(`${SS_KEY}.${key}`)
+      return stored !== null ? JSON.parse(stored) : initial
+    } catch { return initial }
+  })
+  const set = useCallback((v: T) => {
+    setVal(v)
+    try { sessionStorage.setItem(`${SS_KEY}.${key}`, JSON.stringify(v)) } catch {}
+  }, [key])
+  return [val, set]
+}
 
 const VIEW_OPTIONS = [
   { value: 'scatter' as ViewMode, label: '\u{1FAE7}' },
@@ -86,10 +102,11 @@ function isCanonical(direction: Direction, timePeriod: TimePeriod, granularity: 
 }
 
 export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
-  const [view, setView] = useState<ViewMode>('scatter')
-  const [direction, setDirection] = useState<Direction>('entering')
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('peak_1hr')
-  const [granularity, setGranularity] = useState<Granularity>('crossing')
+  const [view, setView] = useSS<ViewMode>('view', 'scatter')
+  const [direction, setDirection] = useSS<Direction>('dir', 'entering')
+  const [timePeriod, setTimePeriod] = useSS<TimePeriod>('time', 'peak_1hr')
+  const [granularity, setGranularity] = useSS<Granularity>('gran', 'crossing')
+  const [showAnnotations, setShowAnnotations] = useSS('ann', true)
   const colors = useColors()
   const { ref, width } = useContainerWidth()
 
@@ -115,10 +132,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const rightMargin = wide ? 160 : 10
 
   const content = useMemo(() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, canonical, legendLayout, rightMargin)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, canonical, showAnnotations, legendLayout, rightMargin)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin)
     return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin)
-  }, [view, years, series, pct, labels, colorMap, canonical, legendLayout, rightMargin])
+  }, [view, years, series, pct, labels, colorMap, canonical, showAnnotations, legendLayout, rightMargin])
 
   return (
     <div ref={ref}>
@@ -147,6 +164,13 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
           value={GRAN_OPTIONS.find(o => o.value === granularity)!.label}
           onChange={label => setGranularity(GRAN_OPTIONS.find(o => o.label === label)!.value)}
         />
+        {view === 'scatter' && canonical && (
+          <Toggle
+            options={['\u{1F4DD}', '\u2014']}
+            value={showAnnotations ? '\u{1F4DD}' : '\u2014'}
+            onChange={v => setShowAnnotations(v === '\u{1F4DD}')}
+          />
+        )}
       </div>
     </div>
   )
@@ -159,6 +183,7 @@ function renderScatter(
   labels: string[],
   colorMap: Record<string, string>,
   canonical: boolean,
+  showAnnotations: boolean,
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
 ) {
@@ -184,20 +209,21 @@ function renderScatter(
   })
 
   const maxYear = Math.max(...years)
-  const jitter = canonical ? JITTER : undefined
+
+  const jitter = canonical ? CANONICAL_JITTER : undefined
 
   const jx = (traceName: string, yearIdx: number) =>
     getJitteredX(jitter, years[yearIdx], traceName)
 
-  const annotations = canonical
+  const annotations = (canonical && showAnnotations)
     ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx)
     : undefined
-
-  const extraLayout = { legend: legendLayout }
 
   const maxPct = Math.max(...labels.flatMap(l => pct[l]))
   // Round up to next 5% tick, with 5% headroom for bubble radius + text
   const yMax = Math.ceil((maxPct + 0.05) * 20) / 20
+  // Extra headroom for annotation text when shown
+  const yMaxAdj = annotations ? yMax + 0.05 : yMax
 
   return (
     <JitteredPlot
@@ -213,13 +239,13 @@ function renderScatter(
         yaxis: {
           title: { text: '% of total passengers (mode share)' },
           tickformat: ',.0%',
-          range: [0, yMax],
+          range: [0, yMaxAdj],
         },
         hovermode: 'x',
         margin: { t: 10, l: 60, r: rightMargin, b: 90 },
         autosize: true,
         annotations: annotations as Layout['annotations'],
-        ...extraLayout,
+        legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '700px' }}

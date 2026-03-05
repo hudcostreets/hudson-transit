@@ -4,7 +4,7 @@ import type { JitterOffsets } from './JitteredPlot'
 // Positive = rightward, negative = leftward. Only specify where needed.
 const t = 0.07  // tight offset for PATH
 
-export const JITTER: JitterOffsets = {
+export const CANONICAL_JITTER: JitterOffsets = {
   2014: {
     'Holland (Bus)':   -t,
     'Holland (Autos)':  t,
