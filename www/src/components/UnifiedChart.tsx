@@ -185,8 +185,13 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   )
 
   const { years, series, labels } = useMemo(() => {
-    if (granularity === 'mode') return aggregateByMode(filtered)
-    return crossingSeriesArrays(filtered)
+    const raw = granularity === 'mode' ? aggregateByMode(filtered) : crossingSeriesArrays(filtered)
+    // Sort labels by last-year value descending so legend mirrors chart order
+    const lastIdx = raw.years.length - 1
+    const sorted = [...raw.labels].sort((a, b) =>
+      (raw.series[b]?.[lastIdx] ?? 0) - (raw.series[a]?.[lastIdx] ?? 0)
+    )
+    return { ...raw, labels: sorted }
   }, [filtered, granularity])
 
   const pct = useMemo(
