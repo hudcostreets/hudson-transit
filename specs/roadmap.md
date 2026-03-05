@@ -1,6 +1,6 @@
 # Hub Bound Travel - Roadmap
 
-Rename from `hudson-transit` to `hub-bound` (or `hub-bound-travel`). Host at `cbd.hccs.dev`.
+Rename from `hudson-transit` to `hub-bound-travel`. Host at `cbd.hccs.dev`.
 
 ## Phase 1: `use-prms` integration (URL state)
 
@@ -12,28 +12,29 @@ Short single-char keys, `codeParam` for enums:
 
 | Param | Key | Values |
 |-------|-----|--------|
-| view | `v` | `s` (scatter), `b` (bar), `p` (pct) |
+| view | `v` | `s` (scatter), `b` (bar), `p` (pct), `r` (recovery) |
 | direction | `d` | `e` (entering), `l` (leaving) |
 | time period | `t` | `1` (peak_1hr), `3` (peak_period), `d` (24hr) |
 | granularity | `g` | `c` (crossing), `m` (mode) |
 | annotations | `a` | bool (present = on) |
 
-### Shared vs separate controls
+### Single unified chart
 
-Currently 2 charts (UnifiedChart, RecoveryLine) each have independent direction/time/granularity toggles. Options:
+Recovery is a 4th view mode alongside scatter/bar/pct — not a separate chart. All 4 views share the same direction, time period, and granularity controls. One chart, one toggle bar.
 
-1. **Shared state, one set of controls** — Single FAB or sticky toggle bar controlling both charts. Simpler URL, fewer controls. Charts always show same faceting.
-2. **Independent state, prefixed params** — `1v=s&1d=e` vs `2d=l`. More flexible but noisier URLs.
-3. **Shared base, chart-specific overrides** — Shared direction/time/granularity, but view mode is per-chart.
-
-Recommendation: **Option 3** — shared `d`, `t`, `g` params (one set of controls in a sticky bar), per-chart `v` (scatter/bar/pct vs recovery-line). Annotation toggle `a` only relevant to scatter view.
+This means:
+- `RecoveryLine` becomes `renderRecovery()` inside `UnifiedChart`
+- The "Recovery" nav section and `<h2>` go away
+- View toggle: `[bubbles] [#] [%] [recovery]`
+- Annotations toggle only shown for scatter view
 
 ### Implementation
 
 - `pnpm add use-prms` (or `pds local use-prms` for dev)
 - Replace `useSS` calls with `useUrlState` / `codeParam`
-- Lift shared state to `App.tsx`, pass down as props
-- Move toggle bar to a shared `<Controls>` component (sticky/FAB)
+- Merge `RecoveryLine` logic into `UnifiedChart` as `renderRecovery()`
+- Delete `RecoveryLine.tsx`
+- Single toggle bar, single set of URL params
 - Remove `sessionStorage` persistence entirely
 
 ## Phase 2: `use-kbd` integration (keyboard shortcuts)
@@ -47,12 +48,12 @@ Register actions for all toggleable controls. Enables command-palette discovery 
 | `view:scatter` | Scatter view | `1` | setView('scatter') |
 | `view:bar` | Bar view | `2` | setView('bar') |
 | `view:pct` | Percent view | `3` | setView('pct') |
+| `view:recovery` | Recovery view | `4` | setView('recovery') |
 | `dir:toggle` | Toggle direction | `d` | toggle entering/leaving |
 | `time:cycle` | Cycle time period | `t` | cycle 1hr → 3hr → day |
 | `gran:toggle` | Toggle granularity | `g` | toggle crossing/mode |
 | `ann:toggle` | Toggle annotations | `a` | toggle annotations |
-| `nav:crossings` | Go to Crossings | `g c` | scroll to #crossings |
-| `nav:recovery` | Go to Recovery | `g r` | scroll to #recovery |
+| `nav:chart` | Go to Chart | `g c` | scroll to #chart |
 | `nav:map` | Go to Map | `g m` | scroll to #map (Phase 4) |
 
 ### Implementation
@@ -162,14 +163,14 @@ Need to add coordinates for 60th St, Brooklyn, Queens sector crossings once thos
 
 ### Integration
 
-- New nav item: "Map" (between Crossings and Recovery)
+- New section: "Map" (below the main chart)
 - Shares same direction/time/granularity controls
 - Year selector (slider or dropdown) since map shows one year at a time
 - Optional: animation across years
 
 ## Phase 5: Project rename and deploy
 
-- Rename repo `hudson-transit` → `hub-bound` (or `hub-bound-travel`)
+- Rename repo `hudson-transit` → `hub-bound-travel`
 - Update `package.json` name, vite config, etc.
 - Set up `cbd.hccs.dev` hosting
 - Update all internal references
