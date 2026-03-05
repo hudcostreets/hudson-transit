@@ -136,6 +136,74 @@ footer {
   a { color: var(--link); }
 }
 
+.hover-tooltip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  color: var(--text);
+  min-width: 260px;
+
+  .hover-year {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  thead th {
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 0 0.3rem 0.2rem;
+    text-align: right;
+    &:nth-child(2) { text-align: left; }
+  }
+
+  tbody td, tfoot td {
+    padding: 0.12rem 0.3rem;
+  }
+
+  .color-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+
+  .hover-name {
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hover-num, .hover-pct, .hover-rec {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  tfoot {
+    td {
+      border-top: 1px solid var(--border);
+      padding-top: 0.25rem;
+      font-weight: 600;
+    }
+  }
+}
+
 @media (max-width: 600px) {
   header h1 { font-size: 1.3rem; }
 }

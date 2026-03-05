@@ -11,6 +11,7 @@ import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
 import { BubbleIcon, RecoveryIcon } from './icons'
+import { CROSSING_ICONS, MODE_ICONS } from './crossing-icons'
 
 // ?y=[n|p|c] — default: bubble (omitted)
 const viewParam = codeParam<ViewMode>('scatter', [
@@ -122,6 +123,17 @@ function subtitleText(view: ViewMode, direction: Direction, timePeriod: TimePeri
   return `${dir}, ${suffix}`
 }
 
+/** Return dark or light text color based on background luminance */
+function contrastColor(hex: string): string {
+  const c = hex.replace('#', '')
+  const r = parseInt(c.substring(0, 2), 16)
+  const g = parseInt(c.substring(2, 4), 16)
+  const b = parseInt(c.substring(4, 6), 16)
+  // Relative luminance (sRGB)
+  const L = 0.299 * r + 0.587 * g + 0.114 * b
+  return L > 160 ? '#1a1a2e' : '#fff'
+}
+
 function isCanonical(direction: Direction, timePeriod: TimePeriod, granularity: Granularity): boolean {
   return direction === 'entering' && timePeriod === 'peak_1hr' && granularity === 'crossing'
 }
@@ -216,19 +228,65 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     ? { bg: 'rgba(0,0,0,0)', font: '#ccc', grid: '#333', annFont: '#e0e0e0', annBg: '#2a2a4a' }
     : { bg: 'rgba(0,0,0,0)', font: '#444', grid: '#e5e5e5', annFont: '#000', annBg: '#fff' }
 
-  const content = useMemo(() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme)
-    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme)
-    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme)
-  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin, plotTheme])
+  // Pre-compute recovery ratios for hover tooltip
+  const recovery = useMemo(() => {
+    const baseIdx = years.indexOf(BASE_YEAR)
+    if (baseIdx === -1) return undefined
+    const r: Record<string, number[]> = {}
+    for (const label of labels) {
+      const base = series[label][baseIdx]
+      r[label] = years.map((_, i) => base > 0 ? series[label][i] / base : 0)
+    }
+    return r
+  }, [years, series, labels])
+
+  // Unified hover state
+  const [hoverYear, setHoverYear] = useState<number | null>(null)
+  const [hoverPos, setHoverPos] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleHover = useCallback((event: any) => {
+    const pt = event.points?.[0]
+    if (!pt) return
+    const year = Math.round(Number(pt.x))
+    if (!years.includes(year)) return
+    const me = event.event as MouseEvent
+    setHoverYear(year)
+    setHoverPos({ x: me.clientX, y: me.clientY })
+  }, [years])
+
+  const clearHover = useCallback(() => setHoverYear(null), [])
+
+  const hoverProps = { onHover: handleHover, onUnhover: clearHover }
+
+  const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
+  const content = (() => {
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconMap, hoverProps)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
+  })()
+
+  const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
 
   return (
     <div ref={ref}>
       <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
-      <div key={`${view}-${direction}-${timePeriod}-${granularity}`}>
+      <div key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
         {content}
       </div>
+      {hoverYear !== null && yearIdx >= 0 && (
+        <HoverTooltip
+          year={hoverYear}
+          yearIdx={yearIdx}
+          pos={hoverPos}
+          labels={labels}
+          series={series}
+          pct={pct}
+          recovery={recovery}
+          colorMap={colorMap}
+        />
+      )}
       <div className="toggle-bar">
         <Toggle options={VIEW_OPTIONS} value={view} onChange={setView} />
         <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
@@ -246,6 +304,80 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
         )}
         <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
       </div>
+    </div>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type HoverProps = { onHover: (e: any) => void; onUnhover: () => void }
+
+function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, colorMap }: {
+  year: number
+  yearIdx: number
+  pos: { x: number; y: number }
+  labels: string[]
+  series: Record<string, number[]>
+  pct: Record<string, number[]>
+  recovery: Record<string, number[]> | undefined
+  colorMap: Record<string, string>
+}) {
+  const rows = labels
+    .map(label => ({
+      label,
+      color: colorMap[label],
+      passengers: series[label][yearIdx],
+      pctVal: pct[label][yearIdx],
+      recVal: recovery?.[label]?.[yearIdx],
+    }))
+    .sort((a, b) => b.passengers - a.passengers)
+
+  const total = rows.reduce((s, r) => s + r.passengers, 0)
+  const hasRecovery = recovery !== undefined && year >= BASE_YEAR
+
+  // Position: prefer right of cursor, flip left near viewport edge
+  const tooltipW = 340
+  const tooltipH = rows.length * 24 + 70
+  const left = pos.x + 20 + tooltipW > window.innerWidth
+    ? pos.x - tooltipW - 10
+    : pos.x + 20
+  const top = Math.max(10, Math.min(pos.y - tooltipH / 2, window.innerHeight - tooltipH - 10))
+
+  return (
+    <div className="hover-tooltip" style={{ position: 'fixed', left, top, pointerEvents: 'none' }}>
+      <div className="hover-year">{year}</div>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th className="hover-num">#</th>
+            <th className="hover-pct">share</th>
+            {hasRecovery && <th className="hover-rec">vs &rsquo;19</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.label}>
+              <td><span className="color-dot" style={{ background: r.color }} /></td>
+              <td className="hover-name">{r.label}</td>
+              <td className="hover-num">{r.passengers.toLocaleString()}</td>
+              <td className="hover-pct">{(r.pctVal * 100).toFixed(1)}%</td>
+              {hasRecovery && (
+                <td className="hover-rec">{r.recVal !== undefined ? `${(r.recVal * 100).toFixed(0)}%` : ''}</td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td className="hover-name">Total</td>
+            <td className="hover-num">{total.toLocaleString()}</td>
+            <td></td>
+            {hasRecovery && <td></td>}
+          </tr>
+        </tfoot>
+      </table>
     </div>
   )
 }
@@ -279,15 +411,18 @@ function renderScatter(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
+  iconMap: Record<string, string>,
+  hp: HoverProps,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
   const maxSize = 60
 
-  const traces: Data[] = labels.map((label, i) => {
+  const traces: Data[] = labels.map((label) => {
     const passengers = series[label]
     const sizes = passengers.map(p => Math.sqrt(p / maxPassengers) * maxSize)
     const texts = passengers.map(p => p >= 800 ? `${Math.round(p / 1000)}k` : '')
-    const textSizes = sizes.map(s => Math.max(8, Math.min(16, s * 0.4)))
+    const textSizes = sizes.map(s => Math.max(10, Math.min(16, s * 0.4)))
+    const textColor = contrastColor(colorMap[label])
     return {
       type: 'scatter',
       name: label,
@@ -296,9 +431,8 @@ function renderScatter(
       mode: 'text+markers',
       marker: { size: sizes, color: colorMap[label] },
       text: texts,
-      textfont: { size: textSizes },
-      customdata: passengers.map((p, j) => [p, years[j]]),
-      hovertemplate: '%{customdata[0]:,} (%{y:.1%})<extra>%{customdata[1]}</extra>',
+      textfont: { size: textSizes, color: textColor },
+      hoverinfo: 'none',
     } as Data
   })
 
@@ -311,6 +445,30 @@ function renderScatter(
     ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font })
     : undefined
 
+  const lastIdx = years.length - 1
+  const iconSize = 0.018
+  const images = labels.map(label => {
+    const icon = iconMap[label]
+    if (!icon) return null
+    const lastPct = pct[label][lastIdx]
+    const lastP = series[label][lastIdx]
+    const bubbleR = Math.sqrt(lastP / maxPassengers) * maxSize
+    // Offset x slightly past the bubble
+    const xPos = getJitteredX(jitter, years[lastIdx], label) + 0.25 + bubbleR * 0.005
+    return {
+      source: icon,
+      x: xPos,
+      y: lastPct,
+      xref: 'x' as const,
+      yref: 'y' as const,
+      xanchor: 'left' as const,
+      yanchor: 'middle' as const,
+      sizex: iconSize * 8,
+      sizey: iconSize,
+      opacity: 0.6,
+    }
+  }).filter(Boolean)
+
   return (
     <JitteredPlot
       data={traces}
@@ -319,10 +477,14 @@ function renderScatter(
         ...themedLayout(pt),
         xaxis: {
           dtick: 1,
-          range: [years[0] - 0.8, maxYear + 0.5],
+          range: [years[0] - 0.8, maxYear + 0.8],
           title: { text: '' },
           hoverformat: 'd',
           gridcolor: pt.grid,
+          showspikes: true,
+          spikemode: 'across',
+          spikecolor: pt.grid,
+          spikethickness: 1,
         },
         yaxis: {
           title: { text: '% of total passengers (mode share)' },
@@ -334,10 +496,13 @@ function renderScatter(
         margin: { t: 10, l: 60, r: rightMargin, b: 90 },
         autosize: true,
         annotations: annotations as Layout['annotations'],
+        images: images as Layout['images'],
         legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '700px' }}
+      config={{ displayModeBar: false }}
+      {...hp}
     />
   )
 }
@@ -350,6 +515,7 @@ function renderBar(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
+  hp: HoverProps,
 ) {
   return (
     <Plot
@@ -359,6 +525,7 @@ function renderBar(
         x: years,
         y: series[label],
         marker: { color: colorMap[label] },
+        hoverinfo: 'none' as const,
       }))}
       layout={{
         ...themedLayout(pt),
@@ -371,6 +538,8 @@ function renderBar(
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
+      config={{ displayModeBar: false }}
+      {...hp}
     />
   )
 }
@@ -383,6 +552,7 @@ function renderPctBar(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
+  hp: HoverProps,
 ) {
   const totals = years.map((_, i) =>
     labels.reduce((sum, l) => sum + (series[l]?.[i] ?? 0), 0)
@@ -404,8 +574,7 @@ function renderPctBar(
           insidetextanchor: 'middle',
           constraintext: 'none',
           textfont: { size: 11 },
-          customdata: pcts,
-          hovertemplate: '%{customdata:.1f}%<extra>%{fullData.name}</extra>',
+          hoverinfo: 'none' as const,
         }
       })}
       layout={{
@@ -421,6 +590,8 @@ function renderPctBar(
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
+      config={{ displayModeBar: false }}
+      {...hp}
     />
   )
 }
@@ -433,6 +604,7 @@ function renderRecovery(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
+  hp: HoverProps,
 ) {
   const baseIdx = years.indexOf(BASE_YEAR)
   if (baseIdx === -1) return <div>No {BASE_YEAR} data for this selection</div>
@@ -460,7 +632,7 @@ function renderRecovery(
         mode: 'lines+markers' as const,
         marker: { color: colorMap[label], size: 8 },
         line: { color: colorMap[label], width: 2 },
-        hovertemplate: '%{y:.0%}<extra>%{fullData.name}</extra>',
+        hoverinfo: 'none' as const,
       }))}
       layout={{
         ...themedLayout(pt),
@@ -486,6 +658,8 @@ function renderRecovery(
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
+      config={{ displayModeBar: false }}
+      {...hp}
     />
   )
 }

@@ -16,64 +16,13 @@ Done. All chart toggle state persisted in URL params:
 
 Recovery merged as 4th view mode in `UnifiedChart`. Single chart, single toggle bar.
 
-## Phase 2: `use-kbd` integration
+## Phase 2: `use-kbd` + dark mode ✅
 
-### Keyboard shortcuts + SpeedDial
+Done. Keyboard shortcuts, SpeedDial (GitHub link + theme toggle), Omnibar (Cmd+K), and dark/light/system theming via CSS custom properties. Theme in URL as `?T=[l|s]`, inline `<script>` in `index.html` prevents flash.
 
-Register actions for all toggleable controls. Enables command-palette discovery, power-user keyboard navigation, and a SpeedDial FAB.
+## Phase 3: Unified hover info ✅
 
-| Action ID | Label | Default binding | Handler |
-|-----------|-------|----------------|---------|
-| `view:scatter` | Bubble view | `1` | setView('scatter') |
-| `view:bar` | Bar view | `2` | setView('bar') |
-| `view:pct` | Percent view | `3` | setView('pct') |
-| `view:recovery` | Recovery view | `4` | setView('recovery') |
-| `dir:toggle` | Toggle direction | `d` | toggle entering/leaving |
-| `time:cycle` | Cycle time period | `t` | cycle 1hr → 3hr → day |
-| `gran:toggle` | Toggle granularity | `g` | toggle crossing/mode |
-| `ann:toggle` | Toggle annotations | `a` | toggle annotations |
-| `theme:cycle` | Cycle theme | (in SpeedDial) | dark → light → system |
-
-### SpeedDial contents
-
-- Color scheme picker (currently a `<select>`)
-- Theme toggle: dark mode (default), light mode, system
-- Keyboard shortcuts help (?)
-
-### Implementation
-
-- `pds init ~/c/js/use-kbd && pds gh kbd`
-- Wrap app in `<HotkeysProvider>`
-- Add `<SpeedDial />` with theme + scheme pickers
-- Add `<Omnibar />` (Cmd+K)
-- Register actions for all toggles
-- Import `use-kbd/styles.css`
-
-### Dark mode
-
-Default to dark. Cycle: dark → light → system.
-- CSS custom properties for theming
-- `prefers-color-scheme` media query for system mode
-- Persist theme preference in URL param (e.g. `?T=[l|s]`, default dark omitted)
-
-## Phase 3: Custom hover info widget
-
-Replace Plotly's default hoverinfo with a custom overlay widget that shows comprehensive data regardless of current view mode (`y` param):
-
-- **Always show**: trace name, passenger count (#), mode share (%), and recovery % (if post-2019)
-- **Highlight**: the metric matching current view mode
-- **Position**: follow cursor or anchor to nearest data point
-- **Style**: match app theme (dark/light mode aware)
-
-This gives users full context at a glance without switching views.
-
-### Implementation options
-
-1. **Plotly `hovertemplate` enhancement** — limited styling, but simplest
-2. **Custom React overlay** — subscribe to Plotly hover events (`plotly_hover`/`plotly_unhover`), render a positioned `<div>` with full control over layout and styling
-3. **Plotly `customdata` + template** — stuff all metrics into `customdata` array, render via template
-
-Option 2 is most flexible and theme-aware.
+Done. All views now show enriched hover with passenger count, mode share %, and recovery % (when post-2019 data exists). Uses Plotly `customdata` + `hovertemplate` (option 3). Trace name and year shown in the `<extra>` tag.
 
 ## Phase 4: Full NYMTC extraction (all sectors)
 
@@ -179,30 +128,14 @@ Need to add coordinates for 60th St, Brooklyn, Queens sector crossings once thos
 - Year selector (slider or dropdown) since map shows one year at a time
 - Optional: animation across years
 
-## Phase 6: Crossing/mode icons
+## Phase 6: Crossing/mode icons (in progress)
 
-Add recognizable icons for each crossing and mode, rendered inline in charts:
+SVG data-URI icons (bus, car, train, ferry) placed as Plotly `layout.images` in scatter view, positioned after each trace's last-year bubble. Icons defined in `crossing-icons.ts`.
 
-- **Scatter (bubble)**: Draw icon to the right of the last-year circle for each trace
-- **Bar (#)**: Icon above each bar group
-- **Stacked bar (%)**: Icon inside each segment (where space allows)
-- **Recovery**: Icon at end of each line
-
-### Icon sources
-
-| Crossing/Mode | Icon idea |
-|---------------|-----------|
-| Lincoln (Bus) | Bus silhouette |
-| Lincoln (Autos) | Car silhouette |
-| Holland (Bus) | Bus silhouette (smaller/different color) |
-| Holland (Autos) | Car silhouette |
-| PATH (Downtown/Uptown) | PATH logo or train icon |
-| Amtrak / NJ Transit | Rail/train icon |
-| Ferry | Ferry/boat icon |
-
-Options: SVG icons (hand-drawn or from icon libraries like Lucide, Heroicons, or MTA/NJT brand assets), or small raster logos. Prefer SVG for scalability.
-
-Can be implemented as Plotly layout images or as an SVG overlay layer.
+TODO:
+- Tune icon positioning and sizing (needs visual verification)
+- Add icons to bar, pct, and recovery views
+- Consider upgrading to higher-quality or branded icons (PATH logo, NJT logo, etc.)
 
 ## Phase 7: Project rename and deploy
 
@@ -214,11 +147,10 @@ Can be implemented as Plotly layout images or as an SVG overlay layer.
 ## Dependency order
 
 ```
+Phase 1 (use-prms) ✅
+Phase 2 (use-kbd + dark mode) ✅
+Phase 3 (hover widget) ✅
 Phase 4 (extraction) ──→ Phase 5 (map, needs all sectors)
-Phase 1 (use-prms) ✅ ──→ Phase 2 (use-kbd, needs state setters from Phase 1)
-Phase 3 (hover widget) ── independent
-Phase 6 (icons) ── independent
+Phase 6 (icons) ── in progress (scatter done, other views TODO)
 Phase 7 (rename) ── can happen anytime
 ```
-
-Phases 2-3 and Phase 4 are independent and can proceed in parallel.
