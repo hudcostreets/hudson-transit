@@ -175,10 +175,14 @@ def load_nj_crossings(
 
     a = load_nj_sector(xl_path, sheet_name)
 
+    # Pre-2017 single sheets have 12+ columns (modes + Tramway, Bicycle, totals).
+    # Mode data occupies columns 1-7 (Autos..Ferry). 2017+ -1 sheets have 7 cols
+    # (modes only, Ferry on -2 sheet). Cap iteration to exclude total columns.
+    max_mode_col = 8 if year < 2017 else len(a.columns)
+
     # Sheet-2 ferry data (2017+) or column 7 (pre-2017)
     ferry_data: dict[str, int] = {}
     if year < 2017:
-        # Ferry is in column 7 of the single sheet
         for _, row in a.iterrows():
             crossing = str(row[0])
             crossing = CROSSING_ALIASES.get(crossing, crossing)
@@ -201,9 +205,9 @@ def load_nj_crossings(
         if modes is None:
             continue
 
-        # Collect all positive numeric values from data columns (skip col 0 = name)
+        # Collect positive numeric values from mode columns only (skip col 0 = name)
         nums = []
-        for ci in range(1, len(row)):
+        for ci in range(1, max_mode_col):
             v = row[ci]
             try:
                 v = int(v)
