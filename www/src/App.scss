@@ -1,3 +1,82 @@
+// Theme custom properties
+:root {
+  --bg: #1a1a2e;
+  --bg-surface: #16213e;
+  --bg-hover: #0f3460;
+  --text: #e0e0e0;
+  --text-muted: #a0a0b0;
+  --link: #6b9fd4;
+  --border: #2a2a4a;
+  --toggle-bg: #2a2a4a;
+  --toggle-border: #3a3a5a;
+  --toggle-text: #b0b0c0;
+  --toggle-hover: #3a3a5a;
+  --toggle-active-bg: #4a6fa5;
+  --toggle-active-text: #fff;
+  --plot-bg: rgba(0,0,0,0);
+  --plot-font: #ccc;
+  --plot-grid: #333;
+  --ann-font: #e0e0e0;
+  --ann-bg: #2a2a4a;
+}
+
+[data-theme="light"] {
+  --bg: #fff;
+  --bg-surface: #fff;
+  --bg-hover: #f0f4f8;
+  --text: #333;
+  --text-muted: #666;
+  --link: #4a6fa5;
+  --border: #eee;
+  --toggle-bg: #f5f5f5;
+  --toggle-border: #ccc;
+  --toggle-text: #555;
+  --toggle-hover: #e8e8e8;
+  --toggle-active-bg: #4a6fa5;
+  --toggle-active-text: #fff;
+  --plot-bg: rgba(0,0,0,0);
+  --plot-font: #444;
+  --plot-grid: #e5e5e5;
+  --ann-font: #000;
+  --ann-bg: #fff;
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --bg: #fff;
+    --bg-surface: #fff;
+    --bg-hover: #f0f4f8;
+    --text: #333;
+    --text-muted: #666;
+    --link: #4a6fa5;
+    --border: #eee;
+    --toggle-bg: #f5f5f5;
+    --toggle-border: #ccc;
+    --toggle-text: #555;
+    --toggle-hover: #e8e8e8;
+    --toggle-active-bg: #4a6fa5;
+    --toggle-active-text: #fff;
+    --plot-bg: rgba(0,0,0,0);
+    --plot-font: #444;
+    --plot-grid: #e5e5e5;
+    --ann-font: #000;
+    --ann-bg: #fff;
+  }
+}
+
+html {
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.2s, color 0.2s;
+}
+
 .app {
   max-width: 1200px;
   margin: 0 auto;
@@ -15,46 +94,9 @@ header {
   }
 
   .subtitle {
-    color: #666;
+    color: var(--text-muted);
     margin: 0 0 1rem;
-    a { color: #4a6fa5; }
-  }
-
-  nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: #fff;
-    padding: 0.5rem 0;
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    border-bottom: 1px solid #eee;
-
-    a {
-      text-decoration: none;
-      color: #4a6fa5;
-      padding: 0.25rem 0.75rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      &:hover { background: #f0f4f8; }
-    }
-
-    .nav-separator {
-      width: 1px;
-      background: #ddd;
-      align-self: stretch;
-    }
-
-    .scheme-select {
-      font-size: 0.85rem;
-      padding: 0.2rem 0.4rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fff;
-      color: #555;
-    }
+    a { color: var(--link); }
   }
 }
 
@@ -70,7 +112,7 @@ main {
 
     .chart-subtitle {
       text-align: center;
-      color: #666;
+      color: var(--text-muted);
       margin: 0 0 0.5rem;
       font-size: 0.95rem;
     }
@@ -88,13 +130,12 @@ main {
 footer {
   text-align: center;
   padding: 2rem 0;
-  border-top: 1px solid #eee;
-  color: #888;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 0.85rem;
-  a { color: #4a6fa5; }
+  a { color: var(--link); }
 }
 
 @media (max-width: 600px) {
   header h1 { font-size: 1.3rem; }
-  header nav { gap: 0.5rem; }
 }

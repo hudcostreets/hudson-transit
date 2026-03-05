@@ -135,7 +135,11 @@ export function buildCanonicalAnnotations(
   maxPassengers: number,
   maxSize: number,
   jx: (traceName: string, yearIdx: number) => number,
+  annColors?: { font: string, bg: string, arrow: string },
 ) {
+  const fc = annColors?.font ?? 'black'
+  const bg = annColors?.bg ?? 'white'
+  const ac = annColors?.arrow ?? '#444'
   const lastIdx = years.length - 1
   const prevIdx = years.length - 2
 
@@ -182,7 +186,7 @@ export function buildCanonicalAnnotations(
       yanchor: 'bottom' as const,
       x, y,
       standoff: bubbleRadius(p) + 3,
-      arrowcolor: '#444',
+      arrowcolor: ac,
       arrowhead: 0,
     })),
     {
@@ -191,9 +195,9 @@ export function buildCanonicalAnnotations(
       yanchor: 'bottom' as const,
       axref: 'x' as const, ayref: 'y' as const,
       x: years[prevIdx], y: lincolnBusPct[prevIdx],
-      font: { color: 'black' },
+      font: { color: fc },
       arrowcolor: 'rgba(0,0,0,0)',
-      bgcolor: 'white',
+      bgcolor: bg,
       borderpad: 4,
     },
     ...carTargets.map(({ ay, x, y, p }) => ({
@@ -202,7 +206,7 @@ export function buildCanonicalAnnotations(
       yanchor: 'bottom' as const,
       x, y,
       standoff: bubbleRadius(p) + 3,
-      arrowcolor: '#444',
+      arrowcolor: ac,
       arrowhead: 0,
     })),
     {
@@ -211,9 +215,9 @@ export function buildCanonicalAnnotations(
       axref: 'x' as const, ayref: 'y' as const,
       yanchor: 'bottom' as const,
       x: annX, y: carTextYBottom,
-      font: { color: 'black' },
+      font: { color: fc },
       arrowcolor: 'rgba(0,0,0,0)',
-      bgcolor: 'white',
+      bgcolor: bg,
       borderpad: 4,
     },
   ]

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect, useCallback, useEffect } from 'react'
 import Plot from 'react-plotly.js'
 import type { Data, Layout } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
@@ -40,6 +40,16 @@ const annParam: Param<boolean> = {
   encode: (v) => v ? undefined : '',
   decode: (e) => e === undefined,
 }
+
+type Theme = 'dark' | 'light' | 'system'
+const themeParam = codeParam<Theme>('dark', [
+  ['dark', 'd'], ['light', 'l'], ['system', 's'],
+])
+const THEME_OPTIONS: ToggleOption<Theme>[] = [
+  { value: 'dark', label: '\u{1F31A}' },
+  { value: 'light', label: '\u2600\uFE0F' },
+  { value: 'system', label: '\u{1F4BB}' },
+]
 
 const VIEW_OPTIONS: ToggleOption<ViewMode>[] = [
   { value: 'scatter', label: <BubbleIcon /> },
@@ -129,8 +139,14 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const [granularity, setGranularity] = useUrlState('g', granParam)
   const [showAnnotations, setShowAnnotations] = useUrlState('A', annParam)
   const [schemeName, setSchemeName] = useUrlState('s', schemeParam)
+  const [theme, setTheme] = useUrlState('T', themeParam)
   const colors = COLOR_SCHEMES.find(s => s.name === schemeName) ?? COLOR_SCHEMES[0]
   const { ref, width } = useContainerWidth()
+
+  // Sync theme to <html> data-theme attribute
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
 
   const VIEWS: ViewMode[] = ['scatter', 'bar', 'pct', 'recovery']
   const TIMES: TimePeriod[] = ['peak_1hr', 'peak_period', '24hr']
@@ -151,6 +167,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     const names = COLOR_SCHEMES.map(s => s.name) as SchemeName[]
     setSchemeName(names[(names.indexOf(schemeName) + 1) % names.length])
   }, [schemeName, setSchemeName])
+  const THEMES: Theme[] = ['dark', 'light', 'system']
+  const cycleTheme = useCallback(() => {
+    setTheme(THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length])
+  }, [theme, setTheme])
 
   useActions({
     'view:scatter': { label: 'Bubble view', group: 'View', defaultBindings: ['1'], handler: () => setView('scatter') },
@@ -162,6 +182,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     'gran:toggle': { label: 'Toggle granularity', group: 'Controls', defaultBindings: ['g'], handler: toggleGranularity },
     'ann:toggle': { label: 'Toggle annotations', group: 'Controls', defaultBindings: ['a'], handler: toggleAnnotations },
     'scheme:cycle': { label: 'Cycle color scheme', group: 'Controls', defaultBindings: ['c'], handler: cycleScheme },
+    'theme:cycle': { label: 'Cycle theme', group: 'Controls', defaultBindings: ['shift+t'], handler: cycleTheme },
   })
 
   const filtered = useMemo(
@@ -186,12 +207,22 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const legendLayout = wide ? LEGEND_RIGHT : LEGEND_BOTTOM
   const rightMargin = wide ? 160 : 10
 
+  // Resolve effective theme for Plotly
+  const isDark = useMemo(() => {
+    if (theme === 'dark') return true
+    if (theme === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }, [theme])
+  const plotTheme = isDark
+    ? { bg: 'rgba(0,0,0,0)', font: '#ccc', grid: '#333', annFont: '#e0e0e0', annBg: '#2a2a4a' }
+    : { bg: 'rgba(0,0,0,0)', font: '#444', grid: '#e5e5e5', annFont: '#000', annBg: '#fff' }
+
   const content = useMemo(() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin)
-    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin)
-    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin)
-  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin])
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme)
+  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin, plotTheme])
 
   return (
     <div ref={ref}>
@@ -215,9 +246,28 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
           />
         )}
         <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
+        <Toggle options={THEME_OPTIONS} value={theme} onChange={setTheme} />
       </div>
     </div>
   )
+}
+
+interface PlotTheme {
+  bg: string
+  font: string
+  grid: string
+  annFont: string
+  annBg: string
+}
+
+function themedLayout(pt: PlotTheme): Partial<Layout> {
+  return {
+    paper_bgcolor: pt.bg,
+    plot_bgcolor: pt.bg,
+    font: { color: pt.font },
+    xaxis: { gridcolor: pt.grid, zerolinecolor: pt.grid },
+    yaxis: { gridcolor: pt.grid, zerolinecolor: pt.grid },
+  }
 }
 
 function renderScatter(
@@ -230,6 +280,7 @@ function renderScatter(
   showAnnotations: boolean,
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
+  pt: PlotTheme,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
   const maxSize = 60
@@ -258,7 +309,7 @@ function renderScatter(
     getJitteredX(jitter, years[yearIdx], traceName)
 
   const annotations = showAnnotations
-    ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx)
+    ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font })
     : undefined
 
   return (
@@ -266,16 +317,19 @@ function renderScatter(
       data={traces}
       jitter={jitter}
       layout={{
+        ...themedLayout(pt),
         xaxis: {
           dtick: 1,
           range: [years[0] - 0.8, maxYear + 0.5],
           title: { text: '' },
           hoverformat: 'd',
+          gridcolor: pt.grid,
         },
         yaxis: {
           title: { text: '% of total passengers (mode share)' },
           tickformat: ',.0%',
           rangemode: 'tozero',
+          gridcolor: pt.grid,
         },
         hovermode: 'x',
         margin: { t: 10, l: 60, r: rightMargin, b: 90 },
@@ -296,6 +350,7 @@ function renderBar(
   colorMap: Record<string, string>,
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
+  pt: PlotTheme,
 ) {
   return (
     <Plot
@@ -307,8 +362,9 @@ function renderBar(
         marker: { color: colorMap[label] },
       }))}
       layout={{
-        xaxis: { dtick: 1, title: { text: '' } },
-        yaxis: { title: { text: 'Passengers' } },
+        ...themedLayout(pt),
+        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
+        yaxis: { title: { text: 'Passengers' }, gridcolor: pt.grid },
         hovermode: 'x',
         margin: { t: 40, l: 60, r: rightMargin, b: 40 },
         autosize: true,
@@ -327,6 +383,7 @@ function renderPctBar(
   colorMap: Record<string, string>,
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
+  pt: PlotTheme,
 ) {
   const totals = years.map((_, i) =>
     labels.reduce((sum, l) => sum + (series[l]?.[i] ?? 0), 0)
@@ -353,10 +410,11 @@ function renderPctBar(
         }
       })}
       layout={{
+        ...themedLayout(pt),
         barmode: 'stack',
         barnorm: 'percent',
-        xaxis: { dtick: 1, title: { text: '' } },
-        yaxis: { title: { text: '% Passengers' } },
+        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
+        yaxis: { title: { text: '% Passengers' }, gridcolor: pt.grid },
         hovermode: 'x',
         margin: { t: 40, l: 60, r: rightMargin, b: 40 },
         autosize: true,
@@ -375,6 +433,7 @@ function renderRecovery(
   colorMap: Record<string, string>,
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
+  pt: PlotTheme,
 ) {
   const baseIdx = years.indexOf(BASE_YEAR)
   if (baseIdx === -1) return <div>No {BASE_YEAR} data for this selection</div>
@@ -405,11 +464,13 @@ function renderRecovery(
         hovertemplate: '%{y:.0%}<extra>%{fullData.name}</extra>',
       }))}
       layout={{
-        xaxis: { dtick: 1, title: { text: '' } },
+        ...themedLayout(pt),
+        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
         yaxis: {
           title: { text: `% of ${BASE_YEAR} volume` },
           tickformat: ',.0%',
           range: [0, yMax],
+          gridcolor: pt.grid,
         },
         hovermode: 'x',
         shapes: [{

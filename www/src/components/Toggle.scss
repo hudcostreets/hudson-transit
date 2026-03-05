@@ -6,11 +6,11 @@
 
   button {
     padding: 0.3rem 1rem;
-    border: 1px solid #ccc;
-    background: #f5f5f5;
+    border: 1px solid var(--toggle-border);
+    background: var(--toggle-bg);
     cursor: pointer;
     font-size: 0.85rem;
-    color: #555;
+    color: var(--toggle-text);
     transition: background 0.15s, color 0.15s;
 
     &:first-child {
@@ -23,12 +23,12 @@
       border-left: none;
     }
     &.active {
-      background: #4a6fa5;
-      color: #fff;
-      border-color: #4a6fa5;
+      background: var(--toggle-active-bg);
+      color: var(--toggle-active-text);
+      border-color: var(--toggle-active-bg);
     }
     &:hover:not(.active) {
-      background: #e8e8e8;
+      background: var(--toggle-hover);
     }
   }
 }

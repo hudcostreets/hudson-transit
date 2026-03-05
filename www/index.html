@@ -1,10 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hudson River Crossing Transit Data</title>
-    <meta property="og:title" content="Hudson River Crossing Transit Data" />
+    <script>
+      // Set theme before first paint to avoid flash
+      (function() {
+        var p = new URLSearchParams(location.search).get('T')
+        var t = p === 'l' ? 'light' : p === 's' ? 'system' : 'dark'
+        document.documentElement.setAttribute('data-theme', t)
+      })()
+    </script>
+    <title>Hub Bound Travel</title>
+    <meta property="og:title" content="Hub Bound Travel" />
     <meta property="og:description" content="NJ→NY transit trends, 2014-2024. From NYMTC Hub Bound Travel reports." />
     <meta property="og:image" content="/og-image.png" />
   </head>
