@@ -14,7 +14,8 @@
     "plotly.js-dist-min": "^3.4.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-plotly.js": "^2.6.0"
+    "react-plotly.js": "^2.6.0",
+    "use-prms": "https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

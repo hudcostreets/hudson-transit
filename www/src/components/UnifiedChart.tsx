@@ -1,6 +1,8 @@
-import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect } from 'react'
 import Plot from 'react-plotly.js'
 import type { Data, Layout } from 'plotly.js'
+import { useUrlState, codeParam } from 'use-prms'
+import type { Param } from 'use-prms'
 import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } from '../lib/types'
 import { useColors } from '../lib/ColorContext'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
@@ -9,20 +11,22 @@ import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
 import { BubbleIcon, RecoveryIcon } from './icons'
 
-const SS_KEY = 'unified-chart'
-
-function useSS<T>(key: string, initial: T): [T, (v: T) => void] {
-  const [val, setVal] = useState<T>(() => {
-    try {
-      const stored = sessionStorage.getItem(`${SS_KEY}.${key}`)
-      return stored !== null ? JSON.parse(stored) : initial
-    } catch { return initial }
-  })
-  const set = useCallback((v: T) => {
-    setVal(v)
-    try { sessionStorage.setItem(`${SS_KEY}.${key}`, JSON.stringify(v)) } catch {}
-  }, [key])
-  return [val, set]
+const viewParam = codeParam<ViewMode>('scatter', {
+  scatter: 's', bar: 'b', pct: 'p', recovery: 'r',
+})
+const dirParam = codeParam<Direction>('entering', {
+  entering: 'e', leaving: 'l',
+})
+const timeParam = codeParam<TimePeriod>('peak_1hr', {
+  peak_1hr: '1', peak_period: '3', '24hr': 'd',
+})
+const granParam = codeParam<Granularity>('crossing', {
+  crossing: 'c', mode: 'm',
+})
+// Annotations default to on; `?a=0` hides them
+const annParam: Param<boolean> = {
+  encode: (v) => v ? undefined : '0',
+  decode: (e) => e !== '0',
 }
 
 const VIEW_OPTIONS: ToggleOption<ViewMode>[] = [
@@ -107,11 +111,11 @@ function isCanonical(direction: Direction, timePeriod: TimePeriod, granularity: 
 }
 
 export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
-  const [view, setView] = useSS<ViewMode>('view', 'scatter')
-  const [direction, setDirection] = useSS<Direction>('dir', 'entering')
-  const [timePeriod, setTimePeriod] = useSS<TimePeriod>('time', 'peak_1hr')
-  const [granularity, setGranularity] = useSS<Granularity>('gran', 'crossing')
-  const [showAnnotations, setShowAnnotations] = useSS('ann', true)
+  const [view, setView] = useUrlState('v', viewParam)
+  const [direction, setDirection] = useUrlState('d', dirParam)
+  const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
+  const [granularity, setGranularity] = useUrlState('g', granParam)
+  const [showAnnotations, setShowAnnotations] = useUrlState('a', annParam)
   const colors = useColors()
   const { ref, width } = useContainerWidth()
 
