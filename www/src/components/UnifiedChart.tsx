@@ -1,10 +1,11 @@
-import { useState, useMemo, useRef, useLayoutEffect } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react'
 import Plot from 'react-plotly.js'
 import type { Data, Layout } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
 import type { Param } from 'use-prms'
+import { useActions } from 'use-kbd'
 import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } from '../lib/types'
-import { COLOR_SCHEMES, type ColorScheme } from '../lib/colors'
+import { COLOR_SCHEMES } from '../lib/colors'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
@@ -130,6 +131,38 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const [schemeName, setSchemeName] = useUrlState('s', schemeParam)
   const colors = COLOR_SCHEMES.find(s => s.name === schemeName) ?? COLOR_SCHEMES[0]
   const { ref, width } = useContainerWidth()
+
+  const VIEWS: ViewMode[] = ['scatter', 'bar', 'pct', 'recovery']
+  const TIMES: TimePeriod[] = ['peak_1hr', 'peak_period', '24hr']
+
+  const toggleDirection = useCallback(() => {
+    setDirection(direction === 'entering' ? 'leaving' : 'entering')
+  }, [direction, setDirection])
+  const cycleTime = useCallback(() => {
+    setTimePeriod(TIMES[(TIMES.indexOf(timePeriod) + 1) % TIMES.length])
+  }, [timePeriod, setTimePeriod])
+  const toggleGranularity = useCallback(() => {
+    setGranularity(granularity === 'crossing' ? 'mode' : 'crossing')
+  }, [granularity, setGranularity])
+  const toggleAnnotations = useCallback(() => {
+    setShowAnnotations(!showAnnotations)
+  }, [showAnnotations, setShowAnnotations])
+  const cycleScheme = useCallback(() => {
+    const names = COLOR_SCHEMES.map(s => s.name) as SchemeName[]
+    setSchemeName(names[(names.indexOf(schemeName) + 1) % names.length])
+  }, [schemeName, setSchemeName])
+
+  useActions({
+    'view:scatter': { label: 'Bubble view', group: 'View', defaultBindings: ['1'], handler: () => setView('scatter') },
+    'view:bar': { label: 'Bar view', group: 'View', defaultBindings: ['2'], handler: () => setView('bar') },
+    'view:pct': { label: 'Percent view', group: 'View', defaultBindings: ['3'], handler: () => setView('pct') },
+    'view:recovery': { label: 'Recovery view', group: 'View', defaultBindings: ['4'], handler: () => setView('recovery') },
+    'dir:toggle': { label: 'Toggle direction', group: 'Controls', defaultBindings: ['d'], handler: toggleDirection },
+    'time:cycle': { label: 'Cycle time period', group: 'Controls', defaultBindings: ['t'], handler: cycleTime },
+    'gran:toggle': { label: 'Toggle granularity', group: 'Controls', defaultBindings: ['g'], handler: toggleGranularity },
+    'ann:toggle': { label: 'Toggle annotations', group: 'Controls', defaultBindings: ['a'], handler: toggleAnnotations },
+    'scheme:cycle': { label: 'Cycle color scheme', group: 'Controls', defaultBindings: ['c'], handler: cycleScheme },
+  })
 
   const filtered = useMemo(
     () => filterCrossings(data, direction, timePeriod),

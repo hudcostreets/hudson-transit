@@ -20,6 +20,9 @@ importers:
       react-plotly.js:
         specifier: ^2.6.0
         version: 2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4)
+      use-kbd:
+        specifier: https://github.com/runsascoded/use-kbd#e3944be31cecff7c1e02f0b550d0ce011f1a8ba4
+        version: https://codeload.github.com/runsascoded/use-kbd/tar.gz/e3944be31cecff7c1e02f0b550d0ce011f1a8ba4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       use-prms:
         specifier: https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811
         version: https://codeload.github.com/runsascoded/use-prms/tar.gz/e8358bc09a3b2708c5dc41f7d489d1b512092811(react@19.2.4)
@@ -2330,6 +2333,13 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/e3944be31cecff7c1e02f0b550d0ce011f1a8ba4:
+    resolution: {tarball: https://codeload.github.com/runsascoded/use-kbd/tar.gz/e3944be31cecff7c1e02f0b550d0ce011f1a8ba4}
+    version: 0.10.0-dist.a093048
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
 
   use-prms@https://codeload.github.com/runsascoded/use-prms/tar.gz/e8358bc09a3b2708c5dc41f7d489d1b512092811:
     resolution: {tarball: https://codeload.github.com/runsascoded/use-prms/tar.gz/e8358bc09a3b2708c5dc41f7d489d1b512092811}
@@ -4867,6 +4877,14 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/e3944be31cecff7c1e02f0b550d0ce011f1a8ba4(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      debug: 4.4.3
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+    transitivePeerDependencies:
+      - supports-color
 
   use-prms@https://codeload.github.com/runsascoded/use-prms/tar.gz/e8358bc09a3b2708c5dc41f7d489d1b512092811(react@19.2.4):
     dependencies:
