@@ -2,50 +2,29 @@
 
 Rename from `hudson-transit` to `hub-bound-travel`. Host at `cbd.hccs.dev`.
 
-## Phase 1: `use-prms` integration (URL state)
+## Phase 1: `use-prms` integration (URL state) ✅
 
-Replace `useSS` (sessionStorage) with `use-prms` for all plot toggle state. This makes views deep-linkable and shareable.
-
-### Param encoding
-
-Short single-char keys, `codeParam` for enums:
+Done. All chart toggle state persisted in URL params:
 
 | Param | Key | Values |
 |-------|-----|--------|
-| view | `v` | `s` (scatter), `b` (bar), `p` (pct), `r` (recovery) |
-| direction | `d` | `e` (entering), `l` (leaving) |
-| time period | `t` | `1` (peak_1hr), `3` (peak_period), `d` (24hr) |
-| granularity | `g` | `c` (crossing), `m` (mode) |
-| annotations | `a` | bool (present = on) |
+| view | `y` | (default: bubble), `n` (bar), `p` (pct), `c` (recovery) |
+| direction | `d` | (default: NJ→NY), `nynj` (NY→NJ) |
+| time period | `t` | (default: 1h), `3h`, `1d` |
+| granularity | `g` | `c` (crossing, default), `m` (mode) |
+| annotations | `A` | (default: on), present = off |
 
-### Single unified chart
+Recovery merged as 4th view mode in `UnifiedChart`. Single chart, single toggle bar.
 
-Recovery is a 4th view mode alongside scatter/bar/pct — not a separate chart. All 4 views share the same direction, time period, and granularity controls. One chart, one toggle bar.
+## Phase 2: `use-kbd` integration
 
-This means:
-- `RecoveryLine` becomes `renderRecovery()` inside `UnifiedChart`
-- The "Recovery" nav section and `<h2>` go away
-- View toggle: `[bubbles] [#] [%] [recovery]`
-- Annotations toggle only shown for scatter view
+### Keyboard shortcuts + SpeedDial
 
-### Implementation
-
-- `pnpm add use-prms` (or `pds local use-prms` for dev)
-- Replace `useSS` calls with `useUrlState` / `codeParam`
-- Merge `RecoveryLine` logic into `UnifiedChart` as `renderRecovery()`
-- Delete `RecoveryLine.tsx`
-- Single toggle bar, single set of URL params
-- Remove `sessionStorage` persistence entirely
-
-## Phase 2: `use-kbd` integration (keyboard shortcuts)
-
-Register actions for all toggleable controls. Enables command-palette discovery and power-user keyboard navigation.
-
-### Actions
+Register actions for all toggleable controls. Enables command-palette discovery, power-user keyboard navigation, and a SpeedDial FAB.
 
 | Action ID | Label | Default binding | Handler |
 |-----------|-------|----------------|---------|
-| `view:scatter` | Scatter view | `1` | setView('scatter') |
+| `view:scatter` | Bubble view | `1` | setView('scatter') |
 | `view:bar` | Bar view | `2` | setView('bar') |
 | `view:pct` | Percent view | `3` | setView('pct') |
 | `view:recovery` | Recovery view | `4` | setView('recovery') |
@@ -53,18 +32,50 @@ Register actions for all toggleable controls. Enables command-palette discovery 
 | `time:cycle` | Cycle time period | `t` | cycle 1hr → 3hr → day |
 | `gran:toggle` | Toggle granularity | `g` | toggle crossing/mode |
 | `ann:toggle` | Toggle annotations | `a` | toggle annotations |
-| `nav:chart` | Go to Chart | `g c` | scroll to #chart |
-| `nav:map` | Go to Map | `g m` | scroll to #map (Phase 4) |
+| `theme:cycle` | Cycle theme | (in SpeedDial) | dark → light → system |
+
+### SpeedDial contents
+
+- Color scheme picker (currently a `<select>`)
+- Theme toggle: dark mode (default), light mode, system
+- Keyboard shortcuts help (?)
 
 ### Implementation
 
-- `pnpm add use-kbd`
+- `pds init ~/c/js/use-kbd && pds gh kbd`
 - Wrap app in `<HotkeysProvider>`
-- Add `<Omnibar />` + `<ShortcutsModal />` (Cmd+K / ?)
-- Register actions in the shared `<Controls>` component
+- Add `<SpeedDial />` with theme + scheme pickers
+- Add `<Omnibar />` (Cmd+K)
+- Register actions for all toggles
 - Import `use-kbd/styles.css`
 
-## Phase 3: Full NYMTC extraction (all sectors)
+### Dark mode
+
+Default to dark. Cycle: dark → light → system.
+- CSS custom properties for theming
+- `prefers-color-scheme` media query for system mode
+- Persist theme preference in URL param (e.g. `?T=[l|s]`, default dark omitted)
+
+## Phase 3: Custom hover info widget
+
+Replace Plotly's default hoverinfo with a custom overlay widget that shows comprehensive data regardless of current view mode (`y` param):
+
+- **Always show**: trace name, passenger count (#), mode share (%), and recovery % (if post-2019)
+- **Highlight**: the metric matching current view mode
+- **Position**: follow cursor or anchor to nearest data point
+- **Style**: match app theme (dark/light mode aware)
+
+This gives users full context at a glance without switching views.
+
+### Implementation options
+
+1. **Plotly `hovertemplate` enhancement** — limited styling, but simplest
+2. **Custom React overlay** — subscribe to Plotly hover events (`plotly_hover`/`plotly_unhover`), render a positioned `<div>` with full control over layout and styling
+3. **Plotly `customdata` + template** — stuff all metrics into `customdata` array, render via template
+
+Option 2 is most flexible and theme-aware.
+
+## Phase 4: Full NYMTC extraction (all sectors)
 
 Expand `extract.py` to extract all 4 entry sectors, not just NJ. This is the "canonical normalized multi-year distillation" of NYMTC Hub Bound Travel reports.
 
@@ -113,7 +124,7 @@ Same schema as today, but `sector` now includes `60th_street`, `brooklyn`, `quee
 5. Run isna-mask verification across all sector × time-period pairs
 6. Output single `crossings.json` with all sectors
 
-## Phase 4: Geographic map view ("Geo Bar Chart")
+## Phase 5: Geographic map view ("Geo Bar Chart")
 
 A map visualization with proportional bars/rectangles overlaid at each CBD entry point, sized by passenger volume.
 
@@ -164,11 +175,11 @@ Need to add coordinates for 60th St, Brooklyn, Queens sector crossings once thos
 ### Integration
 
 - New section: "Map" (below the main chart)
-- Shares same direction/time/granularity controls
+- Shares same direction/time/granularity controls via URL params
 - Year selector (slider or dropdown) since map shows one year at a time
 - Optional: animation across years
 
-## Phase 5: Crossing/mode icons
+## Phase 6: Crossing/mode icons
 
 Add recognizable icons for each crossing and mode, rendered inline in charts:
 
@@ -193,7 +204,7 @@ Options: SVG icons (hand-drawn or from icon libraries like Lucide, Heroicons, or
 
 Can be implemented as Plotly layout images or as an SVG overlay layer.
 
-## Phase 6: Project rename and deploy
+## Phase 7: Project rename and deploy
 
 - Rename repo `hudson-transit` → `hub-bound-travel`
 - Update `package.json` name, vite config, etc.
@@ -203,9 +214,11 @@ Can be implemented as Plotly layout images or as an SVG overlay layer.
 ## Dependency order
 
 ```
-Phase 3 (extraction) ──→ Phase 4 (map, needs all sectors)
-Phase 1 (use-prms)   ──→ Phase 2 (use-kbd, actions need state setters)
-Phase 5 (rename)     ── can happen anytime
+Phase 4 (extraction) ──→ Phase 5 (map, needs all sectors)
+Phase 1 (use-prms) ✅ ──→ Phase 2 (use-kbd, needs state setters from Phase 1)
+Phase 3 (hover widget) ── independent
+Phase 6 (icons) ── independent
+Phase 7 (rename) ── can happen anytime
 ```
 
-Phases 1-2 and Phase 3 are independent and can proceed in parallel.
+Phases 2-3 and Phase 4 are independent and can proceed in parallel.

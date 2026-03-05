@@ -11,22 +11,26 @@ import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
 import { BubbleIcon, RecoveryIcon } from './icons'
 
-const viewParam = codeParam<ViewMode>('scatter', {
-  scatter: 's', bar: 'b', pct: 'p', recovery: 'r',
-})
-const dirParam = codeParam<Direction>('entering', {
-  entering: 'e', leaving: 'l',
-})
-const timeParam = codeParam<TimePeriod>('peak_1hr', {
-  peak_1hr: '1', peak_period: '3', '24hr': 'd',
-})
-const granParam = codeParam<Granularity>('crossing', {
-  crossing: 'c', mode: 'm',
-})
-// Annotations default to on; `?a=0` hides them
+// ?y=[n|p|c] — default: bubble (omitted)
+const viewParam = codeParam<ViewMode>('scatter', [
+  ['scatter', 'b'], ['bar', 'n'], ['pct', 'p'], ['recovery', 'c'],
+])
+// ?d=nynj — default: NJ→NY (omitted)
+const dirParam = codeParam<Direction>('entering', [
+  ['entering', 'njny'], ['leaving', 'nynj'],
+])
+// ?t=[3h|1d] — default: 1h (omitted)
+const timeParam = codeParam<TimePeriod>('peak_1hr', [
+  ['peak_1hr', '1h'], ['peak_period', '3h'], ['24hr', '1d'],
+])
+// ?g=[c|m] — default: crossing (omitted)
+const granParam = codeParam<Granularity>('crossing', [
+  ['crossing', 'c'], ['mode', 'm'],
+])
+// ?A (valueless) hides annotations; default: on (omitted)
 const annParam: Param<boolean> = {
-  encode: (v) => v ? undefined : '0',
-  decode: (e) => e !== '0',
+  encode: (v) => v ? undefined : '',
+  decode: (e) => e === undefined,
 }
 
 const VIEW_OPTIONS: ToggleOption<ViewMode>[] = [
@@ -111,11 +115,11 @@ function isCanonical(direction: Direction, timePeriod: TimePeriod, granularity: 
 }
 
 export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
-  const [view, setView] = useUrlState('v', viewParam)
+  const [view, setView] = useUrlState('y', viewParam)
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
   const [granularity, setGranularity] = useUrlState('g', granParam)
-  const [showAnnotations, setShowAnnotations] = useUrlState('a', annParam)
+  const [showAnnotations, setShowAnnotations] = useUrlState('A', annParam)
   const colors = useColors()
   const { ref, width } = useContainerWidth()
 
