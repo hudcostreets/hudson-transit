@@ -45,12 +45,6 @@ type Theme = 'dark' | 'light' | 'system'
 const themeParam = codeParam<Theme>('dark', [
   ['dark', 'd'], ['light', 'l'], ['system', 's'],
 ])
-const THEME_OPTIONS: ToggleOption<Theme>[] = [
-  { value: 'dark', label: '\u{1F31A}' },
-  { value: 'light', label: '\u2600\uFE0F' },
-  { value: 'system', label: '\u{1F4BB}' },
-]
-
 const VIEW_OPTIONS: ToggleOption<ViewMode>[] = [
   { value: 'scatter', label: <BubbleIcon /> },
   { value: 'bar', label: '#' },
@@ -246,7 +240,6 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
           />
         )}
         <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
-        <Toggle options={THEME_OPTIONS} value={theme} onChange={setTheme} />
       </div>
     </div>
   )
@@ -289,6 +282,7 @@ function renderScatter(
     const passengers = series[label]
     const sizes = passengers.map(p => Math.sqrt(p / maxPassengers) * maxSize)
     const texts = passengers.map(p => p >= 800 ? `${Math.round(p / 1000)}k` : '')
+    const textSizes = sizes.map(s => Math.max(8, Math.min(16, s * 0.4)))
     return {
       type: 'scatter',
       name: label,
@@ -297,7 +291,7 @@ function renderScatter(
       mode: 'text+markers',
       marker: { size: sizes, color: colorMap[label] },
       text: texts,
-      textfont: { size: 10 },
+      textfont: { size: textSizes },
       customdata: passengers.map((p, j) => [p, years[j]]),
       hovertemplate: '%{customdata[0]:,} (%{y:.1%})<extra>%{customdata[1]}</extra>',
     } as Data
