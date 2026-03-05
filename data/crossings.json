@@ -4,6 +4,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 4583
   },
@@ -12,6 +13,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 32268
   },
@@ -20,6 +22,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 23322
   },
@@ -28,6 +31,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 15230
   },
@@ -36,6 +40,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3154
   },
@@ -44,6 +49,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2163
   },
@@ -52,6 +58,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 13051
   },
@@ -60,6 +67,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 4742
   },
@@ -68,6 +76,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 4259
   },
@@ -76,6 +85,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 38275
   },
@@ -84,6 +94,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 24662
   },
@@ -92,6 +103,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 16712
   },
@@ -100,6 +112,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3195
   },
@@ -108,6 +121,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2590
   },
@@ -116,6 +130,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 14230
   },
@@ -124,6 +139,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5005
   },
@@ -132,6 +148,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3595
   },
@@ -140,6 +157,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 36131
   },
@@ -148,6 +166,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 29942
   },
@@ -156,6 +175,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 17061
   },
@@ -164,6 +184,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3105
   },
@@ -172,6 +193,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2919
   },
@@ -180,6 +202,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 15936
   },
@@ -188,6 +211,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5128
   },
@@ -196,6 +220,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5887
   },
@@ -204,6 +229,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 26614
   },
@@ -212,6 +238,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 17766
   },
@@ -220,6 +247,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3071
   },
@@ -228,6 +256,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2700
   },
@@ -236,6 +265,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 4071
   },
@@ -244,6 +274,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 33949
   },
@@ -252,6 +283,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 17605
   },
@@ -260,6 +292,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5898
   },
@@ -268,6 +301,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 25971
   },
@@ -276,6 +310,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 18953
   },
@@ -284,6 +319,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3706
   },
@@ -292,6 +328,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2299
   },
@@ -300,6 +337,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3842
   },
@@ -308,6 +346,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 37184
   },
@@ -316,6 +355,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 17246
   },
@@ -324,6 +364,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5990
   },
@@ -332,6 +373,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 27223
   },
@@ -340,6 +382,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 20043
   },
@@ -348,6 +391,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3346
   },
@@ -356,6 +400,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 1606
   },
@@ -364,6 +409,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3663
   },
@@ -372,6 +418,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 36978
   },
@@ -380,6 +427,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 15969
   },
@@ -388,6 +436,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 678
   },
@@ -396,6 +445,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3189
   },
@@ -404,6 +454,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2425
   },
@@ -412,6 +463,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3588
   },
@@ -420,6 +472,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 204
   },
@@ -428,6 +481,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 4411
   },
@@ -436,6 +490,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5758
   },
@@ -444,6 +499,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2527
   },
@@ -452,6 +508,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 1897
   },
@@ -460,6 +517,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 8138
   },
@@ -468,6 +526,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 6615
   },
@@ -476,6 +535,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3107
   },
@@ -484,6 +544,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 243
   },
@@ -492,6 +553,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5406
   },
@@ -500,6 +562,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 14220
   },
@@ -508,6 +571,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 6382
   },
@@ -516,6 +580,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3062
   },
@@ -524,6 +589,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 10095
   },
@@ -532,6 +598,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 11068
   },
@@ -540,6 +607,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3562
   },
@@ -548,6 +616,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 777
   },
@@ -556,6 +625,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5240
   },
@@ -564,6 +634,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 23109
   },
@@ -572,6 +643,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 9542
   },
@@ -580,6 +652,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3482
   },
@@ -588,6 +661,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 18663
   },
@@ -596,6 +670,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 13234
   },
@@ -604,6 +679,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3054
   },
@@ -612,6 +688,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 516
   },
@@ -620,6 +697,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 4741
   },
@@ -628,6 +706,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 25019
   },
@@ -636,6 +715,7 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 10686
   },
@@ -644,6 +724,7 @@
     "sector": "nj",
     "crossing": "All Ferry Points",
     "mode": "Ferry",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 3386
   },
@@ -652,6 +733,7 @@
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 20180
   },
@@ -660,6 +742,7 @@
     "sector": "nj",
     "crossing": "Downtown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 14216
   },
@@ -668,6 +751,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 2914
   },
@@ -676,6 +760,7 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 496
   },
@@ -684,6 +769,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Autos",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 5095
   },
@@ -692,6 +778,7 @@
     "sector": "nj",
     "crossing": "Lincoln Tunnel",
     "mode": "Bus",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 28883
   },
@@ -700,7 +787,3914 @@
     "sector": "nj",
     "crossing": "Uptown PATH Tunnel",
     "mode": "PATH",
+    "direction": "entering",
     "time_period": "peak_1hr",
     "passengers": 11420
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 13891
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 85792
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 50441
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 31878
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 9345
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 5972
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 26972
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 9869
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 13249
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 91754
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 53991
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 34560
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 9915
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 6731
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 29465
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10493
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 11292
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 91160
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 60105
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 35153
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 9140
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 7152
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 34890
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10588
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 12534
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 54219
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 38448
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 9208
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 6505
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 12307
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 89827
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 36445
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 35422
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 12460
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10877
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 40470
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 11036
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 55067
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 5572
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 36327
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 12578
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10380
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 41810
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10915
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 56050
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 4421
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 6201
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 1555
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10086
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 6323
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 12230
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 7759
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 456
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 4612
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 14347
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 9093
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 15500
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 15969
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 18160
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 613
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 6986
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 21078
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 10737
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 23350
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 15325
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 25286
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 1779
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 7896
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 23444
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 8553
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 27627
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 13709
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 41248
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 1186
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 7908
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 24915
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 8753
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 30326
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 1431
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 14754
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 70864
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 42977
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 60789
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 175627
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 90623
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 61468
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 50666
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 16722
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 49842
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15233
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 64766
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 198279
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 97090
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 67274
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 52031
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 16330
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 54908
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 16997
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 62172
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 198395
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 105413
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 66368
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 50718
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 17083
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 62454
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 18264
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19731
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 100102
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 67026
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 50844
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 16385
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 64164
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 202951
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 69872
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19876
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 101072
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 70937
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 54335
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15702
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 57353
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 201783
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 66373
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19408
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 107613
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 70288
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 55778
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 13302
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 55252
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 198844
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 69732
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 3362
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 19808
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15568
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 41171
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 1873
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 50932
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 55670
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15371
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 9238
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 42033
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 29575
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 49735
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 1185
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 67560
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 93891
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 31631
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 12839
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 59213
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 39583
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 53036
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 4731
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 66462
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 143896
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 42224
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 14403
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 91023
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 46968
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 51802
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 4106
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 66556
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 150504
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 46198
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 15163
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 98252
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 52072
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 53264
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 3673
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 67043
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 173312
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "24hr",
+    "passengers": 50090
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5780
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 28961
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 20123
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11145
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2495
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2223
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11509
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 3452
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 6379
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 34244
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 21128
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11532
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2710
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2397
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 12547
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 3894
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5392
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 28844
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 22038
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11139
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2298
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1957
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 13348
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 3828
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 3652
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 21222
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 15100
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2023
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1498
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5160
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 30274
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11756
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 3902
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 21845
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 15307
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2202
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1250
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 4994
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 31372
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11907
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 4249
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 23733
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 15205
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2567
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1202
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 4778
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 29627
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 12011
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 692
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 3572
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2525
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2906
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 92
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5597
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 7271
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2445
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1864
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 7094
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5465
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2588
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 253
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 4815
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 12901
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 4892
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2624
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 10120
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 8766
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2673
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1161
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5018
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 19374
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 7163
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2808
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 17171
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 10939
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2245
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 1248
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 5177
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 25867
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 8275
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2663
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 17679
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 11850
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 2417
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 725
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 4519
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 26010
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_1hr",
+    "passengers": 9300
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 17276
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 75497
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 47030
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 26879
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7676
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 5018
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 25281
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 8351
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 19299
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 99235
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 49678
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 28330
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 8209
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 5026
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 27905
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 9633
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 16729
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 79447
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 49896
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 27372
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7544
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 4842
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 30170
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 9837
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 9670
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 50310
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 33309
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 6966
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 4020
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 15834
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 78930
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 28548
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 9686
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 49953
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 34819
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7033
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 3251
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 15153
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 79248
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 28125
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 10342
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 53285
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 34302
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7740
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 2940
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 14800
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 75442
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 28720
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 1736
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 8832
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 6584
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 8375
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 253
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 16850
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 19792
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 6173
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 4509
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 18821
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 13504
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7563
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 703
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 14839
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 33359
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 12479
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 6651
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 28215
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 19963
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7857
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 2085
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 14753
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 46256
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 17528
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7022
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 42211
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 25220
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7567
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 2275
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 15934
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 55942
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 19320
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 6890
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 44331
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 26857
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 7570
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 1285
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 14265
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 60853
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "peak_period",
+    "passengers": 21725
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 71269
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 185351
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 91129
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 63253
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 51913
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 11603
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 48337
+  },
+  {
+    "year": 2014,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13836
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 77718
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 228652
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 97287
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 68478
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 54134
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 12913
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 54877
+  },
+  {
+    "year": 2015,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 17890
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 72012
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 201975
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 95392
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 64491
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 54241
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13654
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 60430
+  },
+  {
+    "year": 2016,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 17572
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 16170
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 97297
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 65182
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 52105
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 11872
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 72712
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 203299
+  },
+  {
+    "year": 2017,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 67554
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 16464
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 95668
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 68216
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 51528
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 9879
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 72599
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 197608
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 64419
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 17412
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 104578
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 66794
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 52319
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 8599
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 71391
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 188322
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 66633
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 3297
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 20350
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 15092
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 45801
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 1153
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 60043
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 52640
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 14607
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 8599
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 42481
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 28328
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 47767
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 1117
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 68486
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 85940
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 29811
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 11937
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 61493
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 38764
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 52700
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 6021
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 65520
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 119401
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 39546
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13284
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 86772
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 48285
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 44374
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 6711
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 79491
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 139439
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 43029
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "All Ferry Points",
+    "mode": "Ferry",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 13406
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Amtrak/N.J. Transit Tunnels",
+    "mode": "Rail",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 91166
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 51548
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 44965
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Holland Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 3872
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Autos",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 78605
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Lincoln Tunnel",
+    "mode": "Bus",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 154272
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "leaving",
+    "time_period": "24hr",
+    "passengers": 47635
   }
 ]

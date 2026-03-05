@@ -1,4 +1,4 @@
-import type { ModeRecord, CrossingRecord, DayMode } from './types'
+import type { ModeRecord, CrossingRecord, DayMode, Direction, TimePeriod } from './types'
 import { CROSSING_LABELS, DAY_MODES } from './types'
 
 /** Pivot mode records into {year -> {mode -> passengers}} for "entering" direction */
@@ -26,6 +26,34 @@ export function modeSeriesArrays(records: ModeRecord[]) {
     series[mode] = years.map(y => pivot.get(y)?.[mode] ?? 0)
   }
   return { years, series }
+}
+
+/** Pre-filter crossing records by direction and time period */
+export function filterCrossings(
+  records: CrossingRecord[],
+  direction: Direction,
+  timePeriod: TimePeriod,
+): CrossingRecord[] {
+  return records.filter(r => r.direction === direction && r.time_period === timePeriod)
+}
+
+const MODE_LABELS = ['Autos', 'Bus', 'PATH', 'Rail', 'Ferry'] as const
+
+/** Aggregate crossing records by mode (summing across crossings) */
+export function aggregateByMode(records: CrossingRecord[]) {
+  const years = crossingYears(records)
+  const byYearMode = new Map<number, Record<string, number>>()
+  for (const r of records) {
+    if (!byYearMode.has(r.year)) byYearMode.set(r.year, {})
+    const m = byYearMode.get(r.year)!
+    m[r.mode] = (m[r.mode] ?? 0) + r.passengers
+  }
+  const labels = [...MODE_LABELS]
+  const series: Record<string, number[]> = {}
+  for (const label of labels) {
+    series[label] = years.map(y => byYearMode.get(y)?.[label] ?? 0)
+  }
+  return { years, series, labels }
 }
 
 /** Pivot crossing records into {year -> {label -> passengers}} */

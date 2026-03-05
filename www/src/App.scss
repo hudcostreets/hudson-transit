@@ -74,6 +74,14 @@ main {
       margin: 0 0 0.5rem;
       font-size: 0.95rem;
     }
+
+    .toggle-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.25rem;
+    }
   }
 }
 

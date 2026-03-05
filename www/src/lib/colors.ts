@@ -16,6 +16,7 @@ export interface ColorScheme {
   name: string
   dayMode: Record<string, string>
   crossing: Record<string, string>
+  mode: Record<string, string>
 }
 
 export const COLOR_SCHEMES: ColorScheme[] = [
@@ -38,6 +39,13 @@ export const COLOR_SCHEMES: ColorScheme[] = [
       'Holland (Autos)':     pc[6],
       'Ferry':               pc[7],
     },
+    mode: {
+      Autos: pc[1],
+      Bus:   pc[0],
+      PATH:  pc[3],
+      Rail:  pc[2],
+      Ferry: pc[7],
+    },
   },
   {
     name: 'Semantic',
@@ -57,6 +65,13 @@ export const COLOR_SCHEMES: ColorScheme[] = [
       'Holland (Bus)':       '#F5BA6A',  // light orange
       'Holland (Autos)':     '#E8787A',  // pink
       'Ferry':               '#1E88E5',  // blue
+    },
+    mode: {
+      Autos: '#DC3545',  // red
+      Bus:   '#EF8D2E',  // orange
+      PATH:  '#AB63FA',  // purple
+      Rail:  '#E5B820',  // gold
+      Ferry: '#1E88E5',  // blue
     },
   },
 ]

@@ -128,8 +128,24 @@ def load_nj_sector(xl_path: Path, sheet_name: str):
     return a
 
 
-def load_nj_crossings(year: int, year_dir: Path, time_period: str = 'peak_1hr'):
-    """Parse AppendixII Table14A for NJ crossing-level peak hour data."""
+TABLE_CONFIG = [
+    ('Table14A', 'entering', 'peak_1hr'),
+    ('Table14B', 'entering', 'peak_period'),
+    ('Table14C', 'entering', '24hr'),
+    ('Table15A', 'leaving',  'peak_1hr'),
+    ('Table15B', 'leaving',  'peak_period'),
+    ('Table15C', 'leaving',  '24hr'),
+]
+
+
+def load_nj_crossings(
+    year: int,
+    year_dir: Path,
+    table_base: str = 'Table14A',
+    direction: str = 'entering',
+    time_period: str = 'peak_1hr',
+):
+    """Parse AppendixII table for NJ crossing-level data."""
     xl_path = find_excel(year_dir, r"AppendixII_")
     if xl_path is None:
         raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
@@ -143,10 +159,10 @@ def load_nj_crossings(year: int, year_dir: Path, time_period: str = 'peak_1hr'):
     }
 
     if year < 2017:
-        sheet_name = 'Table14A'
+        sheet_name = table_base
         cols[7] = 'Ferry'
     else:
-        sheet_name = 'Table14A-1'
+        sheet_name = f'{table_base}-1'
 
     a = load_nj_sector(xl_path, sheet_name)
     a = a[list(cols.keys())]
@@ -159,7 +175,7 @@ def load_nj_crossings(year: int, year_dir: Path, time_period: str = 'peak_1hr'):
     a = a.set_index('Crossing')
 
     if year >= 2017:
-        a2 = load_nj_sector(xl_path, 'Table14A-2')
+        a2 = load_nj_sector(xl_path, f'{table_base}-2')
         a2 = a2[[0, 1]]
         a2.columns = ['Crossing', 'Ferry']
         a2 = a2.set_index('Crossing')
@@ -177,6 +193,7 @@ def load_nj_crossings(year: int, year_dir: Path, time_period: str = 'peak_1hr'):
                     'sector': 'nj',
                     'crossing': str(crossing),
                     'mode': mode,
+                    'direction': direction,
                     'time_period': time_period,
                     'passengers': val,
                 })
@@ -215,15 +232,16 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         f.write('\n')
     print(f"Wrote {len(all_modes)} mode records to {modes_path}")
 
-    # Extract crossings (AppendixII Table14A)
+    # Extract crossings (AppendixII Tables 14A-C, 15A-C)
     all_crossings = []
-    for year, year_dir in sorted(years.items()):
-        try:
-            records = load_nj_crossings(year, year_dir)
-            all_crossings.extend(records)
-            print(f"  crossings {year}: {len(records)} records")
-        except Exception as e:
-            print(f"  crossings {year}: ERROR - {e}")
+    for table_base, direction, time_period in TABLE_CONFIG:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_nj_crossings(year, year_dir, table_base, direction, time_period)
+                all_crossings.extend(records)
+                print(f"  {table_base} {year}: {len(records)} records")
+            except Exception as e:
+                print(f"  {table_base} {year}: ERROR - {e}")
 
     crossings_path = join(output_dir, 'crossings.json')
     with open(crossings_path, 'w') as f:

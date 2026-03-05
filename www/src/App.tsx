@@ -4,9 +4,7 @@ import crossingsData from './data/crossings.json'
 import type { ModeRecord, CrossingRecord } from './lib/types'
 import { COLOR_SCHEMES } from './lib/colors'
 import { ColorContext } from './lib/ColorContext'
-import PeakScatter from './components/PeakScatter'
-import PeakBar from './components/PeakBar'
-import PeakPctBar from './components/PeakPctBar'
+import UnifiedChart from './components/UnifiedChart'
 import DayBar from './components/DayBar'
 import DayPctBar from './components/DayPctBar'
 import RecoveryLine from './components/RecoveryLine'
@@ -17,8 +15,7 @@ const modes = modesData as ModeRecord[]
 const crossings = crossingsData as CrossingRecord[]
 
 const NAV = [
-  { id: 'peak-scatter', label: 'Peak Scatter' },
-  { id: 'peak-bar', label: 'Peak Bar' },
+  { id: 'crossings', label: 'Crossings' },
   { id: 'day', label: '24hr' },
   { id: 'recovery', label: 'Recovery' },
 ]
@@ -27,7 +24,6 @@ const UNIT_OPTIONS = ['#', '%']
 
 function App() {
   const [schemeIdx, setSchemeIdx] = useState(0)
-  const [peakUnit, setPeakUnit] = useState('#')
   const [dayUnit, setDayUnit] = useState('#')
   const scheme = COLOR_SCHEMES[schemeIdx]
 
@@ -57,19 +53,9 @@ function App() {
           </nav>
         </header>
         <main>
-          <section id="peak-scatter">
-            <h2>NJ&rarr;NY passengers, by mode/location</h2>
-            <p className="chart-subtitle">8-9am, Fall business day</p>
-            <PeakScatter data={crossings} />
-          </section>
-          <section id="peak-bar">
-            <h2>NJ&rarr;NY passengers, by mode/location</h2>
-            <p className="chart-subtitle">8-9am, Fall business day</p>
-            <Toggle options={UNIT_OPTIONS} value={peakUnit} onChange={setPeakUnit} />
-            {peakUnit === '#'
-              ? <PeakBar data={crossings} />
-              : <PeakPctBar data={crossings} />
-            }
+          <section id="crossings">
+            <h2>NJ Sector passengers by mode/crossing</h2>
+            <UnifiedChart data={crossings} />
           </section>
           <section id="day">
             <h2>NJ&rarr;NY crossings on a Fall business day</h2>

@@ -12,9 +12,15 @@ export interface CrossingRecord {
   sector: string
   crossing: string
   mode: string
+  direction: string
   time_period: string
   passengers: number
 }
+
+export type ViewMode = 'scatter' | 'bar' | 'pct'
+export type Direction = 'entering' | 'leaving'
+export type TimePeriod = 'peak_1hr' | 'peak_period' | '24hr'
+export type Granularity = 'crossing' | 'mode'
 
 export type DayMode = 'AUTO' | 'BUS' | 'PATH' | 'RAIL' | 'FERRY'
 
