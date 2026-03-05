@@ -6,7 +6,8 @@ import { useColors } from '../lib/ColorContext'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
-import Toggle from './Toggle'
+import Toggle, { type ToggleOption } from './Toggle'
+import { BubbleIcon, RecoveryIcon } from './icons'
 
 const SS_KEY = 'unified-chart'
 
@@ -24,26 +25,27 @@ function useSS<T>(key: string, initial: T): [T, (v: T) => void] {
   return [val, set]
 }
 
-const VIEW_OPTIONS = [
-  { value: 'scatter' as ViewMode, label: '\u{1FAE7}' },
-  { value: 'bar' as ViewMode, label: '#' },
-  { value: 'pct' as ViewMode, label: '%' },
+const VIEW_OPTIONS: ToggleOption<ViewMode>[] = [
+  { value: 'scatter', label: <BubbleIcon /> },
+  { value: 'bar', label: '#' },
+  { value: 'pct', label: '%' },
+  { value: 'recovery', label: <RecoveryIcon /> },
 ]
 
-const DIR_OPTIONS = [
-  { value: 'entering' as Direction, label: 'NJ\u2192NY' },
-  { value: 'leaving' as Direction, label: 'NY\u2192NJ' },
+const DIR_OPTIONS: ToggleOption<Direction>[] = [
+  { value: 'entering', label: 'NJ\u2192NY' },
+  { value: 'leaving', label: 'NY\u2192NJ' },
 ]
 
-const TIME_OPTIONS = [
-  { value: 'peak_1hr' as TimePeriod, label: 'hr' },
-  { value: 'peak_period' as TimePeriod, label: '3hr' },
-  { value: '24hr' as TimePeriod, label: 'day' },
+const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
+  { value: 'peak_1hr', label: 'hr' },
+  { value: 'peak_period', label: '3hr' },
+  { value: '24hr', label: 'day' },
 ]
 
-const GRAN_OPTIONS = [
-  { value: 'crossing' as Granularity, label: 'crossing' },
-  { value: 'mode' as Granularity, label: 'mode' },
+const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
+  { value: 'crossing', label: 'crossing' },
+  { value: 'mode', label: 'mode' },
 ]
 
 /** Breakpoint (px) above which legend moves to the right side */
@@ -68,6 +70,8 @@ const LEGEND_RIGHT: Partial<Layout['legend']> = {
   font: { size: 11 },
 }
 
+const BASE_YEAR = 2019
+
 function useContainerWidth() {
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(0)
@@ -86,7 +90,7 @@ function useContainerWidth() {
   return { ref, width }
 }
 
-function subtitleText(direction: Direction, timePeriod: TimePeriod): string {
+function subtitleText(view: ViewMode, direction: Direction, timePeriod: TimePeriod): string {
   const dir = direction === 'entering' ? 'NJ\u2192NY' : 'NY\u2192NJ'
   const time: Record<TimePeriod, string> = {
     peak_1hr: direction === 'entering' ? '8-9am' : '5-6pm',
@@ -94,6 +98,7 @@ function subtitleText(direction: Direction, timePeriod: TimePeriod): string {
     '24hr': '24hr',
   }
   const suffix = timePeriod === '24hr' ? 'Fall business day' : `${time[timePeriod]}, Fall business day`
+  if (view === 'recovery') return `${dir}, ${suffix}, as % of ${BASE_YEAR}`
   return `${dir}, ${suffix}`
 }
 
@@ -135,41 +140,29 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const content = useMemo(() => {
     if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin)
     return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin)
   }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin])
 
   return (
     <div ref={ref}>
-      <p className="chart-subtitle">{subtitleText(direction, timePeriod)}</p>
+      <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
       <div key={`${view}-${direction}-${timePeriod}-${granularity}`}>
         {content}
       </div>
       <div className="toggle-bar">
-        <Toggle
-          options={VIEW_OPTIONS.map(o => o.label)}
-          value={VIEW_OPTIONS.find(o => o.value === view)!.label}
-          onChange={label => setView(VIEW_OPTIONS.find(o => o.label === label)!.value)}
-        />
-        <Toggle
-          options={DIR_OPTIONS.map(o => o.label)}
-          value={DIR_OPTIONS.find(o => o.value === direction)!.label}
-          onChange={label => setDirection(DIR_OPTIONS.find(o => o.label === label)!.value)}
-        />
-        <Toggle
-          options={TIME_OPTIONS.map(o => o.label)}
-          value={TIME_OPTIONS.find(o => o.value === timePeriod)!.label}
-          onChange={label => setTimePeriod(TIME_OPTIONS.find(o => o.label === label)!.value)}
-        />
-        <Toggle
-          options={GRAN_OPTIONS.map(o => o.label)}
-          value={GRAN_OPTIONS.find(o => o.value === granularity)!.label}
-          onChange={label => setGranularity(GRAN_OPTIONS.find(o => o.label === label)!.value)}
-        />
+        <Toggle options={VIEW_OPTIONS} value={view} onChange={setView} />
+        <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
+        <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
+        <Toggle options={GRAN_OPTIONS} value={granularity} onChange={setGranularity} />
         {view === 'scatter' && canonical && (
           <Toggle
-            options={['\u{1F4DD}', '\u2014']}
-            value={showAnnotations ? '\u{1F4DD}' : '\u2014'}
-            onChange={v => setShowAnnotations(v === '\u{1F4DD}')}
+            options={[
+              { value: 'on', label: '\u{1F4DD}' },
+              { value: 'off', label: '\u2014' },
+            ]}
+            value={showAnnotations ? 'on' : 'off'}
+            onChange={v => setShowAnnotations(v === 'on')}
           />
         )}
       </div>
@@ -322,6 +315,68 @@ function renderPctBar(
         yaxis: { title: { text: '% Passengers' } },
         hovermode: 'x',
         margin: { t: 40, l: 60, r: rightMargin, b: 40 },
+        autosize: true,
+        legend: legendLayout,
+      }}
+      useResizeHandler
+      style={{ width: '100%', height: '600px' }}
+    />
+  )
+}
+
+function renderRecovery(
+  years: number[],
+  series: Record<string, number[]>,
+  labels: string[],
+  colorMap: Record<string, string>,
+  legendLayout: Partial<Layout['legend']>,
+  rightMargin: number,
+) {
+  const baseIdx = years.indexOf(BASE_YEAR)
+  if (baseIdx === -1) return <div>No {BASE_YEAR} data for this selection</div>
+
+  const ry = years.filter(y => y >= BASE_YEAR)
+  const rs: Record<string, number[]> = {}
+  for (const label of labels) {
+    const base = series[label][baseIdx]
+    rs[label] = ry.map(y => {
+      const idx = years.indexOf(y)
+      return base > 0 ? series[label][idx] / base : 0
+    })
+  }
+
+  const maxRecovery = Math.max(...labels.flatMap(l => rs[l]))
+  const yMax = Math.ceil(maxRecovery * 10) / 10 + 0.1
+
+  return (
+    <Plot
+      data={labels.map(label => ({
+        type: 'scatter' as const,
+        name: label,
+        x: ry,
+        y: rs[label],
+        mode: 'lines+markers' as const,
+        marker: { color: colorMap[label], size: 8 },
+        line: { color: colorMap[label], width: 2 },
+        hovertemplate: '%{y:.0%}<extra>%{fullData.name}</extra>',
+      }))}
+      layout={{
+        xaxis: { dtick: 1, title: { text: '' } },
+        yaxis: {
+          title: { text: `% of ${BASE_YEAR} volume` },
+          tickformat: ',.0%',
+          range: [0, yMax],
+        },
+        hovermode: 'x',
+        shapes: [{
+          type: 'line',
+          x0: ry[0],
+          x1: ry[ry.length - 1],
+          y0: 1,
+          y1: 1,
+          line: { color: '#888', width: 1, dash: 'dash' },
+        }],
+        margin: { t: 10, l: 70, r: rightMargin, b: 40 },
         autosize: true,
         legend: legendLayout,
       }}

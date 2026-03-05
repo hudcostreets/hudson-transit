@@ -1,21 +1,27 @@
+import type { ReactNode } from 'react'
 import './Toggle.scss'
 
-interface ToggleProps {
-  options: string[]
-  value: string
-  onChange: (value: string) => void
+export interface ToggleOption<V extends string = string> {
+  value: V
+  label: ReactNode
 }
 
-export default function Toggle({ options, value, onChange }: ToggleProps) {
+interface ToggleProps<V extends string = string> {
+  options: ToggleOption<V>[]
+  value: V
+  onChange: (value: V) => void
+}
+
+export default function Toggle<V extends string>({ options, value, onChange }: ToggleProps<V>) {
   return (
     <div className="toggle">
       {options.map(opt => (
         <button
-          key={opt}
-          className={opt === value ? 'active' : ''}
-          onClick={() => onChange(opt)}
+          key={opt.value}
+          className={opt.value === value ? 'active' : ''}
+          onClick={() => onChange(opt.value)}
         >
-          {opt}
+          {opt.label}
         </button>
       ))}
     </div>

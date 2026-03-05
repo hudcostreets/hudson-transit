@@ -8,7 +8,7 @@ export interface CrossingRecord {
   passengers: number
 }
 
-export type ViewMode = 'scatter' | 'bar' | 'pct'
+export type ViewMode = 'scatter' | 'bar' | 'pct' | 'recovery'
 export type Direction = 'entering' | 'leaving'
 export type TimePeriod = 'peak_1hr' | 'peak_period' | '24hr'
 export type Granularity = 'crossing' | 'mode'
