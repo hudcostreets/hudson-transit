@@ -4,8 +4,8 @@ import type { Data, Layout } from 'plotly.js'
 import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } from '../lib/types'
 import { useColors } from '../lib/ColorContext'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
-import { CANONICAL_JITTER, buildCanonicalAnnotations } from './scatter-config'
-import JitteredPlot, { getJitteredX } from './JitteredPlot'
+import { getJitter, buildCanonicalAnnotations } from './scatter-config'
+import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle from './Toggle'
 
 const SS_KEY = 'unified-chart'
@@ -127,15 +127,16 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
 
   const colorMap = granularity === 'mode' ? colors.mode : colors.crossing
   const canonical = isCanonical(direction, timePeriod, granularity)
+  const jitter = getJitter(direction, timePeriod, granularity)
   const wide = width >= LEGEND_SIDE_MIN_WIDTH
   const legendLayout = wide ? LEGEND_RIGHT : LEGEND_BOTTOM
   const rightMargin = wide ? 160 : 10
 
   const content = useMemo(() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, canonical, showAnnotations, legendLayout, rightMargin)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin)
     return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin)
-  }, [view, years, series, pct, labels, colorMap, canonical, showAnnotations, legendLayout, rightMargin])
+  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin])
 
   return (
     <div ref={ref}>
@@ -182,7 +183,7 @@ function renderScatter(
   pct: Record<string, number[]>,
   labels: string[],
   colorMap: Record<string, string>,
-  canonical: boolean,
+  jitter: JitterOffsets | undefined,
   showAnnotations: boolean,
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
@@ -210,12 +211,10 @@ function renderScatter(
 
   const maxYear = Math.max(...years)
 
-  const jitter = canonical ? CANONICAL_JITTER : undefined
-
   const jx = (traceName: string, yearIdx: number) =>
     getJitteredX(jitter, years[yearIdx], traceName)
 
-  const annotations = (canonical && showAnnotations)
+  const annotations = showAnnotations
     ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx)
     : undefined
 

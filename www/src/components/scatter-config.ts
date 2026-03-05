@@ -2,8 +2,20 @@ import type { JitterOffsets } from './JitteredPlot'
 
 // Explicit per-{year, trace} x-offsets to reduce bubble overlap.
 // Positive = rightward, negative = leftward. Only specify where needed.
-const t = 0.07  // tight offset for PATH
+const t = 0.07
 
+/** Jitter configs keyed by `${direction}:${timePeriod}:${granularity}` */
+export const JITTER_MAP: Record<string, JitterOffsets> = {}
+
+function jitterKey(direction: string, timePeriod: string, granularity: string): string {
+  return `${direction}:${timePeriod}:${granularity}`
+}
+
+export function getJitter(direction: string, timePeriod: string, granularity: string): JitterOffsets | undefined {
+  return JITTER_MAP[jitterKey(direction, timePeriod, granularity)]
+}
+
+// --- entering, peak_1hr, crossing (canonical) ---
 export const CANONICAL_JITTER: JitterOffsets = {
   2014: {
     'Holland (Bus)':   -t,
@@ -64,6 +76,49 @@ export const CANONICAL_JITTER: JitterOffsets = {
     'Ferry':             t,
   },
 }
+
+JITTER_MAP[jitterKey('entering', 'peak_1hr', 'crossing')] = CANONICAL_JITTER
+
+// --- leaving, peak_1hr, crossing ---
+const LEAVING_1HR_JITTER: JitterOffsets = {
+  2014: {
+    'PATH (Downtown)':  -t,
+    'PATH (Uptown)':     t,
+    'Holland (Bus)':    -t,
+    'Holland (Autos)':   t,
+  },
+  2015: {
+    'PATH (Downtown)':  -t,
+    'PATH (Uptown)':     t,
+    'Holland (Bus)':    -t,
+    'Holland (Autos)':   t,
+  },
+  2016: {
+    'Holland (Bus)':    -t,
+    'Holland (Autos)':   t,
+  },
+  2017: {
+    'Holland (Bus)':    -t,
+    'Holland (Autos)':   t,
+  },
+  2018: {
+    'Lincoln (Autos)':  -t,
+    'Ferry':             t,
+  },
+  2019: {
+    'Lincoln (Autos)':  -t,
+    'Ferry':             t,
+  },
+  2023: {
+    'Holland (Autos)':  -t,
+    'Ferry':             t,
+  },
+  2024: {
+    'Holland (Autos)':  -t,
+    'Ferry':             t,
+  },
+}
+JITTER_MAP[jitterKey('leaving', 'peak_1hr', 'crossing')] = LEAVING_1HR_JITTER
 
 export interface AnnotationTarget {
   ay: number
