@@ -1,13 +1,13 @@
 /** Shared legend layouts for peak hour charts */
 
 export const PEAK_BAR_LEGEND_ORDER = [
-  'Lincoln (Autos)', 'PATH (Uptown)',   'Holland (Autos)', 'Ferry',
-  'Lincoln (Bus)',   'PATH (Downtown)', 'Holland (Bus)',   'Amtrak / NJ Transit',
+  'Ferry',           'Lincoln (Bus)',   'Amtrak / NJ Transit', 'PATH (Uptown)',
+  'PATH (Downtown)', 'Holland (Bus)',   'Lincoln (Autos)',     'Holland (Autos)',
 ]
 
 export const PEAK_SCATTER_LEGEND_ORDER = [
-  'Lincoln (Bus)',       'PATH (Uptown)',   'Ferry',           'Holland (Autos)',
-  'Amtrak / NJ Transit', 'PATH (Downtown)', 'Lincoln (Autos)', 'Holland (Bus)',
+  'Ferry',               'Lincoln (Bus)',   'Amtrak / NJ Transit', 'PATH (Downtown)',
+  'PATH (Uptown)',       'Holland (Bus)',   'Lincoln (Autos)',      'Holland (Autos)',
 ]
 
 /** 4-column legend below chart (for scatter) */
@@ -17,8 +17,7 @@ export function peakLegendLayout(
 ): Record<string, object> {
   const layout: Record<string, object> = {}
   for (let i = 0; i < order.length; i++) {
-    const n = i + 1
-    const key = `legend${n === 1 ? '' : n}`
+    const key = `legend${i + 2}`
     layout[key] = {
       yanchor: 'top' as const,
       x: x0 + (i % 4) * dx,
