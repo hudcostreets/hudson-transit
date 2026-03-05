@@ -1095,7 +1095,7 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 55067
+    "passengers": 89556
   },
   {
     "year": 2018,
@@ -1104,7 +1104,7 @@
     "mode": "Rail",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 35422
+    "passengers": 55067
   },
   {
     "year": 2018,
@@ -1113,7 +1113,7 @@
     "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 5572
+    "passengers": 35422
   },
   {
     "year": 2018,
@@ -1129,6 +1129,15 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 5572
+  },
+  {
+    "year": 2018,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 40470
@@ -1158,7 +1167,7 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 56050
+    "passengers": 88433
   },
   {
     "year": 2019,
@@ -1167,7 +1176,7 @@
     "mode": "Rail",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 36327
+    "passengers": 56050
   },
   {
     "year": 2019,
@@ -1176,7 +1185,7 @@
     "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 4421
+    "passengers": 36327
   },
   {
     "year": 2019,
@@ -1192,6 +1201,15 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 4421
+  },
+  {
+    "year": 2019,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 41810
@@ -1221,7 +1239,7 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 7759
+    "passengers": 17095
   },
   {
     "year": 2020,
@@ -1230,7 +1248,7 @@
     "mode": "Rail",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 6201
+    "passengers": 7759
   },
   {
     "year": 2020,
@@ -1239,7 +1257,7 @@
     "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 456
+    "passengers": 6201
   },
   {
     "year": 2020,
@@ -1255,6 +1273,15 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 456
+  },
+  {
+    "year": 2020,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 6323
@@ -1284,7 +1311,7 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 18160
+    "passengers": 36923
   },
   {
     "year": 2021,
@@ -1293,7 +1320,7 @@
     "mode": "Rail",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 14347
+    "passengers": 18160
   },
   {
     "year": 2021,
@@ -1302,7 +1329,7 @@
     "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 613
+    "passengers": 14347
   },
   {
     "year": 2021,
@@ -1318,6 +1345,15 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 613
+  },
+  {
+    "year": 2021,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 15500
@@ -1347,7 +1383,7 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 25286
+    "passengers": 57632
   },
   {
     "year": 2022,
@@ -1356,7 +1392,7 @@
     "mode": "Rail",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 21078
+    "passengers": 25286
   },
   {
     "year": 2022,
@@ -1365,7 +1401,7 @@
     "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 1779
+    "passengers": 21078
   },
   {
     "year": 2022,
@@ -1381,6 +1417,15 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 1779
+  },
+  {
+    "year": 2022,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 23350
@@ -1410,7 +1455,7 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 41248
+    "passengers": 61737
   },
   {
     "year": 2023,
@@ -1419,7 +1464,7 @@
     "mode": "Rail",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 23444
+    "passengers": 41248
   },
   {
     "year": 2023,
@@ -1428,7 +1473,7 @@
     "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 1186
+    "passengers": 23444
   },
   {
     "year": 2023,
@@ -1444,6 +1489,15 @@
     "sector": "nj",
     "crossing": "Holland Tunnel",
     "mode": "Bus",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 1186
+  },
+  {
+    "year": 2023,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 27627
@@ -1473,13 +1527,22 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 113841
+    "passengers": 70864
   },
   {
     "year": 2024,
     "sector": "nj",
     "crossing": "Amtrak/N.J. Transit Tunnels",
     "mode": "Rail",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 42977
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Uptown PATH Tunnel",
+    "mode": "PATH",
     "direction": "entering",
     "time_period": "peak_period",
     "passengers": 24915
@@ -1500,7 +1563,16 @@
     "mode": "Bus",
     "direction": "entering",
     "time_period": "peak_period",
-    "passengers": 31757
+    "passengers": 1431
+  },
+  {
+    "year": 2024,
+    "sector": "nj",
+    "crossing": "Downtown PATH Tunnel",
+    "mode": "PATH",
+    "direction": "entering",
+    "time_period": "peak_period",
+    "passengers": 30326
   },
   {
     "year": 2024,

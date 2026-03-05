@@ -1,11 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react'
 import Plot from 'react-plotly.js'
 import type { Data, Layout } from 'plotly.js'
 import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } from '../lib/types'
 import { useColors } from '../lib/ColorContext'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
 import { JITTER, buildCanonicalAnnotations } from './scatter-config'
-import { peakLegendLayout, PEAK_SCATTER_LEGEND_ORDER, PEAK_BAR_LEGEND } from './peak-legend'
 import JitteredPlot, { getJitteredX } from './JitteredPlot'
 import Toggle from './Toggle'
 
@@ -31,6 +30,46 @@ const GRAN_OPTIONS = [
   { value: 'mode' as Granularity, label: 'mode' },
 ]
 
+/** Breakpoint (px) above which legend moves to the right side */
+const LEGEND_SIDE_MIN_WIDTH = 900
+
+/** Bottom legend: horizontal, 2 rows via tracegroupgap */
+const LEGEND_BOTTOM: Partial<Layout['legend']> = {
+  orientation: 'h',
+  yanchor: 'top',
+  y: -0.08,
+  xanchor: 'center',
+  x: 0.5,
+  font: { size: 11 },
+}
+
+/** Right-side legend: vertical, stacked */
+const LEGEND_RIGHT: Partial<Layout['legend']> = {
+  yanchor: 'top',
+  y: 1,
+  xanchor: 'left',
+  x: 1.02,
+  font: { size: 11 },
+}
+
+function useContainerWidth() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(0)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setWidth(entry.contentRect.width)
+      }
+    })
+    ro.observe(el)
+    setWidth(el.clientWidth)
+    return () => ro.disconnect()
+  }, [])
+  return { ref, width }
+}
+
 function subtitleText(direction: Direction, timePeriod: TimePeriod): string {
   const dir = direction === 'entering' ? 'NJ\u2192NY' : 'NY\u2192NJ'
   const time: Record<TimePeriod, string> = {
@@ -42,7 +81,6 @@ function subtitleText(direction: Direction, timePeriod: TimePeriod): string {
   return `${dir}, ${suffix}`
 }
 
-/** Whether the current combination matches the "canonical" scatter view */
 function isCanonical(direction: Direction, timePeriod: TimePeriod, granularity: Granularity): boolean {
   return direction === 'entering' && timePeriod === 'peak_1hr' && granularity === 'crossing'
 }
@@ -53,6 +91,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('peak_1hr')
   const [granularity, setGranularity] = useState<Granularity>('crossing')
   const colors = useColors()
+  const { ref, width } = useContainerWidth()
 
   const filtered = useMemo(
     () => filterCrossings(data, direction, timePeriod),
@@ -70,19 +109,23 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   )
 
   const colorMap = granularity === 'mode' ? colors.mode : colors.crossing
-
   const canonical = isCanonical(direction, timePeriod, granularity)
+  const wide = width >= LEGEND_SIDE_MIN_WIDTH
+  const legendLayout = wide ? LEGEND_RIGHT : LEGEND_BOTTOM
+  const rightMargin = wide ? 160 : 10
 
   const content = useMemo(() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, canonical)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap)
-    return renderPctBar(years, pct, labels, colorMap)
-  }, [view, years, series, pct, labels, colorMap, canonical])
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, canonical, legendLayout, rightMargin)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin)
+  }, [view, years, series, pct, labels, colorMap, canonical, legendLayout, rightMargin])
 
   return (
-    <div>
+    <div ref={ref}>
       <p className="chart-subtitle">{subtitleText(direction, timePeriod)}</p>
-      {content}
+      <div key={`${view}-${direction}-${timePeriod}-${granularity}`}>
+        {content}
+      </div>
       <div className="toggle-bar">
         <Toggle
           options={VIEW_OPTIONS.map(o => o.label)}
@@ -116,6 +159,8 @@ function renderScatter(
   labels: string[],
   colorMap: Record<string, string>,
   canonical: boolean,
+  legendLayout: Partial<Layout['legend']>,
+  rightMargin: number,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
   const maxSize = 60
@@ -135,7 +180,6 @@ function renderScatter(
       textfont: { size: 10 },
       customdata: passengers.map((p, j) => [p, years[j]]),
       hovertemplate: '%{customdata[0]:,} (%{y:.1%})<extra>%{customdata[1]}</extra>',
-      legend: `legend${i + 2}`,
     } as Data
   })
 
@@ -149,9 +193,11 @@ function renderScatter(
     ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx)
     : undefined
 
-  const extraLayout = canonical
-    ? peakLegendLayout(PEAK_SCATTER_LEGEND_ORDER, { dy: -0.04 })
-    : {}
+  const extraLayout = { legend: legendLayout }
+
+  const maxPct = Math.max(...labels.flatMap(l => pct[l]))
+  // Round up to next 5% tick, with 5% headroom for bubble radius + text
+  const yMax = Math.ceil((maxPct + 0.05) * 20) / 20
 
   return (
     <JitteredPlot
@@ -167,10 +213,10 @@ function renderScatter(
         yaxis: {
           title: { text: '% of total passengers (mode share)' },
           tickformat: ',.0%',
-          range: [0, 0.4],
+          range: [0, yMax],
         },
         hovermode: 'x',
-        margin: { t: 10, l: 60, r: 10, b: 90 },
+        margin: { t: 10, l: 60, r: rightMargin, b: 90 },
         autosize: true,
         annotations: annotations as Layout['annotations'],
         ...extraLayout,
@@ -186,6 +232,8 @@ function renderBar(
   series: Record<string, number[]>,
   labels: string[],
   colorMap: Record<string, string>,
+  legendLayout: Partial<Layout['legend']>,
+  rightMargin: number,
 ) {
   return (
     <Plot
@@ -200,9 +248,9 @@ function renderBar(
         xaxis: { dtick: 1, title: { text: '' } },
         yaxis: { title: { text: 'Passengers' } },
         hovermode: 'x',
-        margin: { t: 40, l: 60, r: 10, b: 40 },
+        margin: { t: 40, l: 60, r: rightMargin, b: 40 },
         autosize: true,
-        legend: PEAK_BAR_LEGEND,
+        legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
@@ -212,26 +260,45 @@ function renderBar(
 
 function renderPctBar(
   years: number[],
-  pct: Record<string, number[]>,
+  series: Record<string, number[]>,
   labels: string[],
   colorMap: Record<string, string>,
+  legendLayout: Partial<Layout['legend']>,
+  rightMargin: number,
 ) {
+  const totals = years.map((_, i) =>
+    labels.reduce((sum, l) => sum + (series[l]?.[i] ?? 0), 0)
+  )
   return (
     <Plot
-      data={labels.map(label => ({
-        type: 'bar' as const,
-        name: label,
-        x: years,
-        y: pct[label],
-        marker: { color: colorMap[label] },
-      }))}
+      data={labels.map(label => {
+        const pcts = series[label].map((v, i) =>
+          totals[i] > 0 ? (v / totals[i]) * 100 : 0
+        )
+        return {
+          type: 'bar' as const,
+          name: label,
+          x: years,
+          y: series[label],
+          marker: { color: colorMap[label] },
+          text: pcts.map(p => p >= 2 ? `${p.toFixed(1)}%` : ''),
+          textposition: 'inside' as const,
+          insidetextanchor: 'middle',
+          constraintext: 'none',
+          textfont: { size: 11 },
+          customdata: pcts,
+          hovertemplate: '%{customdata:.1f}%<extra>%{fullData.name}</extra>',
+        }
+      })}
       layout={{
+        barmode: 'stack',
+        barnorm: 'percent',
         xaxis: { dtick: 1, title: { text: '' } },
-        yaxis: { title: { text: '% Passengers' }, tickformat: ',.0%' },
+        yaxis: { title: { text: '% Passengers' } },
         hovermode: 'x',
-        margin: { t: 40, l: 60, r: 10, b: 40 },
+        margin: { t: 40, l: 60, r: rightMargin, b: 40 },
         autosize: true,
-        legend: PEAK_BAR_LEGEND,
+        legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}

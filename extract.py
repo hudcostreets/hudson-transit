@@ -12,7 +12,7 @@ from os.path import basename, join
 from pathlib import Path
 
 from click import group, option
-from pandas import read_excel
+from pandas import isna, read_excel
 
 
 def discover_years(base: str = ".") -> dict[int, Path]:
@@ -107,8 +107,12 @@ def normalize_mode(mode_raw: str) -> str:
     return mode
 
 
-def load_nj_sector(xl_path: Path, sheet_name: str):
-    """Load NJ sector rows from an AppendixII sheet."""
+def load_nj_sector(xl_path: Path, sheet_name: str, raw: bool = False):
+    """Load NJ sector rows from an AppendixII sheet.
+
+    If raw=True, return rows before SECTOR TOTAL without dropping blank-name
+    rows or replacing '-' with 0 (needed for shift detection/correction).
+    """
     a = read_excel(xl_path, sheet_name=sheet_name)
     a = a.dropna(how='all', axis=1)
     a.columns = list(range(len(a.columns)))
@@ -123,6 +127,9 @@ def load_nj_sector(xl_path: Path, sheet_name: str):
     if not end_matches:
         raise ValueError(f"Could not find 'SECTOR TOTAL' in {sheet_name} of {xl_path}")
     end = end_matches[0]
+
+    if raw:
+        return a.iloc[:end]
 
     a = a.iloc[:end - 1].dropna(subset=[0]).replace('-', 0)
     return a
@@ -173,7 +180,10 @@ def load_nj_crossings(
     else:
         sheet_name = f'{table_base}-1'
 
-    a = load_nj_sector(xl_path, sheet_name)
+    if table_base == 'Table14B' and year >= 2017:
+        a = fix_14b_shift(xl_path, year)
+    else:
+        a = load_nj_sector(xl_path, sheet_name)
 
     # Pre-2017 single sheets have 12+ columns (modes + Tramway, Bicycle, totals).
     # Mode data occupies columns 1-7 (Autos..Ferry). 2017+ -1 sheets have 7 cols
@@ -256,6 +266,100 @@ def _rec(
         'time_period': time_period,
         'passengers': passengers,
     }
+
+
+def fix_14b_shift(xl_path: Path, year: int):
+    """Fix Table14B-1 NJ sector data shifted up by 1 row.
+
+    In 2018-2024, non-auto values in Table14B-1 are circularly shifted up by 1
+    row relative to their correct positions (which match Table14A-1's layout).
+    For each data column, we detect the shift by comparing null patterns against
+    14A-1, and un-shift (rotate values down by 1) where needed.
+
+    Returns the corrected dataframe in the same format as load_nj_sector()
+    (blank-name rows dropped, '-' replaced with 0).
+
+    2017 is unaffected (14A and 14B have identical null patterns).
+    """
+    def has_data(val):
+        if isna(val):
+            return False
+        try:
+            return int(val) > 0
+        except (ValueError, TypeError):
+            return val != '-' and val != 0
+
+    # Load raw (pre-dropna) data to preserve wrapped values in blank-name rows
+    b14 = load_nj_sector(xl_path, 'Table14B-1', raw=True)
+    a14 = load_nj_sector(xl_path, 'Table14A-1', raw=True)
+    ncols = min(len(b14.columns), len(a14.columns))
+
+    # Determine the shift window: rows 0..N where N is the last row with any
+    # data value in either 14A or 14B. Fully-NaN trailing rows are excluded.
+    max_data_row = 0
+    for ri in range(min(len(b14), len(a14))):
+        for ci in range(1, ncols):
+            if has_data(a14.iloc[ri, ci]) or has_data(b14.iloc[ri, ci]):
+                max_data_row = ri
+    nrows = max_data_row + 1
+
+    shifted_cols = []
+    for ci in range(1, ncols):
+        a14_pos = [ri for ri in range(nrows) if has_data(a14.iloc[ri, ci])]
+        b14_pos = [ri for ri in range(nrows) if has_data(b14.iloc[ri, ci])]
+
+        if a14_pos == b14_pos:
+            continue
+
+        # Verify this is a shift-up-by-1: each 14A position minus 1 (mod nrows)
+        # should match 14B's positions
+        expected_shifted = sorted((ri - 1) % nrows for ri in a14_pos)
+        if sorted(b14_pos) != expected_shifted:
+            raise ValueError(
+                f"Table14B-1 col {ci} year {year}: unexpected null pattern. "
+                f"14A positions={a14_pos}, 14B positions={b14_pos}, "
+                f"expected shift-up-by-1={expected_shifted}"
+            )
+        shifted_cols.append(ci)
+
+    if shifted_cols:
+        b14 = b14.copy()
+        for ci in shifted_cols:
+            old_vals = [b14.iloc[ri, ci] for ri in range(nrows)]
+            new_vals = [old_vals[-1]] + old_vals[:-1]
+            for ri in range(nrows):
+                b14.iloc[ri, ci] = new_vals[ri]
+
+        # Verify corrected positions match 14A
+        for ci in shifted_cols:
+            a14_pos = [ri for ri in range(nrows) if has_data(a14.iloc[ri, ci])]
+            b14_pos = [ri for ri in range(nrows) if has_data(b14.iloc[ri, ci])]
+            if a14_pos != b14_pos:
+                raise ValueError(
+                    f"Table14B-1 col {ci} year {year}: post-fix positions "
+                    f"{b14_pos} still don't match 14A {a14_pos}"
+                )
+
+        # Verify 3hr/1hr ratios are reasonable (1.5-4.0x)
+        for ci in shifted_cols:
+            for ri in range(nrows):
+                if has_data(a14.iloc[ri, ci]) and has_data(b14.iloc[ri, ci]):
+                    v1 = int(a14.iloc[ri, ci])
+                    v3 = int(b14.iloc[ri, ci])
+                    if v1 > 0:
+                        ratio = v3 / v1
+                        if not (1.5 <= ratio <= 4.0):
+                            crossing = str(b14.iloc[ri, 0])
+                            raise ValueError(
+                                f"Table14B-1 col {ci} year {year} {crossing}: "
+                                f"3hr/1hr ratio {ratio:.2f} outside [1.5, 4.0] "
+                                f"(1hr={v1}, 3hr={v3})"
+                            )
+
+        print(f"  Table14B {year}: fixed shift-up-by-1 in cols {shifted_cols}")
+
+    # Apply same finalization as load_nj_sector (drop blank rows, replace '-')
+    return b14.dropna(subset=[0]).replace('-', 0)
 
 
 @group()
