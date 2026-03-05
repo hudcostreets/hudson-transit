@@ -169,7 +169,7 @@ export default function PeakScatter({ data }: { data: CrossingRecord[] }) {
       axref: 'x' as const, ayref: 'y' as const,
       yanchor: 'bottom' as const,
       x, y,
-      standoff: bubbleRadius(p),
+      standoff: bubbleRadius(p) + 3,
       arrowcolor: '#444',
       arrowhead: 0,
     })),
@@ -182,13 +182,14 @@ export default function PeakScatter({ data }: { data: CrossingRecord[] }) {
       font: { color: 'black' },
       arrowcolor: 'rgba(0,0,0,0)',
       bgcolor: 'white',
+      borderpad: 4,
     },
     ...carTargets.map(({ ay, x, y, p }) => ({
       ax: annX, ay,
       axref: 'x' as const, ayref: 'y' as const,
       yanchor: 'bottom' as const,
       x, y,
-      standoff: bubbleRadius(p),
+      standoff: bubbleRadius(p) + 3,
       arrowcolor: '#444',
       arrowhead: 0,
     })),
@@ -201,6 +202,8 @@ export default function PeakScatter({ data }: { data: CrossingRecord[] }) {
       x: annX, y: carTextYBottom,
       font: { color: 'black' },
       arrowcolor: 'rgba(0,0,0,0)',
+      bgcolor: 'white',
+      borderpad: 4,
     },
   ]
 
