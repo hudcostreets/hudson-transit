@@ -211,12 +211,6 @@ function renderScatter(
     ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx)
     : undefined
 
-  const maxPct = Math.max(...labels.flatMap(l => pct[l]))
-  // Round up to next 5% tick, with 5% headroom for bubble radius + text
-  const yMax = Math.ceil((maxPct + 0.05) * 20) / 20
-  // Extra headroom for annotation text when shown
-  const yMaxAdj = annotations ? yMax + 0.05 : yMax
-
   return (
     <JitteredPlot
       data={traces}
@@ -231,7 +225,7 @@ function renderScatter(
         yaxis: {
           title: { text: '% of total passengers (mode share)' },
           tickformat: ',.0%',
-          range: [0, yMaxAdj],
+          rangemode: 'tozero',
         },
         hovermode: 'x',
         margin: { t: 10, l: 60, r: rightMargin, b: 90 },

@@ -168,7 +168,32 @@ Need to add coordinates for 60th St, Brooklyn, Queens sector crossings once thos
 - Year selector (slider or dropdown) since map shows one year at a time
 - Optional: animation across years
 
-## Phase 5: Project rename and deploy
+## Phase 5: Crossing/mode icons
+
+Add recognizable icons for each crossing and mode, rendered inline in charts:
+
+- **Scatter (bubble)**: Draw icon to the right of the last-year circle for each trace
+- **Bar (#)**: Icon above each bar group
+- **Stacked bar (%)**: Icon inside each segment (where space allows)
+- **Recovery**: Icon at end of each line
+
+### Icon sources
+
+| Crossing/Mode | Icon idea |
+|---------------|-----------|
+| Lincoln (Bus) | Bus silhouette |
+| Lincoln (Autos) | Car silhouette |
+| Holland (Bus) | Bus silhouette (smaller/different color) |
+| Holland (Autos) | Car silhouette |
+| PATH (Downtown/Uptown) | PATH logo or train icon |
+| Amtrak / NJ Transit | Rail/train icon |
+| Ferry | Ferry/boat icon |
+
+Options: SVG icons (hand-drawn or from icon libraries like Lucide, Heroicons, or MTA/NJT brand assets), or small raster logos. Prefer SVG for scalability.
+
+Can be implemented as Plotly layout images or as an SVG overlay layer.
+
+## Phase 6: Project rename and deploy
 
 - Rename repo `hudson-transit` → `hub-bound-travel`
 - Update `package.json` name, vite config, etc.
