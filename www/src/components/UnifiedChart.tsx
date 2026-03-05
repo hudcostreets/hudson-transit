@@ -4,7 +4,7 @@ import type { Data, Layout } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
 import type { Param } from 'use-prms'
 import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } from '../lib/types'
-import { useColors } from '../lib/ColorContext'
+import { COLOR_SCHEMES, type ColorScheme } from '../lib/colors'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
@@ -27,6 +27,13 @@ const timeParam = codeParam<TimePeriod>('peak_1hr', [
 const granParam = codeParam<Granularity>('crossing', [
   ['crossing', 'c'], ['mode', 'm'],
 ])
+
+type SchemeName = 'Plotly' | 'Semantic'
+const schemeParam = codeParam<SchemeName>('Plotly', [
+  ['Plotly', 'p'], ['Semantic', 's'],
+])
+const SCHEME_OPTIONS: ToggleOption<SchemeName>[] =
+  COLOR_SCHEMES.map(s => ({ value: s.name as SchemeName, label: s.name }))
 // ?A (valueless) hides annotations; default: on (omitted)
 const annParam: Param<boolean> = {
   encode: (v) => v ? undefined : '',
@@ -120,7 +127,8 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
   const [granularity, setGranularity] = useUrlState('g', granParam)
   const [showAnnotations, setShowAnnotations] = useUrlState('A', annParam)
-  const colors = useColors()
+  const [schemeName, setSchemeName] = useUrlState('s', schemeParam)
+  const colors = COLOR_SCHEMES.find(s => s.name === schemeName) ?? COLOR_SCHEMES[0]
   const { ref, width } = useContainerWidth()
 
   const filtered = useMemo(
@@ -173,6 +181,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
             onChange={v => setShowAnnotations(v === 'on')}
           />
         )}
+        <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
       </div>
     </div>
   )
