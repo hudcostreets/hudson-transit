@@ -137,6 +137,24 @@ TABLE_CONFIG = [
     ('Table15C', 'leaving',  '24hr'),
 ]
 
+# Known modes for each NJ sector crossing. Column indices in the source Excel
+# are unreliable (some years have data in wrong columns), so we extract by
+# summing all numeric values and assigning to known modes per crossing.
+# Autos is always column 1 (first data column); the "non-auto" mode is
+# whichever other column holds the remaining value.
+CROSSING_MODES: dict[str, list[str]] = {
+    'Lincoln Tunnel':                ['Autos', 'Bus'],
+    'Holland Tunnel':                ['Autos', 'Bus'],
+    'Amtrak/N.J. Transit Tunnels':   ['Rail'],
+    'Uptown PATH Tunnel':            ['PATH'],
+    'Downtown PATH Tunnel':          ['PATH'],
+}
+# Pre-2017 variant names
+CROSSING_ALIASES: dict[str, str] = {
+    'Uptown Path Tunnel':   'Uptown PATH Tunnel',
+    'Downtown Path Tunnel': 'Downtown PATH Tunnel',
+}
+
 
 def load_nj_crossings(
     year: int,
@@ -150,54 +168,90 @@ def load_nj_crossings(
     if xl_path is None:
         raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
 
-    cols = {
-        0: 'Crossing',
-        1: 'Autos',
-        3: 'PATH',
-        4: 'Bus',
-        6: 'Rail',
-    }
-
     if year < 2017:
         sheet_name = table_base
-        cols[7] = 'Ferry'
     else:
         sheet_name = f'{table_base}-1'
 
     a = load_nj_sector(xl_path, sheet_name)
-    a = a[list(cols.keys())]
-    a.columns = list(cols.values())
 
+    # Sheet-2 ferry data (2017+) or column 7 (pre-2017)
+    ferry_data: dict[str, int] = {}
     if year < 2017:
-        a.loc[a.Crossing == 'Uptown Path Tunnel', 'Crossing'] = 'Uptown PATH Tunnel'
-        a.loc[a.Crossing == 'Downtown Path Tunnel', 'Crossing'] = 'Downtown PATH Tunnel'
-
-    a = a.set_index('Crossing')
-
-    if year >= 2017:
+        # Ferry is in column 7 of the single sheet
+        for _, row in a.iterrows():
+            crossing = str(row[0])
+            crossing = CROSSING_ALIASES.get(crossing, crossing)
+            val = row.get(7, 0)
+            if val and val != 0:
+                ferry_data[crossing] = int(val)
+    else:
         a2 = load_nj_sector(xl_path, f'{table_base}-2')
-        a2 = a2[[0, 1]]
-        a2.columns = ['Crossing', 'Ferry']
-        a2 = a2.set_index('Crossing')
-        a = a.join(a2, how='outer').fillna(0)
-
-    a = a.astype(int)
+        for _, row in a2.iterrows():
+            crossing = str(row[0])
+            val = row.get(1, 0)
+            if val and val != 0:
+                ferry_data[crossing] = int(val)
 
     records = []
-    for crossing, row in a.iterrows():
-        for mode in ['Autos', 'PATH', 'Bus', 'Rail', 'Ferry']:
-            val = int(row.get(mode, 0))
-            if val > 0:
-                records.append({
-                    'year': year,
-                    'sector': 'nj',
-                    'crossing': str(crossing),
-                    'mode': mode,
-                    'direction': direction,
-                    'time_period': time_period,
-                    'passengers': val,
-                })
+    for _, row in a.iterrows():
+        crossing = str(row[0])
+        crossing = CROSSING_ALIASES.get(crossing, crossing)
+        modes = CROSSING_MODES.get(crossing)
+        if modes is None:
+            continue
+
+        # Collect all positive numeric values from data columns (skip col 0 = name)
+        nums = []
+        for ci in range(1, len(row)):
+            v = row[ci]
+            try:
+                v = int(v)
+                if v > 0:
+                    nums.append((ci, v))
+            except (ValueError, TypeError):
+                pass
+
+        if 'Autos' in modes:
+            # First data column is always Autos
+            autos = nums[0][1] if nums else 0
+            other_mode = [m for m in modes if m != 'Autos'][0]
+            other_val = sum(v for ci, v in nums[1:])
+            if autos > 0:
+                records.append(_rec(year, crossing, 'Autos', autos, direction, time_period))
+            if other_val > 0:
+                records.append(_rec(year, crossing, other_mode, other_val, direction, time_period))
+        else:
+            # Single non-auto mode: sum all values
+            total = sum(v for _, v in nums)
+            if total > 0:
+                records.append(_rec(year, crossing, modes[0], total, direction, time_period))
+
+    # Ferry records
+    for crossing, val in ferry_data.items():
+        if val > 0:
+            records.append(_rec(year, 'All Ferry Points', 'Ferry', val, direction, time_period))
+
     return records
+
+
+def _rec(
+    year: int,
+    crossing: str,
+    mode: str,
+    passengers: int,
+    direction: str,
+    time_period: str,
+) -> dict:
+    return {
+        'year': year,
+        'sector': 'nj',
+        'crossing': crossing,
+        'mode': mode,
+        'direction': direction,
+        'time_period': time_period,
+        'passengers': passengers,
+    }
 
 
 @group()

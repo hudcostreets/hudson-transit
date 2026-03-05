@@ -22,7 +22,7 @@ const DIR_OPTIONS = [
 
 const TIME_OPTIONS = [
   { value: 'peak_1hr' as TimePeriod, label: 'hr' },
-  { value: 'peak_period' as TimePeriod, label: 'prd' },
+  { value: 'peak_period' as TimePeriod, label: '3hr' },
   { value: '24hr' as TimePeriod, label: 'day' },
 ]
 
@@ -81,6 +81,8 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
 
   return (
     <div>
+      <p className="chart-subtitle">{subtitleText(direction, timePeriod)}</p>
+      {content}
       <div className="toggle-bar">
         <Toggle
           options={VIEW_OPTIONS.map(o => o.label)}
@@ -103,8 +105,6 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
           onChange={label => setGranularity(GRAN_OPTIONS.find(o => o.label === label)!.value)}
         />
       </div>
-      <p className="chart-subtitle">{subtitleText(direction, timePeriod)}</p>
-      {content}
     </div>
   )
 }
