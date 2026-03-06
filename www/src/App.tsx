@@ -1,4 +1,4 @@
-import { HotkeysProvider, Omnibar, ShortcutsModal, SpeedDial, type SpeedDialAction } from 'use-kbd'
+import { HotkeysProvider, LookupModal, Omnibar, ShortcutsModal, SpeedDial, type SpeedDialAction } from 'use-kbd'
 import 'use-kbd/styles.css'
 import crossingsData from './data/crossings.json'
 import type { CrossingRecord } from './lib/types'
@@ -68,7 +68,8 @@ function App() {
         </footer>
       </div>
       <Omnibar />
-      <ShortcutsModal />
+      <ShortcutsModal editable />
+      <LookupModal />
       <SpeedDial actions={sdActions} />
     </HotkeysProvider>
   )

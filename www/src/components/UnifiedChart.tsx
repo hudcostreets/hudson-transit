@@ -11,7 +11,7 @@ import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
 import { BubbleIcon, RecoveryIcon } from './icons'
-import { CROSSING_ICONS, MODE_ICONS } from './crossing-icons'
+import { CROSSING_ICON_FNS, MODE_ICON_FNS } from './crossing-icons'
 
 // ?y=[n|p|c] — default: bubble (omitted)
 const viewParam = codeParam<ViewMode>('scatter', [
@@ -259,9 +259,9 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
 
   const hoverProps = { onHover: handleHover, onUnhover: clearHover }
 
-  const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
+  const iconFns = granularity === 'mode' ? MODE_ICON_FNS : CROSSING_ICON_FNS
   const content = (() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconMap, hoverProps)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
     if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
     return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
@@ -344,12 +344,10 @@ function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, color
 
   return (
     <div className="hover-tooltip" style={{ position: 'fixed', left, top, pointerEvents: 'none' }}>
-      <div className="hover-year">{year}</div>
       <table>
         <thead>
           <tr>
-            <th></th>
-            <th></th>
+            <th className="hover-year" colSpan={2}>{year}</th>
             <th className="hover-num">#</th>
             <th className="hover-pct">share</th>
             {hasRecovery && <th className="hover-rec">vs &rsquo;19</th>}
@@ -411,7 +409,7 @@ function renderScatter(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
-  iconMap: Record<string, string>,
+  iconFns: Record<string, (color: string) => string>,
   hp: HoverProps,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
@@ -448,8 +446,9 @@ function renderScatter(
   const lastIdx = years.length - 1
   const iconSize = 0.018
   const images = labels.map(label => {
-    const icon = iconMap[label]
-    if (!icon) return null
+    const iconFn = iconFns[label]
+    if (!iconFn) return null
+    const icon = iconFn(colorMap[label])
     const lastPct = pct[label][lastIdx]
     const lastP = series[label][lastIdx]
     const bubbleR = Math.sqrt(lastP / maxPassengers) * maxSize
@@ -483,7 +482,7 @@ function renderScatter(
           gridcolor: pt.grid,
           showspikes: true,
           spikemode: 'across',
-          spikecolor: pt.grid,
+          spikecolor: pt.font,
           spikethickness: 1,
         },
         yaxis: {

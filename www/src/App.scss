@@ -150,9 +150,7 @@ footer {
   .hover-year {
     font-weight: 700;
     font-size: 0.95rem;
-    margin-bottom: 0.35rem;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px solid var(--border);
+    text-align: left;
   }
 
   table {
@@ -165,9 +163,9 @@ footer {
     font-weight: 600;
     font-size: 0.7rem;
     color: var(--text-muted);
-    padding: 0 0.3rem 0.2rem;
+    padding: 0.15rem 0.3rem;
     text-align: right;
-    &:nth-child(2) { text-align: left; }
+    border-bottom: 1px solid var(--border);
   }
 
   tbody td, tfoot td {
