@@ -302,32 +302,32 @@ const LEAVING_3HR_JITTER: JitterOffsets = {
     'Holland (Bus)':        -t,  // 2.4%
   },
   2015: {
-    'PATH (Uptown)':         t,  // 11.5%
-    'PATH (Downtown)':      -t,  // 11.3%
+    'PATH (Uptown)':       -t3,  // 11.5%
+    'PATH (Downtown)':      t3,  // 11.3%
     'Ferry':               -t1,  // 3.9%
     'Holland (Autos)':      t1,  // 3.3%
   },
   2016: {
-    'PATH (Uptown)':        -t,  // 12.1%
-    'PATH (Downtown)':       t,  // 13.4%
+    'PATH (Uptown)':       -t2,  // 12.1%
+    'PATH (Downtown)':      t2,  // 13.4%
     'Ferry':                -t,  // 4.4%
     'Holland (Autos)':       t,  // 3.3%
   },
   2017: {
-    'PATH (Uptown)':       -t2,  // 12.5%
-    'PATH (Downtown)':      t2,  // 14.6%
+    'PATH (Uptown)':        -t,  // 12.5%
+    'PATH (Downtown)':       t,  // 14.6%
     'Ferry':                -t,  // 4.2%
     'Holland (Autos)':       t,  // 3.1%
   },
   2018: {
-    'PATH (Uptown)':       -t2,  // 12.4%
-    'PATH (Downtown)':      t2,  // 15.3%
+    'PATH (Uptown)':        -t,  // 12.4%
+    'PATH (Downtown)':       t,  // 15.3%
     'Ferry':                -t,  // 4.3%
     'Holland (Autos)':       t,  // 3.1%
   },
   2019: {
-    'PATH (Uptown)':       -t2,  // 12.6%
-    'PATH (Downtown)':      t2,  // 15.1%
+    'PATH (Uptown)':        -t,  // 12.6%
+    'PATH (Downtown)':       t,  // 15.1%
     'Ferry':                -t,  // 4.5%
     'Holland (Autos)':       t,  // 3.4%
   },
@@ -338,24 +338,24 @@ const LEAVING_3HR_JITTER: JitterOffsets = {
     'Holland (Autos)':      t1,  // 5.8%
   },
   2021: {
-    'PATH (Uptown)':       -t1,  // 11.8%
+    'PATH (Uptown)':        -t,  // 11.8%
     'PATH (Downtown)':      t3,  // 12.8%
   },
   2022: {
-    'PATH (Uptown)':       -t2,  // 12.2%
-    'PATH (Downtown)':      t2,  // 13.9%
+    'PATH (Uptown)':        -t,  // 12.2%
+    'PATH (Downtown)':       t,  // 13.9%
     'Ferry':                -t,  // 4.6%
     'Holland (Autos)':       t,  // 5.5%
   },
   2023: {
-    'PATH (Uptown)':       -t2,  // 11.0%
-    'PATH (Downtown)':      t2,  // 14.4%
+    'PATH (Uptown)':        -t,  // 11.0%
+    'PATH (Downtown)':       t,  // 14.4%
     'Ferry':                -t,  // 4.0%
     'Holland (Autos)':       t,  // 4.3%
   },
   2024: {
-    'PATH (Uptown)':       -t2,  // 11.8%
-    'PATH (Downtown)':      t2,  // 14.6%
+    'PATH (Uptown)':        -t,  // 11.8%
+    'PATH (Downtown)':       t,  // 14.6%
     'Ferry':                -t,  // 3.7%
     'Holland (Autos)':       t,  // 4.1%
   },

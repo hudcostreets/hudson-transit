@@ -12,6 +12,7 @@ import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
 import { BubbleIcon, RecoveryIcon } from './icons'
 import { CROSSING_ICON_FNS, MODE_ICON_FNS } from './crossing-icons'
+import LogoLegend from './LogoLegend'
 
 // ?y=[n|p|c] — default: bubble (omitted)
 const viewParam = codeParam<ViewMode>('scatter', [
@@ -260,20 +261,110 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const hoverProps = { onHover: handleHover, onUnhover: clearHover }
 
   const iconFns = granularity === 'mode' ? MODE_ICON_FNS : CROSSING_ICON_FNS
+  const showLogoLegend = wide
+
+  // Compute explicit y-axis range matching what we pass to Plotly
+  const yRange = useMemo((): [number, number] => {
+    if (view === 'scatter' || view === 'pct') {
+      const maxPct = Math.max(...labels.flatMap(l => pct[l]))
+      // Round up to next 5% tick above max + small padding
+      return [0, Math.ceil((maxPct + 0.025) * 20) / 20]
+    }
+    if (view === 'recovery') {
+      const baseIdx = years.indexOf(BASE_YEAR)
+      if (baseIdx === -1) return [0, 1.5]
+      const maxR = Math.max(...labels.map(l => {
+        const base = series[l][baseIdx]
+        return base > 0 ? Math.max(...years.filter(y => y >= BASE_YEAR).map(y => series[l][years.indexOf(y)] / base)) : 0
+      }))
+      return [0, Math.ceil(maxR * 10) / 10 + 0.1]
+    }
+    // bar view
+    const maxVal = Math.max(...labels.flatMap(l => series[l]))
+    const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal || 1)))
+    const step = magnitude / 2
+    return [0, Math.ceil(maxVal * 1.05 / step) * step]
+  }, [view, years, series, pct, labels])
+
   const content = (() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
-    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
-    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, showLogoLegend, yRange)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, showLogoLegend, yRange)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, showLogoLegend, yRange)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, showLogoLegend, yRange)
   })()
+
+  // Compute last-year y-axis values for the logo legend (varies by view)
+  const lastYValues = useMemo(() => {
+    const lastIdx = years.length - 1
+    const vals: Record<string, number> = {}
+    if (view === 'scatter' || view === 'pct') {
+      for (const label of labels) vals[label] = pct[label][lastIdx]
+    } else if (view === 'recovery') {
+      const baseIdx = years.indexOf(BASE_YEAR)
+      for (const label of labels) {
+        const base = baseIdx >= 0 ? series[label][baseIdx] : 0
+        vals[label] = base > 0 ? series[label][lastIdx] / base : 0
+      }
+    } else {
+      for (const label of labels) vals[label] = series[label][lastIdx]
+    }
+    return vals
+  }, [years, series, pct, labels, view])
+
+  // Chart dimensions for y-alignment
+  const chartHeight = view === 'scatter' ? 700 : 600
+  const chartMargin = view === 'scatter'
+    ? { t: 10, b: 90 }
+    : view === 'recovery' ? { t: 10, b: 40 } : { t: 40, b: 40 }
+
+  // Compute last-year bubble pixel positions (legend-relative) for connector lines
+  const bubblePixels = useMemo(() => {
+    if (view !== 'scatter' || !width) return undefined
+    const lastIdx = years.length - 1
+    const lastYear = years[lastIdx]
+    const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
+    const maxSize = 60
+    const mL = 60
+    const xMin = years[0] - 0.8
+    const xMax = lastYear + 0.8
+    const plotW = width - mL - rightMargin
+    const legendLeft = width - 150
+    const mT = chartMargin.t
+    const plotH = chartHeight - mT - chartMargin.b
+    const [yMin, yMax] = yRange
+
+    const pixels: Record<string, { x: number; y: number; r: number }> = {}
+    for (const label of labels) {
+      const jx = getJitteredX(jitter, lastYear, label)
+      const xPx = mL + ((jx - xMin) / (xMax - xMin)) * plotW - legendLeft
+      const yVal = pct[label][lastIdx]
+      const yPx = mT + plotH * (1 - (yVal - yMin) / (yMax - yMin))
+      const passengers = series[label][lastIdx]
+      const r = Math.sqrt(passengers / maxPassengers) * maxSize / 2
+      pixels[label] = { x: xPx, y: yPx, r }
+    }
+    return pixels
+  }, [view, years, series, pct, labels, width, rightMargin, jitter, yRange, chartHeight, chartMargin])
 
   const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
 
   return (
     <div ref={ref}>
       <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
-      <div key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
+      <div className={showLogoLegend ? 'chart-with-legend' : undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
         {content}
+        {showLogoLegend && (
+          <LogoLegend
+            labels={labels}
+            colorMap={colorMap}
+            granularity={granularity}
+            lastYValues={lastYValues}
+            chartHeight={chartHeight}
+            margin={chartMargin}
+            yRange={yRange}
+            bubblePixels={bubblePixels}
+          />
+        )}
       </div>
       {hoverYear !== null && yearIdx >= 0 && (
         <HoverTooltip
@@ -411,6 +502,8 @@ function renderScatter(
   pt: PlotTheme,
   iconFns: Record<string, (color: string) => string>,
   hp: HoverProps,
+  hideLegend = false,
+  yRange?: [number, number],
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
   const maxSize = 60
@@ -427,7 +520,7 @@ function renderScatter(
       x: years,
       y: pct[label],
       mode: 'text+markers',
-      marker: { size: sizes, color: colorMap[label] },
+      marker: { size: sizes, color: colorMap[label], line: { width: 0 } },
       text: texts,
       textfont: { size: textSizes, color: textColor },
       hoverinfo: 'none',
@@ -488,7 +581,7 @@ function renderScatter(
         yaxis: {
           title: { text: '% of total passengers (mode share)' },
           tickformat: ',.0%',
-          rangemode: 'tozero',
+          range: yRange,
           gridcolor: pt.grid,
         },
         hovermode: 'x',
@@ -496,6 +589,7 @@ function renderScatter(
         autosize: true,
         annotations: annotations as Layout['annotations'],
         images: images as Layout['images'],
+        showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler
@@ -515,6 +609,8 @@ function renderBar(
   rightMargin: number,
   pt: PlotTheme,
   hp: HoverProps,
+  hideLegend = false,
+  yRange?: [number, number],
 ) {
   return (
     <Plot
@@ -529,10 +625,11 @@ function renderBar(
       layout={{
         ...themedLayout(pt),
         xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
-        yaxis: { title: { text: 'Passengers' }, gridcolor: pt.grid },
+        yaxis: { title: { text: 'Passengers' }, range: yRange, gridcolor: pt.grid },
         hovermode: 'x',
         margin: { t: 40, l: 60, r: rightMargin, b: 40 },
         autosize: true,
+        showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler
@@ -552,6 +649,8 @@ function renderPctBar(
   rightMargin: number,
   pt: PlotTheme,
   hp: HoverProps,
+  hideLegend = false,
+  _yRange?: [number, number],
 ) {
   const totals = years.map((_, i) =>
     labels.reduce((sum, l) => sum + (series[l]?.[i] ?? 0), 0)
@@ -585,6 +684,7 @@ function renderPctBar(
         hovermode: 'x',
         margin: { t: 40, l: 60, r: rightMargin, b: 40 },
         autosize: true,
+        showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler
@@ -604,6 +704,8 @@ function renderRecovery(
   rightMargin: number,
   pt: PlotTheme,
   hp: HoverProps,
+  hideLegend = false,
+  yRange?: [number, number],
 ) {
   const baseIdx = years.indexOf(BASE_YEAR)
   if (baseIdx === -1) return <div>No {BASE_YEAR} data for this selection</div>
@@ -639,7 +741,7 @@ function renderRecovery(
         yaxis: {
           title: { text: `% of ${BASE_YEAR} volume` },
           tickformat: ',.0%',
-          range: [0, yMax],
+          range: yRange ?? [0, yMax],
           gridcolor: pt.grid,
         },
         hovermode: 'x',
@@ -653,6 +755,7 @@ function renderRecovery(
         }],
         margin: { t: 10, l: 70, r: rightMargin, b: 40 },
         autosize: true,
+        showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler

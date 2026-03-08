@@ -127,6 +127,84 @@ main {
   }
 }
 
+// Logo legend (right-side, replaces Plotly legend)
+.chart-with-legend {
+  position: relative;
+}
+
+.logo-legend {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  pointer-events: none;
+}
+
+.logo-legend-connectors {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.logo-legend-entry {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  pointer-events: auto;
+}
+
+.logo-legend-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+
+.logo-legend-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.logo-legend-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.logo-legend-icon {
+  display: inline-block;
+  background-color: var(--text);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  opacity: 0.8;
+  &.agency {
+    background-color: transparent;
+    mask-image: none;
+    -webkit-mask-image: none;
+    object-fit: contain;
+    opacity: 0.9;
+  }
+}
+
+.logo-legend-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+
 footer {
   text-align: center;
   padding: 2rem 0;
