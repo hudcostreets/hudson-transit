@@ -1,5 +1,10 @@
 import type { JitterOffsets } from './JitteredPlot'
 
+function configKey(direction: string, timePeriod: string, granularity: string): string {
+  return `${direction}:${timePeriod}:${granularity}`
+}
+
+// --- Jitter config ---
 // Explicit per-{year, trace} x-offsets to reduce bubble overlap.
 // Positive = rightward, negative = leftward. Only specify where needed.
 const t = 0.07
@@ -10,12 +15,8 @@ const t3 = 0.18
 /** Jitter configs keyed by `${direction}:${timePeriod}:${granularity}` */
 export const JITTER_MAP: Record<string, JitterOffsets> = {}
 
-function jitterKey(direction: string, timePeriod: string, granularity: string): string {
-  return `${direction}:${timePeriod}:${granularity}`
-}
-
 export function getJitter(direction: string, timePeriod: string, granularity: string): JitterOffsets | undefined {
-  return JITTER_MAP[jitterKey(direction, timePeriod, granularity)]
+  return JITTER_MAP[configKey(direction, timePeriod, granularity)]
 }
 
 // --- entering, peak_1hr, crossing ---
@@ -80,7 +81,7 @@ const ENTERING_1HR_JITTER: JitterOffsets = {
     'Ferry':             t1,
   },
 }
-JITTER_MAP[jitterKey('entering', 'peak_1hr', 'crossing')] = ENTERING_1HR_JITTER
+JITTER_MAP[configKey('entering', 'peak_1hr', 'crossing')] = ENTERING_1HR_JITTER
 
 // --- entering, peak_period, crossing ---
 // Main overlap clusters: PATH Down/Up (~13-15%), Lincoln Autos/Ferry/Holland Autos (~4-5%)
@@ -153,7 +154,7 @@ const ENTERING_3HR_JITTER: JitterOffsets = {
     'Holland (Autos)':   t,  // 4.3%
   },
 }
-JITTER_MAP[jitterKey('entering', 'peak_period', 'crossing')] = ENTERING_3HR_JITTER
+JITTER_MAP[configKey('entering', 'peak_period', 'crossing')] = ENTERING_3HR_JITTER
 
 // --- entering, 24hr, crossing ---
 // Main overlap clusters: PATH Down/Up (~10%), Lincoln Autos/Holland Autos (~10%), Ferry/Holland Bus (~3%)
@@ -239,7 +240,7 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':    -t3,  // 9.8%
   },
 }
-JITTER_MAP[jitterKey('entering', '24hr', 'crossing')] = ENTERING_24HR_JITTER
+JITTER_MAP[configKey('entering', '24hr', 'crossing')] = ENTERING_24HR_JITTER
 
 // --- leaving, peak_1hr, crossing ---
 const LEAVING_1HR_JITTER: JitterOffsets = {
@@ -289,7 +290,7 @@ const LEAVING_1HR_JITTER: JitterOffsets = {
     'Ferry':            -t,
   },
 }
-JITTER_MAP[jitterKey('leaving', 'peak_1hr', 'crossing')] = LEAVING_1HR_JITTER
+JITTER_MAP[configKey('leaving', 'peak_1hr', 'crossing')] = LEAVING_1HR_JITTER
 
 // --- leaving, peak_period, crossing ---
 // Main overlap clusters: PATH Down/Up (~11-15%), Lincoln Autos/Ferry/Holland Autos (~3-7%)
@@ -360,7 +361,7 @@ const LEAVING_3HR_JITTER: JitterOffsets = {
     'Holland (Autos)':       t,  // 4.1%
   },
 }
-JITTER_MAP[jitterKey('leaving', 'peak_period', 'crossing')] = LEAVING_3HR_JITTER
+JITTER_MAP[configKey('leaving', 'peak_period', 'crossing')] = LEAVING_3HR_JITTER
 
 // --- leaving, 24hr, crossing ---
 // Main overlap clusters: PATH Down/Up (~9-11%), Lincoln Autos/Holland Autos (~9-13%), Ferry/Holland Bus (~2-3%)
@@ -439,7 +440,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'Holland (Autos)':       0,  // 9.3%
   },
 }
-JITTER_MAP[jitterKey('leaving', '24hr', 'crossing')] = LEAVING_24HR_JITTER
+JITTER_MAP[configKey('leaving', '24hr', 'crossing')] = LEAVING_24HR_JITTER
 
 export interface AnnotationTarget {
   ay: number

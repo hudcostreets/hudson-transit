@@ -18,6 +18,8 @@
   --plot-grid: #333;
   --ann-font: #e0e0e0;
   --ann-bg: #2a2a4a;
+  --tooltip-bg: #1e2a45;
+  --tooltip-border: #4a6fa5;
 }
 
 [data-theme="light"] {
@@ -39,6 +41,8 @@
   --plot-grid: #e5e5e5;
   --ann-font: #000;
   --ann-bg: #fff;
+  --tooltip-bg: #fff;
+  --tooltip-border: #bbb;
 }
 
 @media (prefers-color-scheme: light) {
@@ -61,6 +65,8 @@
     --plot-grid: #e5e5e5;
     --ann-font: #000;
     --ann-bg: #fff;
+    --tooltip-bg: #fff;
+    --tooltip-border: #bbb;
   }
 }
 
@@ -84,28 +90,18 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-header {
-  text-align: center;
-  padding: 2rem 0 1rem;
-
-  h1 {
-    margin: 0 0 0.5rem;
-    font-size: 1.8rem;
-  }
-
-  .subtitle {
-    color: var(--text-muted);
-    margin: 0 0 1rem;
-    a { color: var(--link); }
-  }
+.subtitle {
+  color: var(--text-muted);
+  a { color: var(--link); }
 }
 
 main {
   section {
-    padding: 1rem 0;
+    padding: 0;
 
     h2 {
-      margin: 1.5rem 0 0.25rem;
+      margin: 0;
+      padding-top: 0.25rem;
       font-size: 1.3rem;
       text-align: center;
     }
@@ -113,7 +109,7 @@ main {
     .chart-subtitle {
       text-align: center;
       color: var(--text-muted);
-      margin: 0 0 0.5rem;
+      margin: 0;
       font-size: 0.95rem;
     }
 
@@ -184,6 +180,16 @@ main {
   flex-shrink: 0;
 }
 
+.logo-legend-overlay {
+  position: relative;
+  > * {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
 .logo-legend-icon {
   display: inline-block;
   background-color: var(--text);
@@ -214,10 +220,18 @@ main {
 
 // Compact grid legend for non-wide screens
 .logo-legend-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.25rem 0.75rem;
-  padding: 0.4rem 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-legend-grid-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .logo-legend-grid-item {
@@ -246,12 +260,12 @@ footer {
 }
 
 .hover-tooltip {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
+  background: var(--tooltip-bg);
+  border: 1px solid var(--tooltip-border);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   font-size: 0.8rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   color: var(--text);
   min-width: 260px;

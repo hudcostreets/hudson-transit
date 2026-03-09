@@ -57,21 +57,21 @@ export const COLOR_SCHEMES: ColorScheme[] = [
       FERRY: '#1E88E5',  // blue
     },
     crossing: {
-      'Lincoln (Bus)':       '#EF8D2E',  // orange
-      'Lincoln (Autos)':     '#DC3545',  // red
-      'Amtrak / NJ Transit': '#E5B820',  // gold
-      'PATH (Downtown)':     '#AB63FA',  // purple
-      'PATH (Uptown)':       '#CE93F9',  // light purple
-      'Holland (Bus)':       '#F5BA6A',  // light orange
-      'Holland (Autos)':     '#E8787A',  // pink
-      'Ferry':               '#1E88E5',  // blue
+      'Lincoln (Bus)':       '#FF9F1C',  // bright orange
+      'Lincoln (Autos)':     '#EF4444',  // bright red
+      'Amtrak / NJ Transit': '#FACC15',  // yellow-gold
+      'PATH (Downtown)':     '#A855F7',  // purple
+      'PATH (Uptown)':       '#D8B4FE',  // light purple
+      'Holland (Bus)':       '#22D3EE',  // cyan (distinct from gold)
+      'Holland (Autos)':     '#FB7185',  // rose pink
+      'Ferry':               '#3B82F6',  // bright blue
     },
     mode: {
-      Autos: '#DC3545',  // red
-      Bus:   '#EF8D2E',  // orange
-      PATH:  '#AB63FA',  // purple
-      Rail:  '#E5B820',  // gold
-      Ferry: '#1E88E5',  // blue
+      Autos: '#EF4444',  // bright red
+      Bus:   '#FF9F1C',  // bright orange
+      PATH:  '#A855F7',  // purple
+      Rail:  '#FACC15',  // yellow-gold
+      Ferry: '#3B82F6',  // bright blue
     },
   },
 ]

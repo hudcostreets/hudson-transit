@@ -17,7 +17,8 @@
     "react-dom": "^19.2.0",
     "react-plotly.js": "^2.6.0",
     "use-prms": "https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811",
-    "use-kbd": "https://github.com/runsascoded/use-kbd#e3944be31cecff7c1e02f0b550d0ce011f1a8ba4"
+    "use-kbd": "https://github.com/runsascoded/use-kbd#e3944be31cecff7c1e02f0b550d0ce011f1a8ba4",
+    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/62320583b73cfe161031b3ed432bd67e480366b4/pltly-62320583b73cfe161031b3ed432bd67e480366b4.tar.gz"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

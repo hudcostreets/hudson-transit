@@ -9,7 +9,7 @@ const CROSSING_ICONS: Record<string, string[]> = {
   'Holland (Autos)':     ['pa', 'car'],
   'PATH (Downtown)':     ['path', 'train'],
   'PATH (Uptown)':       ['path', 'train'],
-  'Amtrak / NJ Transit': ['amtrak', 'njt', 'train'],
+  'Amtrak / NJ Transit': ['njt', 'amtrak', 'train'],
   'Ferry':               ['nyww', 'ferry'],
 }
 
@@ -17,7 +17,7 @@ const MODE_ICONS: Record<string, string[]> = {
   'Bus':   ['njt', 'bus'],
   'Autos': ['car'],
   'PATH':  ['path', 'train'],
-  'Rail':  ['amtrak', 'njt', 'train'],
+  'Rail':  ['njt', 'amtrak', 'train'],
   'Ferry': ['nyww', 'ferry'],
 }
 
@@ -59,48 +59,81 @@ export interface LogoLegendProps {
   bubblePixels?: Record<string, BubblePixel>
 }
 
+function IconEl({ name, height, invert }: { name: string; height: number; invert?: boolean }) {
+  const natural = ICON_NATURAL_WIDTHS[name] ?? 16
+  const w = natural * (height / ICON_HEIGHT)
+  if (MODE_ICON_SET.has(name)) {
+    return (
+      <span
+        className="logo-legend-icon"
+        style={{
+          width: w,
+          height,
+          maskImage: `url(/icons/${name}.svg)`,
+          WebkitMaskImage: `url(/icons/${name}.svg)`,
+        }}
+      />
+    )
+  }
+  return (
+    <img
+      className="logo-legend-icon agency"
+      src={`/icons/${name}.svg`}
+      alt={name}
+      style={{ width: w, height, ...(invert ? { filter: 'brightness(0) invert(1)' } : {}) }}
+    />
+  )
+}
+
 function IconRow({ icons }: { icons: string[] }) {
+  // Split into agency icons and mode icons
+  const agencies = icons.filter(n => !MODE_ICON_SET.has(n))
+  const modes = icons.filter(n => MODE_ICON_SET.has(n))
+
   return (
     <>
-      {icons.map(name => {
-        const isMode = MODE_ICON_SET.has(name)
-        const slot = isMode ? MODE_SLOT : AGENCY_SLOT
-        const natural = ICON_NATURAL_WIDTHS[name] ?? 16
-        if (isMode) {
-          return (
-            <span
-              key={name}
-              className="logo-legend-icon-slot"
-              style={{ width: slot }}
-            >
-              <span
-                className="logo-legend-icon"
-                style={{
-                  width: natural,
-                  height: ICON_HEIGHT,
-                  maskImage: `url(/icons/${name}.svg)`,
-                  WebkitMaskImage: `url(/icons/${name}.svg)`,
-                }}
-              />
-            </span>
-          )
-        }
-        return (
-          <span
-            key={name}
-            className="logo-legend-icon-slot"
-            style={{ width: slot }}
-          >
-            <img
-              className="logo-legend-icon agency"
-              src={`/icons/${name}.svg`}
-              alt={name}
-              style={{ width: natural, height: ICON_HEIGHT }}
-            />
-          </span>
-        )
-      })}
+      {agencies.length > 1 ? (
+        // Overlay: stack agencies at full size, later ones on top (inverted for visibility)
+        <span className="logo-legend-icon-slot logo-legend-overlay" style={{ width: AGENCY_SLOT, height: ICON_HEIGHT }}>
+          {agencies.map((name, i) => (
+            <IconEl key={name} name={name} height={ICON_HEIGHT} invert={i > 0} />
+          ))}
+        </span>
+      ) : agencies.length === 1 ? (
+        <span className="logo-legend-icon-slot" style={{ width: AGENCY_SLOT }}>
+          <IconEl name={agencies[0]} height={ICON_HEIGHT} />
+        </span>
+      ) : null}
+      {modes.map(name => (
+        <span key={name} className="logo-legend-icon-slot" style={{ width: MODE_SLOT }}>
+          <IconEl name={name} height={ICON_HEIGHT} />
+        </span>
+      ))}
     </>
+  )
+}
+
+// Grid columns: [left, right] — NJT crossings left, others right
+const GRID_COLS: Record<string, [string[], string[]]> = {
+  crossing: [
+    ['Lincoln (Bus)', 'Lincoln (Autos)', 'Holland (Autos)', 'Holland (Bus)'],
+    ['Amtrak / NJ Transit', 'PATH (Downtown)', 'PATH (Uptown)', 'Ferry'],
+  ],
+  mode: [
+    ['Bus', 'Autos', 'Rail'],
+    ['PATH', 'Ferry'],
+  ],
+}
+
+function GridItem({ label, icons, color }: { label: string; icons: string[]; color: string }) {
+  return (
+    <div className="logo-legend-grid-item">
+      <span className="logo-legend-dot" style={{ backgroundColor: color }} />
+      <span className="logo-legend-icons">
+        <IconRow icons={icons} />
+      </span>
+      <span className="logo-legend-grid-label">{label}</span>
+    </div>
   )
 }
 
@@ -111,20 +144,21 @@ export function LogoLegendGrid({ labels, colorMap, granularity }: {
   granularity: 'crossing' | 'mode'
 }) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
+  const [left, right] = GRID_COLS[granularity] ?? [labels, []]
+  const leftItems = left.filter(l => labels.includes(l))
+  const rightItems = right.filter(l => labels.includes(l))
   return (
     <div className="logo-legend-grid">
-      {labels.map(label => {
-        const icons = iconMap[label] ?? []
-        return (
-          <div key={label} className="logo-legend-grid-item">
-            <span className="logo-legend-dot" style={{ backgroundColor: colorMap[label] }} />
-            <span className="logo-legend-icons">
-              <IconRow icons={icons} />
-            </span>
-            <span className="logo-legend-grid-label">{label}</span>
-          </div>
-        )
-      })}
+      <div className="logo-legend-grid-col">
+        {leftItems.map(label => (
+          <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} />
+        ))}
+      </div>
+      <div className="logo-legend-grid-col">
+        {rightItems.map(label => (
+          <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} />
+        ))}
+      </div>
     </div>
   )
 }
