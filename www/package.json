@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "clean": "rm -rf node_modules/.vite dist"
+    "clean": "rm -rf node_modules/.vite dist",
+    "scrns": "scrns"
   },
   "dependencies": {
     "plotly.js-dist-min": "^3.4.0",
@@ -19,6 +20,7 @@
     "use-kbd": "https://github.com/runsascoded/use-kbd#e3944be31cecff7c1e02f0b550d0ce011f1a8ba4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/plotly.js": "^3.0.10",
@@ -30,6 +32,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "scrns": "^0",
     "sass": "^1.97.3",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
