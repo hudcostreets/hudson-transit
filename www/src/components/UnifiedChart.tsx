@@ -15,9 +15,9 @@ import { repelLabels } from 'pltly/plotly'
 import type { RepelPoint, RepelObstacle } from 'pltly/plotly'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
-import Toggle, { type ToggleOption } from './Toggle'
+import Toggle, { ToggleButton, type ToggleOption } from './Toggle'
 import PalettePicker from './PalettePicker'
-import { BubbleIcon, CrossingIcon, ModeIcon, SchemeSwatch } from './icons'
+import { BubbleIcon, SchemeSwatch } from './icons'
 import { CROSSING_ICON_FNS, MODE_ICON_FNS } from './crossing-icons'
 import LogoLegend, { LogoLegendGrid } from './LogoLegend'
 
@@ -73,8 +73,8 @@ const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
 ]
 
 const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
-  { value: 'crossing', label: <CrossingIcon />, tooltip: 'By crossing' },
-  { value: 'mode', label: <ModeIcon />, tooltip: 'By transport mode' },
+  { value: 'crossing', label: 'crossing', tooltip: 'By crossing' },
+  { value: 'mode', label: 'mode', tooltip: 'By transport mode' },
 ]
 
 /** Bottom legend: horizontal, 2 rows via tracegroupgap */
@@ -413,14 +413,13 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
         <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
         <Toggle options={GRAN_OPTIONS} value={granularity} onChange={setGranularity} />
         {view === 'scatter' && canonical && (
-          <Toggle
-            options={[
-              { value: 'on', label: '\u{1F4DD}', tooltip: 'Show annotations' },
-              { value: 'off', label: '\u2014', tooltip: 'Hide annotations' },
-            ]}
-            value={showAnnotations ? 'on' : 'off'}
-            onChange={v => setShowAnnotations(v === 'on')}
-          />
+          <ToggleButton
+            active={showAnnotations}
+            onClick={() => setShowAnnotations(!showAnnotations)}
+            tooltip={showAnnotations ? 'Hide annotations' : 'Show annotations'}
+          >
+            {'\u{1F4DD}'}
+          </ToggleButton>
         )}
         <PalettePicker options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
       </div>

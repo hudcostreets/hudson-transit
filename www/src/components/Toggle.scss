@@ -12,7 +12,8 @@
   }
 
   button {
-    padding: 0.3rem 1rem;
+    padding: 0.3rem 0.5rem;
+    min-width: 2rem;
     border: 1px solid var(--toggle-border);
     background: var(--toggle-bg);
     cursor: pointer;
@@ -20,13 +21,16 @@
     color: var(--toggle-text);
     transition: background 0.15s, color 0.15s;
 
-    &:first-child {
+    &:first-of-type {
       border-radius: 4px 0 0 4px;
     }
-    &:last-child {
+    &:last-of-type {
       border-radius: 0 4px 4px 0;
     }
-    &:not(:first-child) {
+    &:only-of-type {
+      border-radius: 4px;
+    }
+    &:not(:first-of-type) {
       border-left: none;
     }
     &.active {
@@ -37,6 +41,26 @@
     &:hover:not(.active) {
       background: var(--toggle-hover);
     }
+  }
+}
+
+.toggle-standalone {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--toggle-border);
+  background: var(--toggle-bg);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--toggle-text);
+  transition: background 0.15s, color 0.15s;
+
+  &.active {
+    background: var(--toggle-active-bg);
+    color: var(--toggle-active-text);
+    border-color: var(--toggle-active-bg);
+  }
+  &:hover:not(.active) {
+    background: var(--toggle-hover);
   }
 }
 

@@ -56,6 +56,49 @@ function TooltipButton<V extends string>({ opt, active, onClick }: {
   )
 }
 
+/** Standalone toggle button with active/inactive state + tooltip */
+export function ToggleButton({ active, onClick, tooltip, children }: {
+  active: boolean
+  onClick: () => void
+  tooltip?: string
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  const { refs, floatingStyles, context } = useFloating({
+    open,
+    onOpenChange: setOpen,
+    placement: 'bottom',
+    middleware: [offset(6), flip(), shift({ padding: 8 })],
+  })
+  const hover = useHover(context, { delay: { open: 400, close: 0 } })
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover])
+
+  return (
+    <>
+      <button
+        ref={refs.setReference}
+        className={`toggle-standalone${active ? ' active' : ''}`}
+        onClick={onClick}
+        {...getReferenceProps()}
+      >
+        {children}
+      </button>
+      {tooltip && open && (
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            className="toggle-tooltip"
+            style={floatingStyles}
+            {...getFloatingProps()}
+          >
+            {tooltip}
+          </div>
+        </FloatingPortal>
+      )}
+    </>
+  )
+}
+
 export default function Toggle<V extends string>({ options, value, onChange, prefix }: ToggleProps<V>) {
   return (
     <div className="toggle">
