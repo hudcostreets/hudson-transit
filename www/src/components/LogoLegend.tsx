@@ -182,22 +182,20 @@ const GRID_4: Record<string, string[][]> = {
   ],
 }
 
-function GridItem({ label, icons, color, tip, highlight }: { label: string; icons: string[]; color: string; tip: string; highlight?: UseTraceHighlightReturn }) {
+function GridItem({ label, icons, color, highlight }: { label: string; icons: string[]; color: string; highlight?: UseTraceHighlightReturn }) {
   return (
-    <Tooltip title={tip}>
-      <div
-        className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}`}
-        onMouseEnter={() => highlight?.setHoverTrace(label)}
-        onMouseLeave={() => highlight?.setHoverTrace(null)}
-        onClick={() => highlight?.toggleSolo(label)}
-        style={{ cursor: highlight ? 'pointer' : undefined }}
-      >
-        <span className="logo-legend-icons">
-          <IconRow icons={icons} color={color} />
-        </span>
-        <span className="logo-legend-grid-label">{label}</span>
-      </div>
-    </Tooltip>
+    <div
+      className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}`}
+      onMouseEnter={() => highlight?.setHoverTrace(label)}
+      onMouseLeave={() => highlight?.setHoverTrace(null)}
+      onClick={() => highlight?.toggleSolo(label)}
+      style={{ cursor: highlight ? 'pointer' : undefined }}
+    >
+      <span className="logo-legend-icons">
+        <IconRow icons={icons} color={color} />
+      </span>
+      <span className="logo-legend-grid-label">{label}</span>
+    </div>
   )
 }
 
@@ -219,7 +217,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth, 
       {cols.map((col, i) => (
         <div key={i} className="logo-legend-grid-col">
           {col.map(label => (
-            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} tip={tipMap[label] ?? label} highlight={highlight} />
+            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} highlight={highlight} />
           ))}
         </div>
       ))}
