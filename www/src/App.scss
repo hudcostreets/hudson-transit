@@ -177,6 +177,13 @@ main {
   gap: 4px;
 }
 
+.logo-legend-icon-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .logo-legend-icon {
   display: inline-block;
   background-color: var(--text);
@@ -201,8 +208,32 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-muted);
-  font-size: 0.7rem;
-  line-height: 1.1;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+// Compact grid legend for non-wide screens
+.logo-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem 0.75rem;
+  padding: 0.4rem 0.5rem;
+}
+
+.logo-legend-grid-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.logo-legend-grid-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.2;
 }
 
 footer {
@@ -282,4 +313,10 @@ footer {
 
 @media (max-width: 600px) {
   header h1 { font-size: 1.3rem; }
+
+  // Bleed chart to viewport edges on narrow screens
+  .chart-bleed {
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
 }

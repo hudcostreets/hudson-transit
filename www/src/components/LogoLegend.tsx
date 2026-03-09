@@ -24,9 +24,9 @@ const MODE_ICONS: Record<string, string[]> = {
 // Mode icons rendered as CSS masks (theme-adaptive); agency icons as <img> (true color)
 const MODE_ICON_SET = new Set(['bus', 'car', 'train', 'ferry'])
 
-// Per-icon width at ICON_HEIGHT, based on SVG aspect ratios
+// Per-icon natural width at ICON_HEIGHT, based on SVG aspect ratios
 const ICON_HEIGHT = 20
-const ICON_WIDTHS: Record<string, number> = {
+const ICON_NATURAL_WIDTHS: Record<string, number> = {
   njt:    40,   // 500x250 → 2:1
   amtrak: 36,   // 537x230 → 2.3:1, capped
   path:   28,   // 104x75 → 1.4:1
@@ -37,6 +37,10 @@ const ICON_WIDTHS: Record<string, number> = {
   train:  20,
   ferry:  20,
 }
+
+// Uniform slot widths for alignment: all agency icons same width, all mode icons same width
+const AGENCY_SLOT = 40
+const MODE_SLOT = 20
 
 export interface BubblePixel {
   x: number  // px from legend container left
@@ -55,6 +59,76 @@ export interface LogoLegendProps {
   bubblePixels?: Record<string, BubblePixel>
 }
 
+function IconRow({ icons }: { icons: string[] }) {
+  return (
+    <>
+      {icons.map(name => {
+        const isMode = MODE_ICON_SET.has(name)
+        const slot = isMode ? MODE_SLOT : AGENCY_SLOT
+        const natural = ICON_NATURAL_WIDTHS[name] ?? 16
+        if (isMode) {
+          return (
+            <span
+              key={name}
+              className="logo-legend-icon-slot"
+              style={{ width: slot }}
+            >
+              <span
+                className="logo-legend-icon"
+                style={{
+                  width: natural,
+                  height: ICON_HEIGHT,
+                  maskImage: `url(/icons/${name}.svg)`,
+                  WebkitMaskImage: `url(/icons/${name}.svg)`,
+                }}
+              />
+            </span>
+          )
+        }
+        return (
+          <span
+            key={name}
+            className="logo-legend-icon-slot"
+            style={{ width: slot }}
+          >
+            <img
+              className="logo-legend-icon agency"
+              src={`/icons/${name}.svg`}
+              alt={name}
+              style={{ width: natural, height: ICON_HEIGHT }}
+            />
+          </span>
+        )
+      })}
+    </>
+  )
+}
+
+/** Compact grid legend for narrow screens (replaces Plotly's bottom legend) */
+export function LogoLegendGrid({ labels, colorMap, granularity }: {
+  labels: string[]
+  colorMap: Record<string, string>
+  granularity: 'crossing' | 'mode'
+}) {
+  const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
+  return (
+    <div className="logo-legend-grid">
+      {labels.map(label => {
+        const icons = iconMap[label] ?? []
+        return (
+          <div key={label} className="logo-legend-grid-item">
+            <span className="logo-legend-dot" style={{ backgroundColor: colorMap[label] }} />
+            <span className="logo-legend-icons">
+              <IconRow icons={icons} />
+            </span>
+            <span className="logo-legend-grid-label">{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function LogoLegend({ labels, colorMap, granularity, lastYValues, chartHeight, margin, yRange, bubblePixels }: LogoLegendProps) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
 
@@ -66,7 +140,7 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
 
   const yToPx = (yVal: number) => plotTop + plotHeight * (1 - (yVal - yMin) / (yMax - yMin))
 
-  const entryHeight = 46
+  const entryHeight = 50
 
   const entries = labels
     .map(label => ({
@@ -167,32 +241,7 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
             <span className="logo-legend-dot" style={{ backgroundColor: colorMap[label] }} />
             <div className="logo-legend-content">
               <span className="logo-legend-icons">
-                {icons.map(name => {
-                  const w = ICON_WIDTHS[name] ?? 16
-                  if (MODE_ICON_SET.has(name)) {
-                    return (
-                      <span
-                        key={name}
-                        className="logo-legend-icon"
-                        style={{
-                          width: w,
-                          height: ICON_HEIGHT,
-                          maskImage: `url(/icons/${name}.svg)`,
-                          WebkitMaskImage: `url(/icons/${name}.svg)`,
-                        }}
-                      />
-                    )
-                  }
-                  return (
-                    <img
-                      key={name}
-                      className="logo-legend-icon agency"
-                      src={`/icons/${name}.svg`}
-                      alt={name}
-                      style={{ width: w, height: ICON_HEIGHT }}
-                    />
-                  )
-                })}
+                <IconRow icons={icons} />
               </span>
               <span className="logo-legend-label">{label}</span>
             </div>

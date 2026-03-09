@@ -12,7 +12,7 @@ import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
 import { BubbleIcon, RecoveryIcon } from './icons'
 import { CROSSING_ICON_FNS, MODE_ICON_FNS } from './crossing-icons'
-import LogoLegend from './LogoLegend'
+import LogoLegend, { LogoLegendGrid } from './LogoLegend'
 
 // ?y=[n|p|c] — default: bubble (omitted)
 const viewParam = codeParam<ViewMode>('scatter', [
@@ -70,8 +70,20 @@ const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
   { value: 'mode', label: 'mode' },
 ]
 
-/** Breakpoint (px) above which legend moves to the right side */
-const LEGEND_SIDE_MIN_WIDTH = 900
+/** Breakpoint (px) for side legend: show above HIGH, hide below LOW */
+const LEGEND_SIDE_SHOW = 800
+const LEGEND_SIDE_HIDE = 750
+
+/** Breakpoint (px) below which x-ticks use 'yy format at -45° */
+const NARROW_TICK_WIDTH = 600
+
+/** Scale bubble maxSize based on container width */
+function responsiveMaxSize(width: number): number {
+  if (width >= 1000) return 75
+  if (width <= 400) return 35
+  // Linear interpolation between 400→35 and 1000→75
+  return Math.round(35 + (width - 400) * (75 - 35) / (1000 - 400))
+}
 
 /** Bottom legend: horizontal, 2 rows via tracegroupgap */
 const LEGEND_BOTTOM: Partial<Layout['legend']> = {
@@ -215,9 +227,14 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const colorMap = granularity === 'mode' ? colors.mode : colors.crossing
   const canonical = isCanonical(direction, timePeriod, granularity)
   const jitter = getJitter(direction, timePeriod, granularity)
-  const wide = width >= LEGEND_SIDE_MIN_WIDTH
+  const wideRef = useRef(false)
+  if (width >= LEGEND_SIDE_SHOW) wideRef.current = true
+  else if (width <= LEGEND_SIDE_HIDE) wideRef.current = false
+  const wide = wideRef.current
+  const narrow = width > 0 && width < NARROW_TICK_WIDTH
   const legendLayout = wide ? LEGEND_RIGHT : LEGEND_BOTTOM
   const rightMargin = wide ? 160 : 10
+  const maxSize = responsiveMaxSize(width || 1000)
 
   // Resolve effective theme for Plotly
   const isDark = useMemo(() => {
@@ -261,7 +278,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const hoverProps = { onHover: handleHover, onUnhover: clearHover }
 
   const iconFns = granularity === 'mode' ? MODE_ICON_FNS : CROSSING_ICON_FNS
-  const showLogoLegend = wide
+  const showSideLegend = wide
 
   // Compute explicit y-axis range matching what we pass to Plotly
   const yRange = useMemo((): [number, number] => {
@@ -287,10 +304,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   }, [view, years, series, pct, labels])
 
   const content = (() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, showLogoLegend, yRange)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, showLogoLegend, yRange)
-    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, showLogoLegend, yRange)
-    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, showLogoLegend, yRange)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow)
   })()
 
   // Compute last-year y-axis values for the logo legend (varies by view)
@@ -323,10 +340,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     const lastIdx = years.length - 1
     const lastYear = years[lastIdx]
     const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
-    const maxSize = 60
     const mL = 60
-    const xMin = years[0] - 0.8
-    const xMax = lastYear + 0.8
+    const xPad = narrow ? 0.4 : 0.8
+    const xMin = years[0] - xPad
+    const xMax = lastYear + xPad
     const plotW = width - mL - rightMargin
     const legendLeft = width - 150
     const mT = chartMargin.t
@@ -344,16 +361,16 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
       pixels[label] = { x: xPx, y: yPx, r }
     }
     return pixels
-  }, [view, years, series, pct, labels, width, rightMargin, jitter, yRange, chartHeight, chartMargin])
+  }, [view, years, series, pct, labels, width, rightMargin, jitter, yRange, chartHeight, chartMargin, maxSize, narrow])
 
   const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
 
   return (
     <div ref={ref}>
       <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
-      <div className={showLogoLegend ? 'chart-with-legend' : undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
+      <div className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
         {content}
-        {showLogoLegend && (
+        {showSideLegend && (
           <LogoLegend
             labels={labels}
             colorMap={colorMap}
@@ -366,6 +383,9 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
           />
         )}
       </div>
+      {!showSideLegend && (
+        <LogoLegendGrid labels={labels} colorMap={colorMap} granularity={granularity} />
+      )}
       {hoverYear !== null && yearIdx >= 0 && (
         <HoverTooltip
           year={hoverYear}
@@ -484,8 +504,17 @@ function themedLayout(pt: PlotTheme): Partial<Layout> {
     paper_bgcolor: pt.bg,
     plot_bgcolor: pt.bg,
     font: { color: pt.font },
-    xaxis: { gridcolor: pt.grid, zerolinecolor: pt.grid },
-    yaxis: { gridcolor: pt.grid, zerolinecolor: pt.grid },
+    xaxis: { gridcolor: pt.grid, zerolinecolor: pt.grid, fixedrange: true },
+    yaxis: { gridcolor: pt.grid, zerolinecolor: pt.grid, fixedrange: true },
+  }
+}
+
+/** Narrow-screen x-axis overrides: 'yy labels at -45° */
+function narrowXaxis(years: number[]): Partial<Layout['xaxis']> {
+  return {
+    tickvals: years,
+    ticktext: years.map(y => `'${String(y).slice(2)}`),
+    tickangle: -45,
   }
 }
 
@@ -504,9 +533,10 @@ function renderScatter(
   hp: HoverProps,
   hideLegend = false,
   yRange?: [number, number],
+  maxSize = 75,
+  narrow = false,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
-  const maxSize = 60
 
   const traces: Data[] = labels.map((label) => {
     const passengers = series[label]
@@ -569,7 +599,7 @@ function renderScatter(
         ...themedLayout(pt),
         xaxis: {
           dtick: 1,
-          range: [years[0] - 0.8, maxYear + 0.8],
+          range: [years[0] - (narrow ? 0.4 : 0.8), maxYear + (narrow ? 0.4 : 0.8)],
           title: { text: '' },
           hoverformat: 'd',
           gridcolor: pt.grid,
@@ -577,15 +607,17 @@ function renderScatter(
           spikemode: 'across',
           spikecolor: pt.font,
           spikethickness: 1,
+          ...(narrow ? narrowXaxis(years) : {}),
         },
         yaxis: {
-          title: { text: '% of total passengers (mode share)' },
+          title: narrow ? { text: '' } : { text: '% of total passengers (mode share)' },
           tickformat: ',.0%',
           range: yRange,
           gridcolor: pt.grid,
         },
         hovermode: 'x',
-        margin: { t: 10, l: 60, r: rightMargin, b: 90 },
+        dragmode: false,
+        margin: { t: 10, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 60 : 90 },
         autosize: true,
         annotations: annotations as Layout['annotations'],
         images: images as Layout['images'],
@@ -594,7 +626,7 @@ function renderScatter(
       }}
       useResizeHandler
       style={{ width: '100%', height: '700px' }}
-      config={{ displayModeBar: false }}
+      config={{ displayModeBar: false, scrollZoom: false }}
       {...hp}
     />
   )
@@ -611,6 +643,7 @@ function renderBar(
   hp: HoverProps,
   hideLegend = false,
   yRange?: [number, number],
+  narrow = false,
 ) {
   return (
     <Plot
@@ -624,17 +657,18 @@ function renderBar(
       }))}
       layout={{
         ...themedLayout(pt),
-        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
-        yaxis: { title: { text: 'Passengers' }, range: yRange, gridcolor: pt.grid },
+        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid, ...(narrow ? narrowXaxis(years) : {}) },
+        yaxis: { title: narrow ? { text: '' } : { text: 'Passengers' }, range: yRange, gridcolor: pt.grid },
         hovermode: 'x',
-        margin: { t: 40, l: 60, r: rightMargin, b: 40 },
+        dragmode: false,
+        margin: { t: 40, l: narrow ? 40 : 60, r: rightMargin, b: narrow ? 50 : 40 },
         autosize: true,
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
-      config={{ displayModeBar: false }}
+      config={{ displayModeBar: false, scrollZoom: false }}
       {...hp}
     />
   )
@@ -651,6 +685,7 @@ function renderPctBar(
   hp: HoverProps,
   hideLegend = false,
   _yRange?: [number, number],
+  narrow = false,
 ) {
   const totals = years.map((_, i) =>
     labels.reduce((sum, l) => sum + (series[l]?.[i] ?? 0), 0)
@@ -679,17 +714,18 @@ function renderPctBar(
         ...themedLayout(pt),
         barmode: 'stack',
         barnorm: 'percent',
-        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
-        yaxis: { title: { text: '% Passengers' }, gridcolor: pt.grid },
+        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid, ...(narrow ? narrowXaxis(years) : {}) },
+        yaxis: { title: narrow ? { text: '' } : { text: '% Passengers' }, gridcolor: pt.grid },
         hovermode: 'x',
-        margin: { t: 40, l: 60, r: rightMargin, b: 40 },
+        dragmode: false,
+        margin: { t: 40, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 50 : 40 },
         autosize: true,
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
-      config={{ displayModeBar: false }}
+      config={{ displayModeBar: false, scrollZoom: false }}
       {...hp}
     />
   )
@@ -706,6 +742,7 @@ function renderRecovery(
   hp: HoverProps,
   hideLegend = false,
   yRange?: [number, number],
+  narrow = false,
 ) {
   const baseIdx = years.indexOf(BASE_YEAR)
   if (baseIdx === -1) return <div>No {BASE_YEAR} data for this selection</div>
@@ -737,14 +774,15 @@ function renderRecovery(
       }))}
       layout={{
         ...themedLayout(pt),
-        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid },
+        xaxis: { dtick: 1, title: { text: '' }, gridcolor: pt.grid, ...(narrow ? narrowXaxis(ry) : {}) },
         yaxis: {
-          title: { text: `% of ${BASE_YEAR} volume` },
+          title: narrow ? { text: '' } : { text: `% of ${BASE_YEAR} volume` },
           tickformat: ',.0%',
           range: yRange ?? [0, yMax],
           gridcolor: pt.grid,
         },
         hovermode: 'x',
+        dragmode: false,
         shapes: [{
           type: 'line',
           x0: ry[0],
@@ -753,14 +791,14 @@ function renderRecovery(
           y1: 1,
           line: { color: '#888', width: 1, dash: 'dash' },
         }],
-        margin: { t: 10, l: 70, r: rightMargin, b: 40 },
+        margin: { t: 10, l: narrow ? 40 : 70, r: rightMargin, b: narrow ? 50 : 40 },
         autosize: true,
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
       useResizeHandler
       style={{ width: '100%', height: '600px' }}
-      config={{ displayModeBar: false }}
+      config={{ displayModeBar: false, scrollZoom: false }}
       {...hp}
     />
   )
