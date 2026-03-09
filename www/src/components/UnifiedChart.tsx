@@ -16,7 +16,8 @@ import type { RepelPoint, RepelObstacle } from 'pltly/plotly'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
-import { BubbleIcon, SchemeSwatch } from './icons'
+import PalettePicker from './PalettePicker'
+import { BubbleIcon, CrossingIcon, ModeIcon, SchemeSwatch } from './icons'
 import { CROSSING_ICON_FNS, MODE_ICON_FNS } from './crossing-icons'
 import LogoLegend, { LogoLegendGrid } from './LogoLegend'
 
@@ -72,8 +73,8 @@ const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
 ]
 
 const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
-  { value: 'crossing', label: 'crossing', tooltip: 'By crossing' },
-  { value: 'mode', label: 'mode', tooltip: 'By transport mode' },
+  { value: 'crossing', label: <CrossingIcon />, tooltip: 'By crossing' },
+  { value: 'mode', label: <ModeIcon />, tooltip: 'By transport mode' },
 ]
 
 /** Bottom legend: horizontal, 2 rows via tracegroupgap */
@@ -421,7 +422,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
             onChange={v => setShowAnnotations(v === 'on')}
           />
         )}
-        <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} prefix="🎨" />
+        <PalettePicker options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
       </div>
     </div>
   )
@@ -525,12 +526,12 @@ function themedLayout(pt: PlotTheme): Partial<Layout> {
   }
 }
 
-/** Narrow-screen x-axis overrides: 'yy labels at -45° */
-function narrowXaxis(years: number[]): Partial<Layout['xaxis']> {
+/** 'yy tick labels; angled on narrow screens */
+function yearTicks(years: number[], narrow: boolean): Partial<Layout['xaxis']> {
   return {
     tickvals: years,
     ticktext: years.map(y => `'${String(y).slice(2)}`),
-    tickangle: -45,
+    ...(narrow ? { tickangle: -45 } : {}),
   }
 }
 
@@ -698,7 +699,7 @@ function renderScatter(
           spikesnap: 'data',
           spikecolor: pt.font,
           spikethickness: 1,
-          ...(narrow ? narrowXaxis(years) : {}),
+          ...yearTicks(years, narrow),
         },
         yaxis: {
           title: narrow ? { text: '' } : { text: '% of total passengers (mode share)' },
@@ -749,7 +750,7 @@ function renderBar(
       }))}
       layout={{
         ...themedLayout(pt),
-        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...(narrow ? narrowXaxis(years) : {}) },
+        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(years, narrow) },
         yaxis: { fixedrange: true, title: narrow ? { text: '' } : { text: 'Passengers' }, range: yRange, gridcolor: pt.grid },
         hovermode: 'x',
         clickmode: 'event',
@@ -806,7 +807,7 @@ function renderPctBar(
         ...themedLayout(pt),
         barmode: 'stack',
         barnorm: 'percent',
-        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...(narrow ? narrowXaxis(years) : {}) },
+        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(years, narrow) },
         yaxis: { fixedrange: true, title: narrow ? { text: '' } : { text: '% Passengers' }, gridcolor: pt.grid },
         hovermode: 'x',
         clickmode: 'event',
@@ -866,7 +867,7 @@ function renderRecovery(
       }))}
       layout={{
         ...themedLayout(pt),
-        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...(narrow ? narrowXaxis(ry) : {}) },
+        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(ry, narrow) },
         yaxis: {
           fixedrange: true,
           title: narrow ? { text: '' } : { text: `% of ${BASE_YEAR} volume` },
