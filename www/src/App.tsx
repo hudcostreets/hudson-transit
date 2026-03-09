@@ -3,6 +3,7 @@ import 'use-kbd/styles.css'
 import crossingsData from './data/crossings.json'
 import type { CrossingRecord } from './lib/types'
 import UnifiedChart from './components/UnifiedChart'
+import { SDTooltipRenderer } from './components/Tooltip'
 import './App.scss'
 
 const crossings = crossingsData as CrossingRecord[]
@@ -63,7 +64,7 @@ function App() {
       <Omnibar />
       <ShortcutsModal editable />
       <LookupModal />
-      <SpeedDial actions={sdActions} />
+      <SpeedDial actions={sdActions} TooltipRenderer={SDTooltipRenderer} />
     </HotkeysProvider>
   )
 }

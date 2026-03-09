@@ -18,7 +18,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-plotly.js": "^2.6.0",
-    "use-kbd": "https://github.com/runsascoded/use-kbd#e3944be31cecff7c1e02f0b550d0ce011f1a8ba4",
+    "use-kbd": "https://github.com/runsascoded/use-kbd#42b5a04da6e7da6b7094bab4f12581da05d80868",
     "use-prms": "https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811"
   },
   "devDependencies": {

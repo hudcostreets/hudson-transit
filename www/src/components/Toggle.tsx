@@ -27,7 +27,7 @@ function TooltipButton<V extends string>({ opt, active, onClick }: {
     placement: 'bottom',
     middleware: [offset(6), flip(), shift({ padding: 8 })],
   })
-  const hover = useHover(context, { delay: { open: 400, close: 0 } })
+  const hover = useHover(context)
   const { getReferenceProps, getFloatingProps } = useInteractions([hover])
 
   return (
@@ -70,7 +70,7 @@ export function ToggleButton({ active, onClick, tooltip, children }: {
     placement: 'bottom',
     middleware: [offset(6), flip(), shift({ padding: 8 })],
   })
-  const hover = useHover(context, { delay: { open: 400, close: 0 } })
+  const hover = useHover(context)
   const { getReferenceProps, getFloatingProps } = useInteractions([hover])
 
   return (

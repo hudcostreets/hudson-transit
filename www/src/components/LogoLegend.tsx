@@ -1,6 +1,27 @@
 /** Right-side legend that replaces Plotly's built-in legend with agency logos + mode icons.
  *  Items are y-aligned to their last data point. */
 
+import Tooltip from './Tooltip'
+
+// Descriptive tooltips for legend items
+const CROSSING_TIPS: Record<string, string> = {
+  'Lincoln (Bus)':       'Lincoln Tunnel — NJ Transit bus',
+  'Lincoln (Autos)':     'Lincoln Tunnel — cars (Port Authority)',
+  'Holland (Bus)':       'Holland Tunnel — NJ Transit bus',
+  'Holland (Autos)':     'Holland Tunnel — cars (Port Authority)',
+  'PATH (Downtown)':     'PATH train — downtown (WTC)',
+  'PATH (Uptown)':       'PATH train — uptown (33rd St)',
+  'Amtrak / NJ Transit': 'Rail — Amtrak & NJ Transit via Penn Station',
+  'Ferry':               'NY Waterway ferry',
+}
+const MODE_TIPS: Record<string, string> = {
+  'Bus':   'NJ Transit bus (Lincoln & Holland tunnels)',
+  'Autos': 'Cars & trucks (Lincoln & Holland tunnels)',
+  'PATH':  'PATH rapid transit (downtown & uptown)',
+  'Rail':  'Amtrak & NJ Transit rail (Penn Station)',
+  'Ferry': 'NY Waterway ferry',
+}
+
 // Crossing → [agency icons, mode icon] (file basenames under /icons/)
 const CROSSING_ICONS: Record<string, string[]> = {
   'Lincoln (Bus)':       ['njt', 'bus'],
@@ -159,14 +180,16 @@ const GRID_4: Record<string, string[][]> = {
   ],
 }
 
-function GridItem({ label, icons, color }: { label: string; icons: string[]; color: string }) {
+function GridItem({ label, icons, color, tip }: { label: string; icons: string[]; color: string; tip: string }) {
   return (
-    <div className="logo-legend-grid-item">
-      <span className="logo-legend-icons">
-        <IconRow icons={icons} color={color} />
-      </span>
-      <span className="logo-legend-grid-label">{label}</span>
-    </div>
+    <Tooltip title={tip}>
+      <div className="logo-legend-grid-item">
+        <span className="logo-legend-icons">
+          <IconRow icons={icons} color={color} />
+        </span>
+        <span className="logo-legend-grid-label">{label}</span>
+      </div>
+    </Tooltip>
   )
 }
 
@@ -178,6 +201,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }
   containerWidth?: number
 }) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
+  const tipMap = granularity === 'mode' ? MODE_TIPS : CROSSING_TIPS
   const use4 = (containerWidth ?? 0) >= 500
   const grid = use4 ? GRID_4 : GRID_2
   const cols = (grid[granularity] ?? [labels]).map(col => col.filter(l => labels.includes(l)))
@@ -186,7 +210,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }
       {cols.map((col, i) => (
         <div key={i} className="logo-legend-grid-col">
           {col.map(label => (
-            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} />
+            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} tip={tipMap[label] ?? label} />
           ))}
         </div>
       ))}
@@ -196,6 +220,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }
 
 export default function LogoLegend({ labels, colorMap, granularity, lastYValues, chartHeight, margin, yRange, bubblePixels }: LogoLegendProps) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
+  const tipMap = granularity === 'mode' ? MODE_TIPS : CROSSING_TIPS
 
   const [yMin, yMax] = yRange
 
@@ -303,12 +328,14 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
             className="logo-legend-entry"
             style={{ top: rawY - dotCy }}
           >
-            <div className="logo-legend-content">
-              <span className="logo-legend-icons">
-                <IconRow icons={icons} color={colorMap[label]} />
-              </span>
-              <span className="logo-legend-label">{label}</span>
-            </div>
+            <Tooltip title={tipMap[label] ?? label} placement="left">
+              <div className="logo-legend-content">
+                <span className="logo-legend-icons">
+                  <IconRow icons={icons} color={colorMap[label]} />
+                </span>
+                <span className="logo-legend-label">{label}</span>
+              </div>
+            </Tooltip>
           </div>
         )
       })}
