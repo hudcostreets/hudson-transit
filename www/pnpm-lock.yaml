@@ -12,8 +12,8 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       pltly:
-        specifier: https://gitlab.com/runsascoded/js/pltly/-/archive/62320583b73cfe161031b3ed432bd67e480366b4/pltly-62320583b73cfe161031b3ed432bd67e480366b4.tar.gz
-        version: https://gitlab.com/runsascoded/js/pltly/-/archive/62320583b73cfe161031b3ed432bd67e480366b4/pltly-62320583b73cfe161031b3ed432bd67e480366b4.tar.gz(plotly.js@3.4.0(mapbox-gl@1.13.3))(react-plotly.js@2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4))(react@19.2.4)
+        specifier: https://gitlab.com/runsascoded/js/pltly/-/archive/9eb841ceeb8ea21a89183bda5b6a31965c188482/pltly-9eb841ceeb8ea21a89183bda5b6a31965c188482.tar.gz
+        version: https://gitlab.com/runsascoded/js/pltly/-/archive/9eb841ceeb8ea21a89183bda5b6a31965c188482/pltly-9eb841ceeb8ea21a89183bda5b6a31965c188482.tar.gz(plotly.js@3.4.0(mapbox-gl@1.13.3))(react-plotly.js@2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4))(react@19.2.4)
       react:
         specifier: ^19.2.0
         version: 19.2.4
@@ -2364,9 +2364,9 @@ packages:
     resolution: {integrity: sha512-jdWfHLB8AxlGUmVhqJTGEKdwjCKGn9Yi8yg16067/JyqseuSado7F6IOM1XPZspdZyO/cf8IPuy7ROlVhqZZNw==}
     engines: {node: '>=18.0.0'}
 
-  pltly@https://gitlab.com/runsascoded/js/pltly/-/archive/62320583b73cfe161031b3ed432bd67e480366b4/pltly-62320583b73cfe161031b3ed432bd67e480366b4.tar.gz:
-    resolution: {tarball: https://gitlab.com/runsascoded/js/pltly/-/archive/62320583b73cfe161031b3ed432bd67e480366b4/pltly-62320583b73cfe161031b3ed432bd67e480366b4.tar.gz}
-    version: 0.1.0-dist.7b0eef5
+  pltly@https://gitlab.com/runsascoded/js/pltly/-/archive/9eb841ceeb8ea21a89183bda5b6a31965c188482/pltly-9eb841ceeb8ea21a89183bda5b6a31965c188482.tar.gz:
+    resolution: {tarball: https://gitlab.com/runsascoded/js/pltly/-/archive/9eb841ceeb8ea21a89183bda5b6a31965c188482/pltly-9eb841ceeb8ea21a89183bda5b6a31965c188482.tar.gz}
+    version: 0.1.0-dist.b8cc6a4
     peerDependencies:
       plotly.js: '>=2'
       react: '>=17'
@@ -5510,7 +5510,7 @@ snapshots:
       - mapbox-gl
       - supports-color
 
-  pltly@https://gitlab.com/runsascoded/js/pltly/-/archive/62320583b73cfe161031b3ed432bd67e480366b4/pltly-62320583b73cfe161031b3ed432bd67e480366b4.tar.gz(plotly.js@3.4.0(mapbox-gl@1.13.3))(react-plotly.js@2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4))(react@19.2.4):
+  pltly@https://gitlab.com/runsascoded/js/pltly/-/archive/9eb841ceeb8ea21a89183bda5b6a31965c188482/pltly-9eb841ceeb8ea21a89183bda5b6a31965c188482.tar.gz(plotly.js@3.4.0(mapbox-gl@1.13.3))(react-plotly.js@2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4))(react@19.2.4):
     dependencies:
       plotly.js: 3.4.0(mapbox-gl@1.13.3)
       react: 19.2.4

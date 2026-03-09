@@ -12,7 +12,7 @@ import type { CrossingRecord, ViewMode, Direction, TimePeriod, Granularity } fro
 import { COLOR_SCHEMES } from '../lib/colors'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
 import { repelLabels } from 'pltly/plotly'
-import type { RepelPoint } from 'pltly/plotly'
+import type { RepelPoint, RepelObstacle } from 'pltly/plotly'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
@@ -276,8 +276,8 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const yRange = useMemo((): [number, number] => {
     if (view === 'scatter' || view === 'pct') {
       const maxPct = Math.max(...labels.flatMap(l => pct[l]))
-      // Round up to next 2% above max + 1% padding for bubble/label clearance
-      return [0, Math.ceil((maxPct + 0.01) * 50) / 50]
+      // Round up to next 2% above max + 3% padding for bubble radius clearance
+      return [0, Math.ceil((maxPct + 0.03) * 50) / 50]
     }
     if (view === 'recovery') {
       const baseIdx = years.indexOf(BASE_YEAR)
@@ -335,11 +335,11 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     return vals
   }, [years, series, pct, labels, view])
 
-  // Chart dimensions for y-alignment
+  // Chart dimensions for y-alignment — must match Plotly layout margins exactly
   const chartHeight = view === 'scatter' ? (narrow ? 580 : 700) : 600
   const chartMargin = view === 'scatter'
-    ? { t: 10, b: 90 }
-    : view === 'recovery' ? { t: 10, b: 40 } : { t: 40, b: 40 }
+    ? { t: 5, b: narrow ? 50 : 55 }
+    : view === 'recovery' ? { t: 10, b: narrow ? 50 : 40 } : { t: 40, b: narrow ? 50 : 40 }
 
   // Compute last-year bubble pixel positions (legend-relative) for connector lines
   const bubblePixels = useMemo(() => {
@@ -347,11 +347,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     const lastIdx = years.length - 1
     const lastYear = years[lastIdx]
     const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
-    const mL = 60
-    const xPad = narrow ? 0.4 : 0.8
-    const xMin = years[0] - xPad
-    const xMax = lastYear + xPad
-    const plotW = width - mL - rightMargin
+    const mL = chartMarginRef.current.l
+    const mR = chartMarginRef.current.r
+    const [xMin, xMax] = xRangeRef.current
+    const plotW = width - mL - mR
     const legendLeft = width - 150
     const mT = chartMargin.t
     const plotH = chartHeight - mT - chartMargin.b
@@ -368,7 +367,8 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
       pixels[label] = { x: xPx, y: yPx, r }
     }
     return pixels
-  }, [view, years, series, pct, labels, width, rightMargin, jitter, yRange, chartHeight, chartMargin, maxSize, narrow])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are set above, deps cover all changing inputs
+  }, [view, years, series, pct, labels, width, rightMargin, narrow, jitter, yRange, chartHeight, chartMargin, maxSize])
 
   const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
 
@@ -392,7 +392,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
         )}
       </div>
       {!showSideLegend && (
-        <LogoLegendGrid labels={labels} colorMap={colorMap} granularity={granularity} />
+        <LogoLegendGrid labels={labels} colorMap={colorMap} granularity={granularity} containerWidth={width} />
       )}
       {hoverYear !== null && yearIdx >= 0 && (
         <HoverTooltip
@@ -597,27 +597,32 @@ function renderScatter(
 
   const maxYear = Math.max(...years)
 
-  // Build repel points for small-bubble labels (text outside)
-  const margin = { t: 5, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 50 : 80 }
+  // Build repel points for small-bubble labels (text outside) + obstacles for all other bubbles
+  const margin = { t: 5, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 50 : 55 }
   const xRange: [number, number] = [years[0] - (narrow ? 0.4 : 0.8), maxYear + (narrow ? 0.7 : 0.8)]
   const computedYRange = yRange ?? [0, 0.4]
   const repelPoints: RepelPoint[] = []
+  const obstacles: RepelObstacle[] = []
   for (const label of labels) {
     const passengers = series[label]
     for (let i = 0; i < years.length; i++) {
       const p = passengers[i]
-      if (p < 800) continue
-      const text = `${Math.round(p / 1000)}k`
       const s = Math.sqrt(p / maxPassengers) * maxSize
-      // Only repel labels for bubbles too small for inside text
-      if (textFitsInside(text, s)) continue
-      repelPoints.push({
-        x: getJitteredX(jitter, years[i], label),
-        y: pct[label][i],
-        markerSize: s,
-        text,
-        group: label,
-      })
+      const jitteredX = getJitteredX(jitter, years[i], label)
+      const yVal = pct[label][i]
+      if (p < 800) {
+        // Tiny bubbles are still obstacles
+        if (s > 2) obstacles.push({ x: jitteredX, y: yVal, size: s })
+        continue
+      }
+      const text = `${Math.round(p / 1000)}k`
+      if (textFitsInside(text, s)) {
+        // Large bubbles with inside text: obstacle only (no outside label needed)
+        obstacles.push({ x: jitteredX, y: yVal, size: s })
+      } else {
+        // Small-to-medium bubbles: need outside label (already an obstacle via RepelPoint.markerSize)
+        repelPoints.push({ x: jitteredX, y: yVal, markerSize: s, text, group: label })
+      }
     }
   }
 
@@ -630,6 +635,7 @@ function renderScatter(
     fontSize,
     standoff: 3,
     textColor: pt.font,
+    obstacles,
   })
 
   const canonicalAnnotations = showAnnotations

@@ -113,8 +113,8 @@ function IconRow({ icons }: { icons: string[] }) {
   )
 }
 
-// Grid columns: [left, right] — NJT crossings left, others right
-const GRID_COLS: Record<string, [string[], string[]]> = {
+// Grid columns for legend layout — 2-col (narrow) and 4-col (medium+)
+const GRID_2: Record<string, string[][]> = {
   crossing: [
     ['Lincoln (Bus)', 'Lincoln (Autos)', 'Holland (Autos)', 'Holland (Bus)'],
     ['Amtrak / NJ Transit', 'PATH (Downtown)', 'PATH (Uptown)', 'Ferry'],
@@ -122,6 +122,19 @@ const GRID_COLS: Record<string, [string[], string[]]> = {
   mode: [
     ['Bus', 'Autos', 'Rail'],
     ['PATH', 'Ferry'],
+  ],
+}
+const GRID_4: Record<string, string[][]> = {
+  crossing: [
+    ['Lincoln (Bus)', 'Lincoln (Autos)'],
+    ['Holland (Autos)', 'Holland (Bus)'],
+    ['Amtrak / NJ Transit', 'PATH (Downtown)'],
+    ['PATH (Uptown)', 'Ferry'],
+  ],
+  mode: [
+    ['Bus', 'Autos'],
+    ['PATH', 'Rail'],
+    ['Ferry'],
   ],
 }
 
@@ -137,28 +150,26 @@ function GridItem({ label, icons, color }: { label: string; icons: string[]; col
   )
 }
 
-/** Compact grid legend for narrow screens (replaces Plotly's bottom legend) */
-export function LogoLegendGrid({ labels, colorMap, granularity }: {
+/** Compact grid legend (replaces Plotly's built-in legend) */
+export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }: {
   labels: string[]
   colorMap: Record<string, string>
   granularity: 'crossing' | 'mode'
+  containerWidth?: number
 }) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
-  const [left, right] = GRID_COLS[granularity] ?? [labels, []]
-  const leftItems = left.filter(l => labels.includes(l))
-  const rightItems = right.filter(l => labels.includes(l))
+  const use4 = (containerWidth ?? 0) >= 500
+  const grid = use4 ? GRID_4 : GRID_2
+  const cols = (grid[granularity] ?? [labels]).map(col => col.filter(l => labels.includes(l)))
   return (
     <div className="logo-legend-grid">
-      <div className="logo-legend-grid-col">
-        {leftItems.map(label => (
-          <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} />
-        ))}
-      </div>
-      <div className="logo-legend-grid-col">
-        {rightItems.map(label => (
-          <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} />
-        ))}
-      </div>
+      {cols.map((col, i) => (
+        <div key={i} className="logo-legend-grid-col">
+          {col.map(label => (
+            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} />
+          ))}
+        </div>
+      ))}
     </div>
   )
 }

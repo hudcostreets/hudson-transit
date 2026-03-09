@@ -176,9 +176,9 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'Holland (Bus)':      t1,  // 2.9%
   },
   2016: {
-    'PATH (Uptown)':    -t3,  // 11.4%
+    'PATH (Uptown)':      0,  // 11.4%
     'PATH (Downtown)':   t3,  // 10.8%
-    'Lincoln (Autos)':    0,  // 10.7%
+    'Lincoln (Autos)':  -t3,  // 10.7%
     'Holland (Autos)':   -0,  // 8.7%
     'Ferry':             -t1,  // 3.1%
     'Holland (Bus)':      t1,  // 2.9%
@@ -477,14 +477,15 @@ export function buildCanonicalAnnotations(
   const hollandAutosPct = pct['Holland (Autos)']
   const hollandAutosP = series['Holland (Autos)']
 
-  const busTextYBottom = Math.max(
+  // Place bus annotation below the bus bubbles (above would go off-screen)
+  const busTextYTop = Math.min(
     lincolnBusPct[lastIdx],
     lincolnBusPct[prevIdx],
-  ) + 0.025
+  ) - 0.025
 
   const busTargets: AnnotationTarget[] = [
-    { ay: busTextYBottom + .005, x: jx('Lincoln (Bus)', prevIdx), y: lincolnBusPct[prevIdx], p: lincolnBusP[prevIdx] },
-    { ay: busTextYBottom + .005, x: jx('Lincoln (Bus)', lastIdx), y: lincolnBusPct[lastIdx], p: lincolnBusP[lastIdx] },
+    { ay: busTextYTop - .005, x: jx('Lincoln (Bus)', prevIdx), y: lincolnBusPct[prevIdx], p: lincolnBusP[prevIdx] },
+    { ay: busTextYTop - .005, x: jx('Lincoln (Bus)', lastIdx), y: lincolnBusPct[lastIdx], p: lincolnBusP[lastIdx] },
   ]
 
   const carTextYBottom = Math.max(
@@ -505,7 +506,7 @@ export function buildCanonicalAnnotations(
     ...busTargets.map(({ ay, x, y, p }) => ({
       ax: annX, ay,
       axref: 'x' as const, ayref: 'y' as const,
-      yanchor: 'bottom' as const,
+      yanchor: 'top' as const,
       x, y,
       standoff: bubbleRadius(p) + 3,
       arrowcolor: ac,
@@ -513,8 +514,8 @@ export function buildCanonicalAnnotations(
     })),
     {
       text: '1 bus lane:<br>30k-40k ppl/lane/hr<br>20-30 ppl/vehicle',
-      ax: annX, ay: busTextYBottom,
-      yanchor: 'bottom' as const,
+      ax: annX, ay: busTextYTop,
+      yanchor: 'top' as const,
       axref: 'x' as const, ayref: 'y' as const,
       x: years[prevIdx], y: lincolnBusPct[prevIdx],
       font: { color: fc },
