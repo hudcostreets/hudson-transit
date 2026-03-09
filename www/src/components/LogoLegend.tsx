@@ -239,7 +239,7 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
   return (
     <div className="logo-legend" style={{ height: chartHeight }}>
       <svg className="logo-legend-connectors" height={chartHeight} style={{ overflow: 'visible' }}>
-        {entries.map(({ label, idealY, rawY }) => {
+        {entries.map(({ label, rawY }) => {
           const bp = bubblePixels?.[label]
           if (!bp) return null
           // Start from bubble edge, offset along the line toward the legend dot

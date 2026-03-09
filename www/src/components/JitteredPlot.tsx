@@ -1,5 +1,6 @@
 import Plot from 'react-plotly.js'
-import type { Data, Layout, PlotParams } from 'plotly.js'
+import type { PlotParams } from 'react-plotly.js'
+import type { Data, Layout } from 'plotly.js'
 
 /** Per-{x, trace} jitter offsets. Outer key = x value, inner key = trace name, value = x offset */
 export type JitterOffsets = Record<number, Record<string, number>>

@@ -129,7 +129,6 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
-  const VIEWS: ViewMode[] = ['scatter', 'bar', 'pct', 'recovery']
   const TIMES: TimePeriod[] = ['peak_1hr', 'peak_period', '24hr']
 
   const toggleDirection = useCallback(() => {
@@ -591,7 +590,7 @@ function renderScatter(
       marker: { size: sizes, color: colorMap[label], line: { width: 0 } },
       text: texts,
       textposition: 'middle center',
-      textfont: { size: textSizes, color: '#fff' },
+      textfont: { size: textSizes as unknown as number, color: '#fff' },
       hoverinfo: 'none',
     } as Data
   })
