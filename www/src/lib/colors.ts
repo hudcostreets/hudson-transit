@@ -21,6 +21,34 @@ export interface ColorScheme {
 
 export const COLOR_SCHEMES: ColorScheme[] = [
   {
+    name: 'Semantic',
+    // Mode colors: red=cars, orange=bus, purple=train, blue=ferry
+    dayMode: {
+      AUTO:  '#DC3545',  // red
+      BUS:   '#EF8D2E',  // orange
+      PATH:  '#9333EA',  // purple
+      RAIL:  '#7C3AED',  // violet (train)
+      FERRY: '#14B8A6',  // teal
+    },
+    crossing: {
+      'Lincoln (Bus)':       '#FFA500',  // pure orange (bright, toward yellow)
+      'Lincoln (Autos)':     '#EF4444',  // bright red
+      'Amtrak / NJ Transit': '#7C3AED',  // violet (train family)
+      'PATH (Downtown)':     '#9333EA',  // purple
+      'PATH (Uptown)':       '#C084FC',  // light purple
+      'Holland (Bus)':       '#C89B7B',  // muted tan / light brown
+      'Holland (Autos)':     '#F87171',  // light red / rose
+      'Ferry':               '#14B8A6',  // teal
+    },
+    mode: {
+      Autos: '#EF4444',  // red
+      Bus:   '#FFA500',  // pure orange
+      PATH:  '#9333EA',  // purple
+      Rail:  '#7C3AED',  // violet
+      Ferry: '#14B8A6',  // teal
+    },
+  },
+  {
     name: 'Plotly',
     dayMode: {
       AUTO:  pc[1],
@@ -45,33 +73,6 @@ export const COLOR_SCHEMES: ColorScheme[] = [
       PATH:  pc[3],
       Rail:  pc[2],
       Ferry: pc[7],
-    },
-  },
-  {
-    name: 'Semantic',
-    dayMode: {
-      AUTO:  '#DC3545',  // red
-      BUS:   '#EF8D2E',  // orange
-      PATH:  '#AB63FA',  // purple
-      RAIL:  '#E5B820',  // gold
-      FERRY: '#1E88E5',  // blue
-    },
-    crossing: {
-      'Lincoln (Bus)':       '#FF9F1C',  // bright orange
-      'Lincoln (Autos)':     '#EF4444',  // bright red
-      'Amtrak / NJ Transit': '#FACC15',  // yellow-gold
-      'PATH (Downtown)':     '#A855F7',  // purple
-      'PATH (Uptown)':       '#D8B4FE',  // light purple
-      'Holland (Bus)':       '#22D3EE',  // cyan (distinct from gold)
-      'Holland (Autos)':     '#FB7185',  // rose pink
-      'Ferry':               '#3B82F6',  // bright blue
-    },
-    mode: {
-      Autos: '#EF4444',  // bright red
-      Bus:   '#FF9F1C',  // bright orange
-      PATH:  '#A855F7',  // purple
-      Rail:  '#FACC15',  // yellow-gold
-      Ferry: '#3B82F6',  // bright blue
     },
   },
 ]

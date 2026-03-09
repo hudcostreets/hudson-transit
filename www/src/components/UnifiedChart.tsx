@@ -16,7 +16,7 @@ import type { RepelPoint, RepelObstacle } from 'pltly/plotly'
 import { getJitter, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { type ToggleOption } from './Toggle'
-import { BubbleIcon, RecoveryIcon } from './icons'
+import { BubbleIcon, SchemeSwatch } from './icons'
 import { CROSSING_ICON_FNS, MODE_ICON_FNS } from './crossing-icons'
 import LogoLegend, { LogoLegendGrid } from './LogoLegend'
 
@@ -38,11 +38,11 @@ const granParam = codeParam<Granularity>('crossing', [
 ])
 
 type SchemeName = 'Plotly' | 'Semantic'
-const schemeParam = codeParam<SchemeName>('Plotly', [
-  ['Plotly', 'p'], ['Semantic', 's'],
+const schemeParam = codeParam<SchemeName>('Semantic', [
+  ['Semantic', 's'], ['Plotly', 'p'],
 ])
 const SCHEME_OPTIONS: ToggleOption<SchemeName>[] =
-  COLOR_SCHEMES.map(s => ({ value: s.name as SchemeName, label: s.name }))
+  COLOR_SCHEMES.map(s => ({ value: s.name as SchemeName, label: <SchemeSwatch scheme={s} />, tooltip: s.name }))
 // ?A (valueless) hides annotations; default: on (omitted)
 const annParam: Param<boolean> = {
   encode: (v) => v ? undefined : '',
@@ -54,26 +54,26 @@ const themeParam = codeParam<Theme>('dark', [
   ['dark', 'd'], ['light', 'l'], ['system', 's'],
 ])
 const VIEW_OPTIONS: ToggleOption<ViewMode>[] = [
-  { value: 'scatter', label: <BubbleIcon /> },
-  { value: 'bar', label: '#' },
-  { value: 'pct', label: '%' },
-  { value: 'recovery', label: <RecoveryIcon /> },
+  { value: 'scatter', label: <BubbleIcon />, tooltip: 'Bubble chart' },
+  { value: 'bar', label: '#', tooltip: 'Grouped bars' },
+  { value: 'pct', label: '%', tooltip: 'Stacked %' },
+  { value: 'recovery', label: "vs.\u2009'19", tooltip: 'Recovery vs. 2019' },
 ]
 
 const DIR_OPTIONS: ToggleOption<Direction>[] = [
-  { value: 'entering', label: 'NJ\u2192NY' },
-  { value: 'leaving', label: 'NY\u2192NJ' },
+  { value: 'entering', label: 'NJ\u2192NY', tooltip: 'Entering NYC' },
+  { value: 'leaving', label: 'NY\u2192NJ', tooltip: 'Leaving NYC' },
 ]
 
 const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
-  { value: 'peak_1hr', label: 'hr' },
-  { value: 'peak_period', label: '3hr' },
-  { value: '24hr', label: 'day' },
+  { value: 'peak_1hr', label: '1hr', tooltip: 'Peak hour' },
+  { value: 'peak_period', label: '3hr', tooltip: 'Peak period' },
+  { value: '24hr', label: 'day', tooltip: '24-hour' },
 ]
 
 const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
-  { value: 'crossing', label: 'crossing' },
-  { value: 'mode', label: 'mode' },
+  { value: 'crossing', label: 'crossing', tooltip: 'By crossing' },
+  { value: 'mode', label: 'mode', tooltip: 'By transport mode' },
 ]
 
 /** Bottom legend: horizontal, 2 rows via tracegroupgap */
@@ -414,14 +414,14 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
         {view === 'scatter' && canonical && (
           <Toggle
             options={[
-              { value: 'on', label: '\u{1F4DD}' },
-              { value: 'off', label: '\u2014' },
+              { value: 'on', label: '\u{1F4DD}', tooltip: 'Show annotations' },
+              { value: 'off', label: '\u2014', tooltip: 'Hide annotations' },
             ]}
             value={showAnnotations ? 'on' : 'off'}
             onChange={v => setShowAnnotations(v === 'on')}
           />
         )}
-        <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
+        <Toggle options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} prefix="🎨" />
       </div>
     </div>
   )
@@ -601,6 +601,18 @@ function renderScatter(
   const margin = { t: 5, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 50 : 55 }
   const xRange: [number, number] = [years[0] - (narrow ? 0.4 : 0.8), maxYear + (narrow ? 0.7 : 0.8)]
   const computedYRange = yRange ?? [0, 0.4]
+
+  // Anchor trace at exact integer years — spike line snaps here instead of jittered x-values
+  const midY = (computedYRange[0] + computedYRange[1]) / 2
+  traces.unshift({
+    type: 'scatter',
+    x: years,
+    y: years.map(() => midY),
+    mode: 'markers',
+    marker: { size: 40, color: 'rgba(0,0,0,0)' },
+    hoverinfo: 'none',
+    showlegend: false,
+  } as Data)
   const repelPoints: RepelPoint[] = []
   const obstacles: RepelObstacle[] = []
   for (const label of labels) {
@@ -683,6 +695,7 @@ function renderScatter(
           gridcolor: pt.grid,
           showspikes: true,
           spikemode: 'across',
+          spikesnap: 'data',
           spikecolor: pt.font,
           spikethickness: 1,
           ...(narrow ? narrowXaxis(years) : {}),

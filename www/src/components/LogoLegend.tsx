@@ -59,10 +59,31 @@ export interface LogoLegendProps {
   bubblePixels?: Record<string, BubblePixel>
 }
 
-function IconEl({ name, height, invert }: { name: string; height: number; invert?: boolean }) {
+function IconEl({ name, height, invert, color }: { name: string; height: number; invert?: boolean; color?: string }) {
   const natural = ICON_NATURAL_WIDTHS[name] ?? 16
   const w = natural * (height / ICON_HEIGHT)
   if (MODE_ICON_SET.has(name)) {
+    if (color) {
+      // Colored pill with white icon
+      const pad = 2
+      return (
+        <span
+          className="logo-legend-icon-pill"
+          style={{ width: w + pad * 2, height: height + pad * 2, backgroundColor: color, borderRadius: 3 }}
+        >
+          <span
+            className="logo-legend-icon"
+            style={{
+              width: w,
+              height,
+              backgroundColor: '#fff',
+              maskImage: `url(/icons/${name}.svg)`,
+              WebkitMaskImage: `url(/icons/${name}.svg)`,
+            }}
+          />
+        </span>
+      )
+    }
     return (
       <span
         className="logo-legend-icon"
@@ -85,13 +106,18 @@ function IconEl({ name, height, invert }: { name: string; height: number; invert
   )
 }
 
-function IconRow({ icons }: { icons: string[] }) {
+function IconRow({ icons, color }: { icons: string[]; color?: string }) {
   // Split into agency icons and mode icons
   const agencies = icons.filter(n => !MODE_ICON_SET.has(n))
   const modes = icons.filter(n => MODE_ICON_SET.has(n))
 
   return (
     <>
+      {modes.map(name => (
+        <span key={name} className="logo-legend-icon-slot" style={{ width: color ? MODE_SLOT + 4 : MODE_SLOT }}>
+          <IconEl name={name} height={ICON_HEIGHT} color={color} />
+        </span>
+      ))}
       {agencies.length > 1 ? (
         // Overlay: stack agencies at full size, later ones on top (inverted for visibility)
         <span className="logo-legend-icon-slot logo-legend-overlay" style={{ width: AGENCY_SLOT, height: ICON_HEIGHT }}>
@@ -104,11 +130,6 @@ function IconRow({ icons }: { icons: string[] }) {
           <IconEl name={agencies[0]} height={ICON_HEIGHT} />
         </span>
       ) : null}
-      {modes.map(name => (
-        <span key={name} className="logo-legend-icon-slot" style={{ width: MODE_SLOT }}>
-          <IconEl name={name} height={ICON_HEIGHT} />
-        </span>
-      ))}
     </>
   )
 }
@@ -141,9 +162,8 @@ const GRID_4: Record<string, string[][]> = {
 function GridItem({ label, icons, color }: { label: string; icons: string[]; color: string }) {
   return (
     <div className="logo-legend-grid-item">
-      <span className="logo-legend-dot" style={{ backgroundColor: color }} />
       <span className="logo-legend-icons">
-        <IconRow icons={icons} />
+        <IconRow icons={icons} color={color} />
       </span>
       <span className="logo-legend-grid-label">{label}</span>
     </div>
@@ -243,9 +263,9 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
     }
   }
 
-  // Dot center offsets: x = half dot width, y = margin-top + half height
-  const dotCx = 5
-  const dotCy = 8 // 3px margin-top + 5px radius
+  // Connector target: center of the first icon area
+  const dotCx = 10
+  const dotCy = 8
 
   return (
     <div className="logo-legend" style={{ height: chartHeight }}>
@@ -283,10 +303,9 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
             className="logo-legend-entry"
             style={{ top: rawY - dotCy }}
           >
-            <span className="logo-legend-dot" style={{ backgroundColor: colorMap[label] }} />
             <div className="logo-legend-content">
               <span className="logo-legend-icons">
-                <IconRow icons={icons} />
+                <IconRow icons={icons} color={colorMap[label]} />
               </span>
               <span className="logo-legend-label">{label}</span>
             </div>

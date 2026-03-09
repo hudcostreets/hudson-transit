@@ -1,8 +1,15 @@
 .toggle {
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 0;
   margin-bottom: 0.5rem;
+
+  .toggle-prefix {
+    margin-right: 0.3rem;
+    font-size: 0.85rem;
+    line-height: 1;
+  }
 
   button {
     padding: 0.3rem 1rem;
@@ -31,4 +38,17 @@
       background: var(--toggle-hover);
     }
   }
+}
+
+.toggle-tooltip {
+  background: var(--tooltip-bg);
+  border: 1px solid var(--tooltip-border);
+  color: var(--text);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

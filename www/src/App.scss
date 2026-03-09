@@ -209,6 +209,15 @@ main {
   }
 }
 
+.logo-legend-icon-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  .logo-legend-icon {
+    opacity: 1;
+  }
+}
+
 .logo-legend-label {
   white-space: nowrap;
   overflow: hidden;

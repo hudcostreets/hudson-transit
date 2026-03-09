@@ -12,6 +12,7 @@
     "scrns": "scrns"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.19",
     "plotly.js-dist-min": "^3.4.0",
     "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/9eb841ceeb8ea21a89183bda5b6a31965c188482/pltly-9eb841ceeb8ea21a89183bda5b6a31965c188482.tar.gz",
     "react": "^19.2.0",
