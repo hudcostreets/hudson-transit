@@ -1,6 +1,7 @@
 /** Right-side legend that replaces Plotly's built-in legend with agency logos + mode icons.
  *  Items are y-aligned to their last data point. */
 
+import type { UseTraceHighlightReturn } from 'pltly/react'
 import Tooltip from './Tooltip'
 
 // Descriptive tooltips for legend items
@@ -78,6 +79,7 @@ export interface LogoLegendProps {
   margin: { t: number; b: number }
   yRange: [number, number]
   bubblePixels?: Record<string, BubblePixel>
+  highlight?: UseTraceHighlightReturn
 }
 
 function IconEl({ name, height, invert, color }: { name: string; height: number; invert?: boolean; color?: string }) {
@@ -180,10 +182,16 @@ const GRID_4: Record<string, string[][]> = {
   ],
 }
 
-function GridItem({ label, icons, color, tip }: { label: string; icons: string[]; color: string; tip: string }) {
+function GridItem({ label, icons, color, tip, highlight }: { label: string; icons: string[]; color: string; tip: string; highlight?: UseTraceHighlightReturn }) {
   return (
     <Tooltip title={tip}>
-      <div className="logo-legend-grid-item">
+      <div
+        className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}`}
+        onMouseEnter={() => highlight?.setHoverTrace(label)}
+        onMouseLeave={() => highlight?.setHoverTrace(null)}
+        onClick={() => highlight?.toggleSolo(label)}
+        style={{ cursor: highlight ? 'pointer' : undefined }}
+      >
         <span className="logo-legend-icons">
           <IconRow icons={icons} color={color} />
         </span>
@@ -194,11 +202,12 @@ function GridItem({ label, icons, color, tip }: { label: string; icons: string[]
 }
 
 /** Compact grid legend (replaces Plotly's built-in legend) */
-export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }: {
+export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth, highlight }: {
   labels: string[]
   colorMap: Record<string, string>
   granularity: 'crossing' | 'mode'
   containerWidth?: number
+  highlight?: UseTraceHighlightReturn
 }) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
   const tipMap = granularity === 'mode' ? MODE_TIPS : CROSSING_TIPS
@@ -210,7 +219,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }
       {cols.map((col, i) => (
         <div key={i} className="logo-legend-grid-col">
           {col.map(label => (
-            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} tip={tipMap[label] ?? label} />
+            <GridItem key={label} label={label} icons={iconMap[label] ?? []} color={colorMap[label]} tip={tipMap[label] ?? label} highlight={highlight} />
           ))}
         </div>
       ))}
@@ -218,7 +227,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth }
   )
 }
 
-export default function LogoLegend({ labels, colorMap, granularity, lastYValues, chartHeight, margin, yRange, bubblePixels }: LogoLegendProps) {
+export default function LogoLegend({ labels, colorMap, granularity, lastYValues, chartHeight, margin, yRange, bubblePixels, highlight }: LogoLegendProps) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
   const tipMap = granularity === 'mode' ? MODE_TIPS : CROSSING_TIPS
 
@@ -322,11 +331,15 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
       </svg>
       {entries.map(({ label, rawY }) => {
         const icons = iconMap[label] ?? []
+        const faded = highlight?.activeTrace && highlight.activeTrace !== label
         return (
           <div
             key={label}
-            className="logo-legend-entry"
-            style={{ top: rawY - dotCy }}
+            className={`logo-legend-entry${faded ? ' faded' : ''}`}
+            style={{ top: rawY - dotCy, cursor: highlight ? 'pointer' : undefined }}
+            onMouseEnter={() => highlight?.setHoverTrace(label)}
+            onMouseLeave={() => highlight?.setHoverTrace(null)}
+            onClick={() => highlight?.toggleSolo(label)}
           >
             <Tooltip title={tipMap[label] ?? label} placement="left">
               <div className="logo-legend-content">

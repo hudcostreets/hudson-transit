@@ -4,7 +4,8 @@ import type { Data, Layout } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
 import type { Param } from 'use-prms'
 import { useActions } from 'use-kbd'
-import { useContainerWidth, useBreakpoints } from 'pltly/react'
+import { useContainerWidth, useBreakpoints, useTraceHighlight } from 'pltly/react'
+import type { UseTraceHighlightReturn } from 'pltly/react'
 import { lerp } from 'pltly/plotly'
 import { mobileSafeConfig, mobileSafeLayout } from 'pltly/mobile'
 import type { PlotTheme } from 'pltly/plotly'
@@ -270,6 +271,8 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
 
   const hoverProps = { onHover: handleHover, onUnhover: clearHover }
 
+  const highlight = useTraceHighlight(labels)
+
   const iconFns = granularity === 'mode' ? MODE_ICON_FNS : CROSSING_ICON_FNS
   const showSideLegend = wide
 
@@ -312,10 +315,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   }
 
   const content = (() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations && !narrow, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow, width)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow)
-    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow)
-    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations && !narrow, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow, width, highlight)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
   })()
 
   // Compute last-year y-axis values for the logo legend (varies by view)
@@ -389,11 +392,12 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
             margin={chartMargin}
             yRange={yRange}
             bubblePixels={bubblePixels}
+            highlight={highlight}
           />
         )}
       </div>
       {!showSideLegend && (
-        <LogoLegendGrid labels={labels} colorMap={colorMap} granularity={granularity} containerWidth={width} />
+        <LogoLegendGrid labels={labels} colorMap={colorMap} granularity={granularity} containerWidth={width} highlight={highlight} />
       )}
       {hoverYear !== null && yearIdx >= 0 && (
         <HoverTooltip
@@ -552,6 +556,7 @@ function renderScatter(
   maxSize = 75,
   narrow = false,
   containerWidth = 1000,
+  highlight?: UseTraceHighlightReturn,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
 
@@ -653,7 +658,19 @@ function renderScatter(
   const canonicalAnnotations = showAnnotations
     ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font })
     : []
-  const annotations = [...(canonicalAnnotations ?? []), ...repelAnnotations]
+
+  // Fade repel labels for non-active traces
+  const fadedRepelAnnotations = highlight?.activeTrace
+    ? repelAnnotations.map((ann, i) => {
+        const group = repelPoints[i]?.group
+        if (group && group !== highlight.activeTrace) {
+          return { ...ann, opacity: 0.15 }
+        }
+        return ann
+      })
+    : repelAnnotations
+
+  const annotations = [...(canonicalAnnotations ?? []), ...fadedRepelAnnotations]
 
   const lastIdx = years.length - 1
   const iconSize = 0.018
@@ -680,9 +697,11 @@ function renderScatter(
     }
   }).filter(Boolean)
 
+  const styledTraces = highlight ? highlight.fadeTraces(traces) : traces
+
   return (
     <JitteredPlot
-      data={traces}
+      data={styledTraces}
       jitter={jitter}
       layout={{
         ...themedLayout(pt),
@@ -736,17 +755,19 @@ function renderBar(
   hideLegend = false,
   yRange?: [number, number],
   narrow = false,
+  highlight?: UseTraceHighlightReturn,
 ) {
+  const traces = labels.map(label => ({
+    type: 'bar' as const,
+    name: label,
+    x: years,
+    y: series[label],
+    marker: { color: colorMap[label] },
+    hoverinfo: 'none' as const,
+  }))
   return (
     <Plot
-      data={labels.map(label => ({
-        type: 'bar' as const,
-        name: label,
-        x: years,
-        y: series[label],
-        marker: { color: colorMap[label] },
-        hoverinfo: 'none' as const,
-      }))}
+      data={highlight ? highlight.fadeTraces(traces) : traces}
       layout={{
         ...themedLayout(pt),
         xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(years, narrow) },
@@ -778,30 +799,32 @@ function renderPctBar(
   hideLegend = false,
   _yRange?: [number, number],
   narrow = false,
+  highlight?: UseTraceHighlightReturn,
 ) {
   const totals = years.map((_, i) =>
     labels.reduce((sum, l) => sum + (series[l]?.[i] ?? 0), 0)
   )
+  const traces = labels.map(label => {
+    const pcts = series[label].map((v, i) =>
+      totals[i] > 0 ? (v / totals[i]) * 100 : 0
+    )
+    return {
+      type: 'bar' as const,
+      name: label,
+      x: years,
+      y: series[label],
+      marker: { color: colorMap[label] },
+      text: pcts.map(p => p >= 2 ? `${p.toFixed(1)}%` : ''),
+      textposition: 'inside' as const,
+      insidetextanchor: 'middle',
+      constraintext: 'none',
+      textfont: { size: 11 },
+      hoverinfo: 'none' as const,
+    }
+  })
   return (
     <Plot
-      data={labels.map(label => {
-        const pcts = series[label].map((v, i) =>
-          totals[i] > 0 ? (v / totals[i]) * 100 : 0
-        )
-        return {
-          type: 'bar' as const,
-          name: label,
-          x: years,
-          y: series[label],
-          marker: { color: colorMap[label] },
-          text: pcts.map(p => p >= 2 ? `${p.toFixed(1)}%` : ''),
-          textposition: 'inside' as const,
-          insidetextanchor: 'middle',
-          constraintext: 'none',
-          textfont: { size: 11 },
-          hoverinfo: 'none' as const,
-        }
-      })}
+      data={highlight ? highlight.fadeTraces(traces) : traces}
       layout={{
         ...themedLayout(pt),
         barmode: 'stack',
@@ -835,6 +858,7 @@ function renderRecovery(
   hideLegend = false,
   yRange?: [number, number],
   narrow = false,
+  highlight?: UseTraceHighlightReturn,
 ) {
   const baseIdx = years.indexOf(BASE_YEAR)
   if (baseIdx === -1) return <div>No {BASE_YEAR} data for this selection</div>
@@ -852,18 +876,19 @@ function renderRecovery(
   const maxRecovery = Math.max(...labels.flatMap(l => rs[l]))
   const yMax = Math.ceil(maxRecovery * 10) / 10 + 0.1
 
+  const traces = labels.map(label => ({
+    type: 'scatter' as const,
+    name: label,
+    x: ry,
+    y: rs[label],
+    mode: 'lines+markers' as const,
+    marker: { color: colorMap[label], size: 8 },
+    line: { color: colorMap[label], width: 2 },
+    hoverinfo: 'none' as const,
+  }))
   return (
     <Plot
-      data={labels.map(label => ({
-        type: 'scatter' as const,
-        name: label,
-        x: ry,
-        y: rs[label],
-        mode: 'lines+markers' as const,
-        marker: { color: colorMap[label], size: 8 },
-        line: { color: colorMap[label], width: 2 },
-        hoverinfo: 'none' as const,
-      }))}
+      data={highlight ? highlight.fadeTraces(traces) : traces}
       layout={{
         ...themedLayout(pt),
         xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(ry, narrow) },
