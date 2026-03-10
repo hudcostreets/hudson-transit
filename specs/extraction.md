@@ -123,13 +123,48 @@ Schema:
 }
 ```
 
-### Phase 3: AppendixIII (granular bus/rail/subway)
+### Phase 3: AppendixIII summary data (Sections A, B, C, F) ✅
 
-AppendixIII Sections A-G contain hourly bus/rail/subway data per sector:
-- Section A: Buses and passengers by sector (hourly, inbound/outbound)
-- Sections B-G: More granular route-level data
+Done. 17,606 records in `data/appendix_iii.json`. Sector-level hourly data from AppendixIII summary sheets.
 
-Lower priority — extract if needed for specific visualizations.
+| Section | Description | Measures | Records |
+|---------|-------------|----------|---------|
+| A | Bus transit | buses, passengers | 3,840 |
+| B | Subway/PATH | trains, cars, passengers | 6,336 |
+| C | Suburban/intercity rail | trains, cars, passengers | 4,752 |
+| F | Ferry/tramway | passengers | 2,678 |
+
+Schema:
+```json
+{
+  "year": 2024,
+  "hour": 8,
+  "direction": "entering",
+  "section": "B",
+  "sector": "brooklyn",
+  "measure": "passengers",
+  "value": 108823
+}
+```
+
+Notes:
+- Section A 2022 file missing (all other years 2014–2024 complete).
+- Section C outbound sheet name varies (`Rec-Suburban_Rail-Outbound` with hyphen, not underscore).
+- Section F grows over time: 2014 has 3 ferry sectors, 2017+ adds 60th St/Queens, 2022+ adds separate tramway.
+- Pre-2017 files combine inbound/outbound on single sheets; parsed by splitting on "OUTBOUND" marker.
+- Cross-validated: III-B subway passengers at 8am 2024 sum to 280,381, matching Table 24 exactly.
+
+### Phase 3b: AppendixIII route-level detail
+
+Not yet extracted. Each section has detail sheets with per-route/facility hourly data:
+- Section A: Bus routes by corridor/operator (NYCT Local, Express, MTA Bus Co., WCDOT)
+- Section B: Individual subway lines (4/5, 6, Q/W, A/D, etc.) and PATH
+- Section C: Metro-North, LIRR, NJ Transit, Amtrak lines
+- Section D: Auto occupants per crossing/road
+- Section E: Vehicle counts per crossing/road (overlaps Tables 16-17)
+- Section G: Bicycle volumes per crossing
+
+Lower priority — extract when needed for route-level visualizations.
 
 ## Data quality
 

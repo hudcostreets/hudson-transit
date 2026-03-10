@@ -763,6 +763,175 @@ def load_hourly_totals(year: int, year_dir: Path, table: str, measure: str):
     return records
 
 
+# --- AppendixIII: granular hourly data by sector ---
+
+# Sector keyword matching for AppendixIII headers
+APPIII_SECTOR_KEYWORDS: list[tuple[str, str]] = [
+    ('60TH', '60th_street'),
+    ('BROOKLYN', 'brooklyn'),
+    ('QUEENS', 'queens'),
+    ('NEW JERSEY', 'nj'),
+    ('N. J.', 'nj'),
+    ('N.J.', 'nj'),
+    ('STATEN', 'staten_island'),
+    ('S. I.', 'staten_island'),
+    ('ROOSEVEL', 'roosevelt_island'),  # handles "ROOSEVEL ISLAND" typo in 2014
+]
+
+# AppendixIII section configs
+APPIII_SECTIONS = {
+    'A': {
+        'description': 'Bus transit',
+        'file_pattern': r'SectionA',
+        'sub_cols': ['buses', 'passengers'],
+        'sheets_2017': {'entering': 'Total by Sector-In-bound', 'leaving': 'Total by Sector-Out-bound'},
+        'sheets_pre2017': 'By Sector',
+    },
+    'B': {
+        'description': 'Subway/PATH',
+        'file_pattern': r'SectionB',
+        'sub_cols': ['trains', 'cars', 'passengers'],
+        'sheets_2017': {'entering': 'Rec_Sec-Inbound', 'leaving': 'Rec_Sec-Outbound'},
+        'sheets_pre2017': 'REC SEC',
+    },
+    'C': {
+        'description': 'Suburban/intercity rail',
+        'file_pattern': r'SectionC',
+        'sub_cols': ['trains', 'cars', 'passengers'],
+        'sheets_2017': {'entering': 'Rec-Suburban_Rail_Inbound', 'leaving': 'Rec-Suburban_Rail-Outbound'},
+        'sheets_pre2017': 'Rec',
+    },
+    'F': {
+        'description': 'Ferry/tramway',
+        'file_pattern': r'SectionF',
+        'sub_cols': ['passengers'],
+        'sheets_2017': {'entering': 'Ferry-Inbound', 'leaving': 'Ferry-Outbound'},
+        'sheets_pre2017': 'ferry',
+    },
+}
+
+
+def load_appiii_summary(
+    year: int,
+    year_dir: Path,
+    section: str,
+    direction: str,
+):
+    """Parse an AppendixIII summary sheet for sector-level hourly data.
+
+    Returns records with: year, hour, direction, section, sector, and
+    sub-column values (e.g. buses/passengers, trains/cars/passengers).
+    """
+    cfg = APPIII_SECTIONS[section]
+    xl_path = find_excel(year_dir, cfg['file_pattern'])
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixIII Section {section} file found for {year}")
+
+    # Determine sheet name
+    if year >= 2017:
+        sheet = cfg['sheets_2017'][direction]
+    else:
+        sheet = cfg['sheets_pre2017']
+
+    ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+    # For pre-2017 combined sheets, split on direction
+    if year < 2017:
+        if direction == 'leaving':
+            # Find OUTBOUND marker
+            out_start = None
+            for ri in range(len(ws)):
+                for ci in range(min(5, len(ws.columns))):
+                    cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                    if 'OUTBOUND' in cell:
+                        out_start = ri
+                        break
+                if out_start is not None:
+                    break
+            if out_start is None:
+                raise ValueError(f"Could not find OUTBOUND section in {sheet} for {year}")
+            ws = ws.iloc[out_start:].reset_index(drop=True)
+        # For inbound, just use the sheet as-is (inbound comes first)
+
+    sub_cols = cfg['sub_cols']
+    stride = len(sub_cols)
+
+    # Find sector headers by scanning for keywords
+    sector_col_map: dict[int, str] = {}  # col_index -> sector_key
+    header_ri = None
+    for ri in range(min(12, len(ws))):
+        for ci in range(len(ws.columns)):
+            cell = str(ws.iloc[ri, ci]).strip().upper() if not isna(ws.iloc[ri, ci]) else ''
+            if not cell:
+                continue
+            # Skip "TOTAL" columns
+            if 'TOTAL' in cell:
+                continue
+            for keyword, sector in APPIII_SECTOR_KEYWORDS:
+                if keyword in cell and ci not in sector_col_map:
+                    sector_col_map[ci] = sector
+                    header_ri = ri
+
+    if not sector_col_map:
+        raise ValueError(f"Could not find sector headers in Section {section} {sheet} for {year}")
+
+    # Find data start: first row after headers with an hour value
+    data_start = None
+    for ri in range(header_ri + 1, min(header_ri + 6, len(ws))):
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val) and parse_hour(str(val)) is not None:
+                data_start = ri
+                break
+        if data_start is not None:
+            break
+
+    if data_start is None:
+        raise ValueError(f"Could not find data rows in Section {section} {sheet} for {year}")
+
+    records = []
+    for ri in range(data_start, len(ws)):
+        hour = None
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val):
+                hour = parse_hour(str(val))
+                if hour is not None:
+                    break
+        if hour is None:
+            # Stop at TOTAL row
+            for ci in range(min(3, len(ws.columns))):
+                cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                if 'TOTAL' in cell:
+                    break
+            else:
+                continue
+            break
+
+        for start_ci, sector in sector_col_map.items():
+            for offset, sub_name in enumerate(sub_cols):
+                ci = start_ci + offset
+                if ci >= len(ws.columns):
+                    continue
+                val = ws.iloc[ri, ci]
+                try:
+                    val = int(float(val))
+                    if val >= 0:
+                        records.append({
+                            'year': year,
+                            'hour': hour,
+                            'direction': direction,
+                            'section': section,
+                            'sector': sector,
+                            'measure': sub_name,
+                            'value': val,
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+    return records
+
+
 def load_peak_accumulation(year: int, year_dir: Path, table_b: str, measure: str):
     """Parse Tables 21B/22B/23B: peak accumulation historical series.
 
@@ -1013,6 +1182,24 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         json.dump(all_peak, f, indent=2)
         f.write('\n')
     print(f"Wrote {len(all_peak)} peak accumulation records to {peak_path}")
+
+    # Extract AppendixIII summary data (Sections A, B, C, F)
+    all_appiii = []
+    for section in ('A', 'B', 'C', 'F'):
+        for direction in ('entering', 'leaving'):
+            for year, year_dir in sorted(years.items()):
+                try:
+                    records = load_appiii_summary(year, year_dir, section, direction)
+                    all_appiii.extend(records)
+                    print(f"  III-{section} {direction} {year}: {len(records)} records")
+                except Exception as e:
+                    print(f"  III-{section} {direction} {year}: ERROR - {e}")
+
+    appiii_path = join(output_dir, 'appendix_iii.json')
+    with open(appiii_path, 'w') as f:
+        json.dump(all_appiii, f, indent=2)
+        f.write('\n')
+    print(f"Wrote {len(all_appiii)} AppendixIII records to {appiii_path}")
 
 
 if __name__ == '__main__':
