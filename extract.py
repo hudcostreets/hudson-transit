@@ -1301,6 +1301,231 @@ def load_appiii_detail(
     return all_records
 
 
+# --- Section A bus detail: corridor → operator → BUSES/PSGRS ---
+
+SECTION_A_DETAIL = {
+    '60th_street': {
+        'sheets_2017': (['60th-In-bound_1', '60th-In-bound_2'],
+                        ['60th-Out-bound_1', '60th-Out-bound_2']),
+        'sheets_pre2017': '60th Street',
+    },
+    'brooklyn': {
+        'sheets_2017': ('Brooklyn-In-bound', 'Brooklyn-Out-bound'),
+        'sheets_pre2017': 'Brooklyn',
+    },
+    'queens': {
+        'sheets_2017': ('Queens-In-bound', 'Queens-Out-bound'),
+        'sheets_pre2017': 'Queens',
+    },
+    'nj': {
+        'sheets_2017': ('New_Jersey-Inbound', 'New Jersey-Outbound'),
+        'sheets_pre2017': 'New Jersey',
+    },
+    'express': {
+        'sheets_2017': ('Express_Bus_In-bound', 'Express_Bus-Out-bound'),
+        'sheets_pre2017': 'Express',
+    },
+}
+
+
+def parse_bus_detail_sheet(ws, year: int, direction: str, sector: str) -> list[dict]:
+    """Parse a Section A bus detail sheet with corridor→operator→BUSES/PSGRS headers.
+
+    Finds the BUSES/PSGRS row, maps corridor and operator names from rows above,
+    then extracts 24 hours of buses + passengers data.
+    """
+    # Find BUSES/PSGRS sub-header row
+    buses_ri = None
+    for ri in range(min(15, len(ws))):
+        for ci in range(1, len(ws.columns)):
+            cell = str(ws.iloc[ri, ci]).strip().upper() if not isna(ws.iloc[ri, ci]) else ''
+            if cell in ('BUSES', 'BUS'):
+                buses_ri = ri
+                break
+        if buses_ri is not None:
+            break
+    if buses_ri is None:
+        raise ValueError("Could not find BUSES sub-header row")
+
+    # Map BUSES columns — each pair is (BUSES, PSGRS)
+    bus_cols: list[int] = []
+    for ci in range(1, len(ws.columns)):
+        cell = str(ws.iloc[buses_ri, ci]).strip().upper() if not isna(ws.iloc[buses_ri, ci]) else ''
+        if cell in ('BUSES', 'BUS'):
+            bus_cols.append(ci)
+
+    # Get corridor names from 1-3 rows above buses_ri
+    # and operator names from the row just above buses_ri
+    corridor_map: dict[int, str] = {}  # col -> corridor name
+    operator_map: dict[int, str] = {}  # col -> operator name
+
+    # Scan rows above for corridor and operator names
+    for ri in range(max(0, buses_ri - 3), buses_ri):
+        for ci in bus_cols:
+            cell = ws.iloc[ri, ci]
+            if isna(cell):
+                continue
+            cell_str = str(cell).strip()
+            if not cell_str or cell_str.upper() in ('HOURS', 'NAN'):
+                continue
+            # Operator row is typically buses_ri - 1
+            if ri == buses_ri - 1:
+                operator_map[ci] = cell_str
+            else:
+                corridor_map[ci] = cell_str
+
+    # Forward-fill corridor names (corridor spans multiple operator columns)
+    sorted_cols = sorted(bus_cols)
+    last_corridor = None
+    for ci in sorted_cols:
+        if ci in corridor_map:
+            last_corridor = corridor_map[ci]
+        elif last_corridor is not None:
+            corridor_map[ci] = last_corridor
+
+    # Find data start
+    data_start = None
+    for ri in range(buses_ri + 1, min(buses_ri + 4, len(ws))):
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val) and parse_hour(str(val)) is not None:
+                data_start = ri
+                break
+        if data_start is not None:
+            break
+    if data_start is None:
+        raise ValueError("Could not find data rows in bus detail sheet")
+
+    records = []
+    for ri in range(data_start, len(ws)):
+        hour = None
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val):
+                hour = parse_hour(str(val))
+                if hour is not None:
+                    break
+        if hour is None:
+            for ci in range(min(3, len(ws.columns))):
+                cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                if 'TOTAL' in cell:
+                    break
+            else:
+                continue
+            break
+
+        for bus_ci in bus_cols:
+            psgr_ci = bus_ci + 1
+            corridor = corridor_map.get(bus_ci, '')
+            operator = operator_map.get(bus_ci, '')
+
+            # Skip TOTAL columns
+            if 'TOTAL' in corridor.upper() or 'ALL' in corridor.upper():
+                continue
+            if 'TOTAL' in operator.upper() or 'ALL' in operator.upper():
+                continue
+
+            # Build facility name from corridor + operator
+            corridor_clean = normalize_facility_name(corridor) if corridor else ''
+            operator_clean = operator.strip() if operator else ''
+            if corridor_clean and operator_clean:
+                facility = f"{corridor_clean} / {operator_clean}"
+            elif corridor_clean:
+                facility = corridor_clean
+            elif operator_clean:
+                facility = operator_clean
+            else:
+                continue
+
+            for measure, ci in [('buses', bus_ci), ('passengers', psgr_ci)]:
+                if ci >= len(ws.columns):
+                    continue
+                val = ws.iloc[ri, ci]
+                try:
+                    val = int(float(val))
+                    if val >= 0:
+                        records.append({
+                            'year': year,
+                            'hour': hour,
+                            'direction': direction,
+                            'section': 'A',
+                            'sector': sector,
+                            'facility': facility,
+                            'measure': measure,
+                            'value': val,
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+    return records
+
+
+def load_section_a_detail(
+    year: int,
+    year_dir: Path,
+    sector: str,
+    direction: str,
+) -> list[dict]:
+    """Load Section A bus detail for a specific sector/direction."""
+    xl_path = find_excel(year_dir, r'SectionA')
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixIII Section A file found for {year}")
+
+    cfg = SECTION_A_DETAIL[sector]
+
+    if year >= 2017:
+        dir_idx = 0 if direction == 'entering' else 1
+        sheet_names = cfg['sheets_2017'][dir_idx]
+        if isinstance(sheet_names, str):
+            sheet_names = [sheet_names]
+    else:
+        sheet_names = [cfg['sheets_pre2017']]
+
+    all_records = []
+    for sheet in sheet_names:
+        ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+        if year < 2017 and direction == 'leaving':
+            # Handle stacked or side-by-side outbound
+            out_start_row = None
+            out_start_col = None
+            for ri in range(len(ws)):
+                for ci in range(len(ws.columns)):
+                    cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                    if 'OUTBOUND' in cell:
+                        if ci < 5:
+                            out_start_row = ri
+                        else:
+                            out_start_col = ci
+                        break
+                if out_start_row is not None or out_start_col is not None:
+                    break
+            if out_start_row is not None:
+                ws = ws.iloc[out_start_row:].reset_index(drop=True)
+            elif out_start_col is not None:
+                hours_col = None
+                for ci in range(out_start_col - 2, out_start_col + 3):
+                    for ri in range(min(10, len(ws))):
+                        cell = str(ws.iloc[ri, ci]).strip().upper() if 0 <= ci < len(ws.columns) and not isna(ws.iloc[ri, ci]) else ''
+                        if cell == 'HOURS':
+                            hours_col = ci
+                            break
+                    if hours_col is not None:
+                        break
+                if hours_col is not None:
+                    ws = ws.iloc[:, hours_col:].reset_index(drop=True)
+                    ws.columns = list(range(len(ws.columns)))
+                else:
+                    raise ValueError(f"Could not find HOURS column for outbound in {sheet} for {year}")
+            else:
+                raise ValueError(f"Could not find OUTBOUND section in {sheet} for {year}")
+
+        records = parse_bus_detail_sheet(ws, year, direction, sector)
+        all_records.extend(records)
+
+    return all_records
+
+
 def load_peak_accumulation(year: int, year_dir: Path, table_b: str, measure: str):
     """Parse Tables 21B/22B/23B: peak accumulation historical series.
 
@@ -1582,6 +1807,17 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
                         print(f"  III-{section}/{sector} {direction} {year}: {len(records)} records")
                     except Exception as e:
                         print(f"  III-{section}/{sector} {direction} {year}: ERROR - {e}")
+
+    # Section A bus detail (corridor/operator)
+    for sector in SECTION_A_DETAIL:
+        for direction in ('entering', 'leaving'):
+            for year, year_dir in sorted(years.items()):
+                try:
+                    records = load_section_a_detail(year, year_dir, sector, direction)
+                    all_detail.extend(records)
+                    print(f"  III-A/{sector} {direction} {year}: {len(records)} records")
+                except Exception as e:
+                    print(f"  III-A/{sector} {direction} {year}: ERROR - {e}")
 
     detail_path = join(output_dir, 'appendix_iii_detail.json')
     with open(detail_path, 'w') as f:

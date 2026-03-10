@@ -7,4 +7,4 @@ meta:
   computation:
     cmd: ./extract.py extract
     git_deps:
-      extract.py: fcdc18f640fa785378d4942afb3bbee5cc5d51c8
+      extract.py: 532f0563b80bd751c95fc43c38e605551cd2a6da

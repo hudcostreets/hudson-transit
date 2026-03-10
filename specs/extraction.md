@@ -183,7 +183,7 @@ Schema:
 Notes:
 - Pre-2017 combined sheets use both stacked and side-by-side layouts for inbound/outbound.
 - Facility names vary across years (e.g. "VIA 4, 5 LINES (Express)" vs "4, 5 Lines"); future normalization pass needed.
-- Section A detail (bus routes by corridor/operator) not yet extracted — complex multi-page layout with operator sub-columns.
+- Section A detail (bus routes by corridor/operator) extracted: 28,512 records, 51 facilities.
 - Cross-validated: subway passengers sum matches Table 24 and III summary (280,381 at 8am 2024).
 
 ## Data quality
