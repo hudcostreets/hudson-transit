@@ -1,0 +1,10 @@
+outs:
+- md5: b719aa53c9a35aec545a10a0af967397
+  size: 1219962
+  hash: md5
+  path: hourly.json
+meta:
+  computation:
+    cmd: ./extract.py extract
+    git_deps:
+      extract.py: e18a959d6137cd9ac218873d2604271a43574cbd

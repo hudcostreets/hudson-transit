@@ -1,0 +1,10 @@
+outs:
+- md5: a317b9425e0ea1c6c8592a3ab81b3595
+  size: 2802581
+  hash: md5
+  path: appendix_iii.json
+meta:
+  computation:
+    cmd: ./extract.py extract
+    git_deps:
+      extract.py: e18a959d6137cd9ac218873d2604271a43574cbd

@@ -1,0 +1,10 @@
+outs:
+- md5: 462351f97b4c43058ea349ee06cf5689
+  size: 411171
+  hash: md5
+  path: vehicles.json
+meta:
+  computation:
+    cmd: ./extract.py extract
+    git_deps:
+      extract.py: e18a959d6137cd9ac218873d2604271a43574cbd

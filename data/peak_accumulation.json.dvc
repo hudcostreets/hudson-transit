@@ -1,0 +1,10 @@
+outs:
+- md5: 1fa29cabe4d41bc596e97859bf76817c
+  size: 17075
+  hash: md5
+  path: peak_accumulation.json
+meta:
+  computation:
+    cmd: ./extract.py extract
+    git_deps:
+      extract.py: e18a959d6137cd9ac218873d2604271a43574cbd

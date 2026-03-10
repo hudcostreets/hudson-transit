@@ -1,0 +1,10 @@
+outs:
+- md5: 5a324a0fb40a992aefa96c1ff9d1ecb4
+  size: 98782
+  hash: md5
+  path: crossings.json
+meta:
+  computation:
+    cmd: ./extract.py extract
+    git_deps:
+      extract.py: e18a959d6137cd9ac218873d2604271a43574cbd
