@@ -219,16 +219,18 @@ Same as current `crossings.json`, extended:
 
 Sector values: `60th_street`, `brooklyn`, `queens`, `nj`, `staten_island`.
 
-## Estimated record counts
+## Record counts
 
-- Current: 528 (NJ crossings) + 165 (NJ modes)
-- Tables 16-19: ~18 crossings × 3 time periods × 2 directions × 11 years × 2-3 modes ≈ 2,000-3,000
-- Hourly tables: 24 hours × 2 directions × modes/sectors × years ≈ 5,000-10,000
-- Total: ~10,000-15,000 records (still small enough for static JSON)
+| File | Records |
+|------|---------|
+| `crossings.json` | 528 |
+| `modes.json` | 165 |
+| `vehicles.json` | 2,158 |
+| `bus_passengers.json` | 1,191 |
+| `hourly.json` | 8,736 |
+| `peak_accumulation.json` | 148 |
+| `appendix_iii.json` | 17,606 |
+| `appendix_iii_detail.json` | 102,581 |
+| **Total** | **133,113** |
 
-## Frontend impact
-
-- `CrossingRecord` type unchanged (sector field already exists)
-- Add sector selector toggle to `UnifiedChart`
-- Color maps needed for new crossing names
-- Jitter configs for new sector views (or auto-jitter)
+All files served as static JSON imports in the web app.

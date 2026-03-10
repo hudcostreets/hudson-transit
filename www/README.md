@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# Hub Bound Travel — Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interactive visualizations of NYMTC Hub Bound Travel data (2014–2024).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [Vite] + [React] + [TypeScript]
+- [Plotly.js] via [pltly] (legend hover/solo, theme, mobile fixes)
+- [use-prms] for URL-synced toggle state
+- [use-kbd] for keyboard shortcuts, omnibar, speed dial
+- [SASS] for styling
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev       # http://localhost:3847
+pnpm build     # Production build → dist/
+pnpm tsc -b    # Type check
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+  components/
+    UnifiedChart.tsx     # NJ crossings: scatter/bar/pct/recovery views
+    HourlyChart.tsx      # Stacked area by mode/sector
+    ModeShareChart.tsx   # Mode share stacked bars
+    SectorChart.tsx      # All-sector vehicle bars
+    PeakChart.tsx        # 50-year peak accumulation timeline
+    LogoLegend.tsx       # Custom icon legend for UnifiedChart
+    Toggle.tsx           # Shared toggle button group
+  lib/
+    types.ts             # CrossingRecord, dimension types
+    hourly-types.ts      # HourlyRecord, PeakRecord
+    transform.ts         # Data filtering and aggregation
+    colors.ts            # Color schemes and palettes
+  data/                  # Static JSON (from extract.py)
+```
+
+[Vite]: https://vite.dev
+[React]: https://react.dev
+[TypeScript]: https://www.typescriptlang.org
+[Plotly.js]: https://plotly.com/javascript/
+[pltly]: https://github.com/runsascoded/pltly
+[use-prms]: https://github.com/runsascoded/use-prms
+[use-kbd]: https://github.com/runsascoded/use-kbd
+[SASS]: https://sass-lang.com
