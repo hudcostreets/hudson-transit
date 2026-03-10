@@ -3,6 +3,7 @@ import type { Layout, PlotData } from 'plotly.js'
 import { Plot, useContainerWidth, useBreakpoints } from 'pltly/react'
 import { useUrlState, codeParam } from 'use-prms'
 import type { PeakRecord } from '../lib/hourly-types'
+import { Abbr } from './Tooltip'
 
 const CATEGORY_CONFIG: Record<string, { label: string, color: string }> = {
   total_persons: { label: 'All persons', color: '#3366cc' },
@@ -90,10 +91,7 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: 'rgba(0,0,0,0)',
     font: { color: fc },
-    title: {
-      text: 'Peak accumulation in the Manhattan Hub<br><sub>Maximum persons present on a Fall business day, 1975\u20132024</sub>',
-      font: { size: narrow ? 14 : 18, color: fc },
-    },
+    title: { text: '' },
     xaxis: {
       color: fc,
       gridcolor: gc,
@@ -113,7 +111,7 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
       font: { color: fc },
     },
     annotations,
-    margin: { t: narrow ? 70 : 80, r: 10, b: 60, l: narrow ? 55 : 70 },
+    margin: { t: 10, r: 10, b: 60, l: narrow ? 55 : 70 },
     autosize: true,
     showlegend: true,
     hovermode: 'x unified' as const,
@@ -121,6 +119,8 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
 
   return (
     <div ref={ref}>
+      <h2>Peak accumulation in the Manhattan <Abbr title="The 'Hub' is NYMTC's term for Manhattan's CBD — below 60th St">Hub</Abbr></h2>
+      <p className="chart-subtitle">Maximum persons present on a Fall business day, 1975&ndash;2024</p>
       <Plot
         data={traces}
         layout={layout}

@@ -2,6 +2,15 @@ import { useState, type ReactNode } from 'react'
 import { useFloating, useHover, useInteractions, offset, flip, shift, FloatingPortal } from '@floating-ui/react'
 import type { Placement } from '@floating-ui/react'
 
+/** Inline abbreviation with tooltip on hover */
+export function Abbr({ title, children }: { title: string, children: ReactNode }) {
+  return (
+    <Tooltip title={title} placement="top">
+      <abbr style={{ textDecoration: 'underline dotted', textUnderlineOffset: '0.15em', cursor: 'help' }}>{children}</abbr>
+    </Tooltip>
+  )
+}
+
 export default function Tooltip({ title, children, placement = 'bottom' }: {
   title: string
   children: ReactNode

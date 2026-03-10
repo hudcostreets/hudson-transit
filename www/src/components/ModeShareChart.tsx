@@ -5,6 +5,7 @@ import { useUrlState, codeParam } from 'use-prms'
 import type { HourlyRecord } from '../lib/hourly-types'
 import type { Direction } from '../lib/types'
 import Toggle, { type ToggleOption } from './Toggle'
+import { Abbr } from './Tooltip'
 
 const MODE_COLORS: Record<string, string> = {
   Subway: '#3366cc',
@@ -93,10 +94,7 @@ export default function ModeShareChart({ data }: { data: HourlyRecord[] }) {
     plot_bgcolor: 'rgba(0,0,0,0)',
     font: { color: fc },
     barmode: 'stack' as const,
-    title: {
-      text: `Daily persons ${direction} the CBD by mode<br><sub>All sectors, 24hr total, Fall business day</sub>`,
-      font: { size: narrow ? 14 : 18, color: fc },
-    },
+    title: { text: '' },
     xaxis: {
       tickvals: years,
       ticktext: years.map(y => `'${String(y).slice(2)}`),
@@ -115,13 +113,15 @@ export default function ModeShareChart({ data }: { data: HourlyRecord[] }) {
       xanchor: 'center' as const,
       font: { color: fc, size: 11 },
     },
-    margin: { t: narrow ? 65 : 75, r: 10, b: 45, l: narrow ? 50 : 65 },
+    margin: { t: 10, r: 10, b: 45, l: narrow ? 50 : 65 },
     autosize: true,
     showlegend: true,
   }
 
   return (
     <div ref={ref}>
+      <h2>Daily persons {direction} the <Abbr title="Central Business District — Manhattan below 60th St">CBD</Abbr> by mode</h2>
+      <p className="chart-subtitle">All sectors, 24hr total, Fall business day</p>
       <Plot
         data={traces}
         layout={layout}
