@@ -1,12 +1,15 @@
 import { HotkeysProvider, LookupModal, Omnibar, ShortcutsModal, SpeedDial, type SpeedDialAction } from 'use-kbd'
 import 'use-kbd/styles.css'
 import crossingsData from './data/crossings.json'
+import vehiclesData from './data/vehicles.json'
 import type { CrossingRecord } from './lib/types'
 import UnifiedChart from './components/UnifiedChart'
+import SectorChart from './components/SectorChart'
 import { SDTooltipRenderer } from './components/Tooltip'
 import './App.scss'
 
 const crossings = crossingsData as CrossingRecord[]
+const vehicles = vehiclesData as CrossingRecord[]
 
 function GitHubIcon() {
   return (
@@ -49,6 +52,9 @@ function App() {
         <main>
           <section id="chart">
             <UnifiedChart data={crossings} />
+          </section>
+          <section id="sectors">
+            <SectorChart data={vehicles} />
           </section>
         </main>
         <footer>
