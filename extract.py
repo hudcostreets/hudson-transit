@@ -485,6 +485,284 @@ def load_all_sector_table(
     return records
 
 
+# --- Tables 24-27: hourly by mode / sector (single year per file) ---
+
+MODE_COLUMNS = {
+    'AUTO/TAXI VAN/TRUCK': 'Auto',
+    'AUTO/TAXI\nVAN/TRUCK': 'Auto',
+    'SUBWAY': 'Subway',
+    'BUSES': 'Bus',
+    'SUBURBAN RAIL': 'Rail',
+    'SUBURBAN\nRAIL': 'Rail',
+    'FERRY': 'Ferry',
+    'TRAMWAY': 'Tramway',
+    'BICYCLE (1)': 'Bicycle',
+    'BICYCLE': 'Bicycle',
+    'BICYCLE(1)': 'Bicycle',
+}
+
+# Partial-match patterns for sector column headers (split across rows in 2017+)
+SECTOR_KEYWORDS: list[tuple[str, str]] = [
+    ('60TH', '60th_street'),
+    ('BROOKLYN', 'brooklyn'),
+    ('QUEENS', 'queens'),
+    ('NEW JERSEY', 'nj'),
+    ('N. J.', 'nj'),
+    ('N.J.', 'nj'),
+    ('STATEN', 'staten_island'),
+    ('S. I.', 'staten_island'),
+    ('S.I.', 'staten_island'),
+    ('ROOSEVELT', 'roosevelt_island'),
+]
+
+
+def parse_hour(raw: str) -> int | None:
+    """Parse hour string like '8:00am' or '12:00pm' to 0-23."""
+    m = re.match(r'(\d{1,2}):?\d*\s*(am|pm)', str(raw).strip().lower())
+    if not m:
+        return None
+    h = int(m.group(1))
+    ap = m.group(2)
+    if ap == 'am':
+        return h % 12
+    else:
+        return (h % 12) + 12
+
+
+def load_hourly_by_mode(year: int, year_dir: Path, table: str, direction: str):
+    """Parse Tables 24/25: hourly persons by mode for a single year."""
+    xl_path = find_excel(year_dir, r"AppendixII_")
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
+
+    # Pre-2017: combined sheet "Table24-25"
+    if year < 2017:
+        sheet = 'Table24-25'
+    else:
+        sheet = table
+
+    ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+    # For combined sheets, find the right table section
+    if year < 2017 and table == 'Table25':
+        # Find second "TABLE 25" or "LEAVING" marker
+        for ri in range(len(ws)):
+            cell = str(ws.iloc[ri, 0]).upper() if not isna(ws.iloc[ri, 0]) else ''
+            if 'TABLE 25' in cell or ('LEAVING' in cell and ri > 5):
+                ws = ws.iloc[ri:].reset_index(drop=True)
+                break
+
+    # Find header row with mode names
+    header_ri = None
+    mode_col_map: dict[int, str] = {}
+    for ri in range(min(15, len(ws))):
+        for ci in range(len(ws.columns)):
+            cell = str(ws.iloc[ri, ci]).strip() if not isna(ws.iloc[ri, ci]) else ''
+            cell_upper = cell.upper()
+            for pattern, mode in MODE_COLUMNS.items():
+                if cell_upper == pattern.upper():
+                    mode_col_map[ci] = mode
+                    header_ri = ri
+    if not mode_col_map:
+        raise ValueError(f"Could not find mode headers in {table} for {year}")
+
+    records = []
+    for ri in range(header_ri + 1, len(ws)):
+        # Find hour in first few columns
+        hour = None
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val):
+                hour = parse_hour(str(val))
+                if hour is not None:
+                    break
+        if hour is None:
+            # Check if it's a TOTAL row — stop
+            cell = str(ws.iloc[ri, 0] if not isna(ws.iloc[ri, 0]) else ws.iloc[ri, 1] if len(ws.columns) > 1 and not isna(ws.iloc[ri, 1]) else '')
+            if 'TOTAL' in cell.upper():
+                break
+            continue
+
+        for ci, mode in mode_col_map.items():
+            val = ws.iloc[ri, ci]
+            try:
+                val = int(val)
+                if val >= 0:
+                    records.append({
+                        'year': year,
+                        'hour': hour,
+                        'direction': direction,
+                        'category': 'mode',
+                        'key': mode,
+                        'persons': val,
+                    })
+            except (ValueError, TypeError):
+                pass
+
+    return records
+
+
+def load_hourly_by_sector(year: int, year_dir: Path, table: str, direction: str):
+    """Parse Tables 26/27: hourly persons by sector for a single year."""
+    xl_path = find_excel(year_dir, r"AppendixII_")
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
+
+    if year < 2017:
+        sheet = 'Table26-27'
+    else:
+        sheet = table
+
+    ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+    # For combined sheets, find Table 27 section
+    if year < 2017 and table == 'Table27':
+        for ri in range(len(ws)):
+            cell = str(ws.iloc[ri, 0]).upper() if not isna(ws.iloc[ri, 0]) else ''
+            if 'TABLE 27' in cell or ('LEAVING' in cell and ri > 5):
+                ws = ws.iloc[ri:].reset_index(drop=True)
+                break
+
+    # Find header row with sector names (may be split across 2 rows in 2017+)
+    header_ri = None
+    sector_col_map: dict[int, str] = {}
+    for ri in range(min(15, len(ws))):
+        for ci in range(len(ws.columns)):
+            cell = str(ws.iloc[ri, ci]).strip().upper() if not isna(ws.iloc[ri, ci]) else ''
+            if not cell:
+                continue
+            for keyword, sector in SECTOR_KEYWORDS:
+                if keyword in cell and ci not in sector_col_map:
+                    sector_col_map[ci] = sector
+                    header_ri = ri
+    if not sector_col_map:
+        raise ValueError(f"Could not find sector headers in {table} for {year}")
+
+    records = []
+    for ri in range(header_ri + 1, len(ws)):
+        hour = None
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val):
+                hour = parse_hour(str(val))
+                if hour is not None:
+                    break
+        if hour is None:
+            cell = str(ws.iloc[ri, 0] if not isna(ws.iloc[ri, 0]) else ws.iloc[ri, 1] if len(ws.columns) > 1 and not isna(ws.iloc[ri, 1]) else '')
+            if 'TOTAL' in cell.upper():
+                break
+            continue
+
+        for ci, sector in sector_col_map.items():
+            val = ws.iloc[ri, ci]
+            try:
+                val = int(val)
+                if val >= 0:
+                    records.append({
+                        'year': year,
+                        'hour': hour,
+                        'direction': direction,
+                        'category': 'sector',
+                        'key': sector,
+                        'persons': val,
+                    })
+            except (ValueError, TypeError):
+                pass
+
+    return records
+
+
+def load_hourly_totals(year: int, year_dir: Path, table: str, measure: str):
+    """Parse Tables 21A/22A/23A: hourly totals (3 years per file).
+
+    Returns records for up to 3 years found in the table.
+    measure is 'total_persons', 'transit_passengers', or 'motor_vehicles'.
+    """
+    xl_path = find_excel(year_dir, r"AppendixII_")
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
+
+    if year < 2017:
+        # e.g. Table21A -> Table21A-21B
+        num = re.search(r'(\d+)', table).group(1)
+        sheet = f'{table}-{num}B'
+    else:
+        sheet = table
+
+    ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+    # Find years row: scan for a row with multiple 4-digit year values
+    years_row = None
+    year_cols: dict[int, tuple[int, int, int]] = {}  # year -> (inbound_col, outbound_col, total_col)
+    for ri in range(min(12, len(ws))):
+        found_years = []
+        for ci in range(len(ws.columns)):
+            val = ws.iloc[ri, ci]
+            try:
+                v = int(val)
+                if 1990 <= v <= 2030:
+                    found_years.append((ci, v))
+            except (ValueError, TypeError):
+                pass
+        if len(found_years) >= 2:
+            years_row = ri
+            # Each year has 3 columns: inbound, outbound, total
+            for ci, y in found_years:
+                year_cols[y] = (ci, ci + 1, ci + 2)
+            break
+
+    if years_row is None:
+        raise ValueError(f"Could not find year headers in {table} for {year}")
+
+    # Find data start: first row after years_row with an hour value
+    data_start = None
+    for ri in range(years_row + 1, min(years_row + 5, len(ws))):
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val) and parse_hour(str(val)) is not None:
+                data_start = ri
+                break
+        if data_start is not None:
+            break
+
+    if data_start is None:
+        raise ValueError(f"Could not find data rows in {table} for {year}")
+
+    records = []
+    for ri in range(data_start, len(ws)):
+        hour = None
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val):
+                hour = parse_hour(str(val))
+                if hour is not None:
+                    break
+        if hour is None:
+            cell = str(ws.iloc[ri, 0] if not isna(ws.iloc[ri, 0]) else ws.iloc[ri, 1] if len(ws.columns) > 1 and not isna(ws.iloc[ri, 1]) else '')
+            if 'TOTAL' in cell.upper():
+                break
+            continue
+
+        for y, (in_col, out_col, _tot_col) in year_cols.items():
+            for direction, col in [('entering', in_col), ('leaving', out_col)]:
+                val = ws.iloc[ri, col]
+                try:
+                    val = int(val)
+                    if val >= 0:
+                        records.append({
+                            'year': y,
+                            'hour': hour,
+                            'direction': direction,
+                            'category': measure,
+                            'key': 'all',
+                            'persons': val,
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+    return records
+
+
 @group()
 def cli():
     """Extract NYMTC Hub Bound Travel data."""
@@ -567,6 +845,58 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         json.dump(all_bus, f, indent=2)
         f.write('\n')
     print(f"Wrote {len(all_bus)} bus passenger records to {bus_path}")
+
+    # Extract hourly data (Tables 21A-23A, 24-27)
+    all_hourly = []
+
+    # Tables 21A-23A: 3-year rolling totals
+    totals_tables = [
+        ('Table21A', 'total_persons'),
+        ('Table22A', 'transit_passengers'),
+        ('Table23A', 'motor_vehicles'),
+    ]
+    seen_totals: set[tuple] = set()  # deduplicate overlapping 3-year windows
+    for table, measure in totals_tables:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_hourly_totals(year, year_dir, table, measure)
+                # Deduplicate: prefer data from the most recent publication
+                new_records = []
+                for r in records:
+                    key = (r['year'], r['hour'], r['direction'], r['category'], r['key'])
+                    if key not in seen_totals:
+                        seen_totals.add(key)
+                        new_records.append(r)
+                all_hourly.extend(new_records)
+                print(f"  {table} {year}: {len(records)} records ({len(new_records)} new)")
+            except Exception as e:
+                print(f"  {table} {year}: ERROR - {e}")
+
+    # Tables 24-25: hourly by mode (one year per file)
+    for table, direction in [('Table24', 'entering'), ('Table25', 'leaving')]:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_hourly_by_mode(year, year_dir, table, direction)
+                all_hourly.extend(records)
+                print(f"  {table} {year}: {len(records)} records")
+            except Exception as e:
+                print(f"  {table} {year}: ERROR - {e}")
+
+    # Tables 26-27: hourly by sector (one year per file)
+    for table, direction in [('Table26', 'entering'), ('Table27', 'leaving')]:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_hourly_by_sector(year, year_dir, table, direction)
+                all_hourly.extend(records)
+                print(f"  {table} {year}: {len(records)} records")
+            except Exception as e:
+                print(f"  {table} {year}: ERROR - {e}")
+
+    hourly_path = join(output_dir, 'hourly.json')
+    with open(hourly_path, 'w') as f:
+        json.dump(all_hourly, f, indent=2)
+        f.write('\n')
+    print(f"Wrote {len(all_hourly)} hourly records to {hourly_path}")
 
 
 if __name__ == '__main__':

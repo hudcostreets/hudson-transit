@@ -72,21 +72,36 @@ Note: these are **vehicle counts**, not passenger counts. Table14A gives passeng
 
 Done. Same parser (`load_all_sector_table`) with `mode_a='Local Bus'`, `mode_b='Express Bus'`. 1,191 records in `data/bus_passengers.json`. These are **passenger counts** (not vehicles).
 
-### Phase 2: Tables 21–27 (hourly data)
+### Phase 2: Tables 21–27 (hourly data) ✅
 
-New output file `hourly.json`:
+Done. 8,736 records in `data/hourly.json`. Five categories:
+
+| Category | Source | Records | Years |
+|----------|--------|---------|-------|
+| `total_persons` | Table 21A | 624 | 2012–2024 |
+| `transit_passengers` | Table 22A | 624 | 2012–2024 |
+| `motor_vehicles` | Table 23A | 624 | 2017–2024 |
+| `mode` | Tables 24–25 | 3,696 | 2014–2024 |
+| `sector` | Tables 26–27 | 3,168 | 2014–2024 |
+
+Schema:
 ```json
 {
   "year": 2024,
   "hour": 8,
   "direction": "entering",
-  "sector": "nj",
-  "mode": "Bus",
-  "persons": 28883
+  "category": "mode",
+  "key": "Subway",
+  "persons": 280381
 }
 ```
 
-Tables 21-23 give 3-year comparisons; Tables 24-27 give mode/sector detail for latest year. Union them into a single hourly dataset.
+Notes:
+- Tables 21A–23A provide 3-year rolling windows; deduplication prefers earliest publication year.
+- Table 23A pre-2017 sheets (`Table23A-23B`) not available in 2014–2016 files.
+- Tables 26–27 have split-row headers in 2017+; matched via keyword search.
+- 7 modes: Auto, Subway, Bus, Rail, Ferry, Tramway, Bicycle.
+- 6 sectors: 60th_street, brooklyn, queens, nj, staten_island, roosevelt_island.
 
 ### Phase 3: AppendixIII (granular bus/rail/subway)
 
