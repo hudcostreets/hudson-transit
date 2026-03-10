@@ -6,6 +6,7 @@
 """Extract NYMTC Hub Bound Travel data from Excel files into JSON."""
 
 import json
+import re
 from glob import glob
 from math import nan
 from os.path import basename, join
@@ -26,7 +27,6 @@ def discover_years(base: str = ".") -> dict[int, Path]:
 
 def find_excel(year_dir: Path, pattern: str) -> Path | None:
     """Find an Excel file matching a pattern in a year directory (recursive)."""
-    import re
     matches = [
         p for p in year_dir.rglob("*.xlsx")
         if re.search(pattern, p.name)
@@ -256,10 +256,11 @@ def _rec(
     passengers: int,
     direction: str,
     time_period: str,
+    sector: str = 'nj',
 ) -> dict:
     return {
         'year': year,
-        'sector': 'nj',
+        'sector': sector,
         'crossing': crossing,
         'mode': mode,
         'direction': direction,
@@ -362,6 +363,134 @@ def fix_14b_shift(xl_path: Path, year: int):
     return b14.dropna(subset=[0]).replace('-', 0)
 
 
+# --- Tables 16-17: all-sector motor vehicle + bus data ---
+
+SECTOR_HEADERS = {
+    '60TH STREET SECTOR': '60th_street',
+    'BROOKLYN SECTOR': 'brooklyn',
+    'QUEENS SECTOR': 'queens',
+    'NEW JERSEY SECTOR': 'nj',
+}
+
+# Normalize crossing names across years
+CROSSING_NAME_ALIASES: dict[str, str] = {
+    'ED KOCH QUEENSBORO BRIDGE RAMP': 'Ed Koch Queensboro Bridge Ramp',
+    'CENTRAL PARK DRIVE AND 7TH AVENUE': 'Central Park Drive / 7th Ave',
+    'HENRY HUDSON BRIDGE': 'Henry Hudson Bridge',
+}
+
+
+def normalize_crossing_name(raw: str) -> str:
+    """Clean up crossing names for consistent output."""
+    name = re.sub(r'\s*\*+\s*$', '', str(raw).strip())  # strip trailing asterisks
+    if name in CROSSING_NAME_ALIASES:
+        return CROSSING_NAME_ALIASES[name]
+    # Title-case, preserving known abbreviations
+    parts = name.split()
+    result = []
+    for p in parts:
+        if p in ('FDR', 'LIRR', 'NJ'):
+            result.append(p)
+        elif p == 'ED':
+            result.append('Ed')
+        elif p in ('L.', 'AM', 'PM'):
+            result.append(p)
+        else:
+            result.append(p.capitalize())
+    return ' '.join(result)
+
+
+def load_all_sector_vehicles(
+    year: int,
+    year_dir: Path,
+    table: str,
+    direction: str,
+):
+    """Parse Table16 or Table17 for all-sector motor vehicle + bus counts.
+
+    Returns records with mode='Auto' or mode='Bus' per crossing, per time period.
+    """
+    xl_path = find_excel(year_dir, r"AppendixII_")
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
+
+    ws = read_excel(xl_path, sheet_name=table, header=None)
+
+    # Detect column layout: pre-2017 has names in col 0, 2017+ in col 1
+    # Find the name column by looking for a sector header
+    name_col = None
+    for ci in range(min(3, len(ws.columns))):
+        if ws[ci].astype(str).str.contains('60TH STREET SECTOR', case=False, na=False).any():
+            name_col = ci
+            break
+    if name_col is None:
+        raise ValueError(f"Could not find sector headers in {table} for {year}")
+
+    data_offset = name_col + 1  # first numeric column
+
+    # Columns: Auto(1hr, 3hr, 24hr), Bus(1hr, 3hr, 24hr), Total(1hr, 3hr, 24hr)
+    # We extract Auto and Bus columns (skip Total, it's derived)
+    auto_cols = [data_offset, data_offset + 1, data_offset + 2]
+    bus_cols = [data_offset + 3, data_offset + 4, data_offset + 5]
+    time_periods = ['peak_1hr', 'peak_period', '24hr']
+
+    records = []
+    current_sector = None
+
+    for _, row in ws.iterrows():
+        name = str(row.get(name_col, '')).strip()
+        if not name or name == 'nan':
+            continue
+
+        # Check for sector header
+        name_upper = name.upper()
+        if name_upper in SECTOR_HEADERS:
+            current_sector = SECTOR_HEADERS[name_upper]
+            continue
+
+        # Skip totals and headers
+        if 'SECTOR TOTAL' in name_upper or 'TOTAL, ALL' in name_upper:
+            continue
+        if 'LOCATION' in name_upper or 'TABLE' in name_upper:
+            continue
+        if 'AUTOS' in name_upper or 'VANS' in name_upper:
+            continue
+        if 'FALL BUSINESS' in name_upper or 'WHERE' in name_upper:
+            continue
+        if name_upper.startswith('NOTE') or name_upper.startswith('-'):
+            continue
+        # Skip time-period header rows (e.g. "8-9 AM", "5-6 PM", "24 HOURS")
+        # but not crossing names that happen to contain "AM" (e.g. "WILLIAMSBURG")
+        if re.match(r'^\d+[- ]\d+\s*(AM|PM)$', name_upper) or name_upper in ('24 HOURS', '24 HOUR'):
+            continue
+
+        if current_sector is None:
+            continue
+
+        crossing = normalize_crossing_name(name)
+
+        for i, tp in enumerate(time_periods):
+            # Auto
+            auto_val = row.get(auto_cols[i])
+            try:
+                auto_val = int(auto_val)
+                if auto_val > 0:
+                    records.append(_rec(year, crossing, 'Auto', auto_val, direction, tp, current_sector))
+            except (ValueError, TypeError):
+                pass
+
+            # Bus
+            bus_val = row.get(bus_cols[i])
+            try:
+                bus_val = int(bus_val)
+                if bus_val > 0:
+                    records.append(_rec(year, crossing, 'Bus', bus_val, direction, tp, current_sector))
+            except (ValueError, TypeError):
+                pass
+
+    return records
+
+
 @group()
 def cli():
     """Extract NYMTC Hub Bound Travel data."""
@@ -410,6 +539,23 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         json.dump(all_crossings, f, indent=2)
         f.write('\n')
     print(f"Wrote {len(all_crossings)} crossing records to {crossings_path}")
+
+    # Extract all-sector vehicle/bus data (Tables 16-17)
+    all_vehicles = []
+    for table, direction in [('Table16', 'entering'), ('Table17', 'leaving')]:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_all_sector_vehicles(year, year_dir, table, direction)
+                all_vehicles.extend(records)
+                print(f"  {table} {year}: {len(records)} records")
+            except Exception as e:
+                print(f"  {table} {year}: ERROR - {e}")
+
+    vehicles_path = join(output_dir, 'vehicles.json')
+    with open(vehicles_path, 'w') as f:
+        json.dump(all_vehicles, f, indent=2)
+        f.write('\n')
+    print(f"Wrote {len(all_vehicles)} vehicle records to {vehicles_path}")
 
 
 if __name__ == '__main__':

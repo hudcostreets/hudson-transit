@@ -56,14 +56,21 @@ Same as 21 but vehicles-only.
 
 ## Extraction plan
 
-### Phase 1: Tables 16–19 (all-sector crossing-level volumes)
+### Phase 1: Tables 16–17 (all-sector motor vehicle + bus counts) ✅
 
-These have the same structure as Tables 14-15 but for all sectors, and with motor vehicle / bus breakdowns rather than per-mode detail.
+Done. `load_all_sector_vehicles()` in `extract.py` parses Tables 16 (entering) and 17 (leaving) for all 4 sectors, outputting to `vehicles.json` (2,158 records). Per-crossing Auto and Bus vehicle counts across 3 time periods × 2 directions × 11 years.
 
-1. Parse sector headers to segment rows
-2. Extract 3 time periods from columns (1hr, 3hr, 24hr)
-3. Normalize crossing names across years
-4. Output to `crossings.json` with new sector values: `60th_street`, `brooklyn`, `queens` (NJ already present)
+Note: these are **vehicle counts**, not passenger counts. Table14A gives passengers; Table16 gives vehicles.
+
+26 unique crossings across sectors:
+- 60th St: 18 crossings (FDR Drive, avenues, West Side Hwy, etc.)
+- Brooklyn: 4 (Williamsburg, Manhattan, Brooklyn bridges + Hugh L. Carey Tunnel)
+- Queens: 2 (Queens Midtown Tunnel, Ed Koch Queensboro Bridge)
+- NJ: 2 (Holland Tunnel, Lincoln Tunnel)
+
+### Phase 1b: Tables 18–19 (all-sector bus passengers) — TODO
+
+Same structure as 16-17 but with Local Bus / Express Bus passenger breakdowns.
 
 ### Phase 2: Tables 21–27 (hourly data)
 
