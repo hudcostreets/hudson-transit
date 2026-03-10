@@ -154,17 +154,37 @@ Notes:
 - Pre-2017 files combine inbound/outbound on single sheets; parsed by splitting on "OUTBOUND" marker.
 - Cross-validated: III-B subway passengers at 8am 2024 sum to 280,381, matching Table 24 exactly.
 
-### Phase 3b: AppendixIII route-level detail
+### Phase 3b: AppendixIII route-level detail ✅
 
-Not yet extracted. Each section has detail sheets with per-route/facility hourly data:
-- Section A: Bus routes by corridor/operator (NYCT Local, Express, MTA Bus Co., WCDOT)
-- Section B: Individual subway lines (4/5, 6, Q/W, A/D, etc.) and PATH
-- Section C: Metro-North, LIRR, NJ Transit, Amtrak lines
-- Section D: Auto occupants per crossing/road
-- Section E: Vehicle counts per crossing/road (overlaps Tables 16-17)
-- Section G: Bicycle volumes per crossing
+Done. 74,069 records in `data/appendix_iii_detail.json`. Per-facility/line hourly data.
 
-Lower priority — extract when needed for route-level visualizations.
+| Section | Description | Records | Facilities |
+|---------|-------------|---------|------------|
+| B | Subway lines | 34,416 | 36 lines (Lex Express, 8th Ave, Broadway, PATH, etc.) |
+| C | Rail lines | 13,482 | 7 lines (Metro-North Hudson/Harlem/New Haven, LIRR, NJ Transit, Amtrak) |
+| D | Auto occupants | 8,543 | 10 roads (FDR, avenues) + 8 crossings (bridges, tunnels) |
+| E | Vehicle counts | 7,608 | Same roads/crossings as D |
+| G | Bicycle volumes | 10,020 | 15 avenues + 4 bridge/ferry crossings |
+
+Schema:
+```json
+{
+  "year": 2024,
+  "hour": 8,
+  "direction": "entering",
+  "section": "B",
+  "sector": "60th_street",
+  "facility": "Lexington Ave Express",
+  "measure": "passengers",
+  "value": 24539
+}
+```
+
+Notes:
+- Pre-2017 combined sheets use both stacked and side-by-side layouts for inbound/outbound.
+- Facility names vary across years (e.g. "VIA 4, 5 LINES (Express)" vs "4, 5 Lines"); future normalization pass needed.
+- Section A detail (bus routes by corridor/operator) not yet extracted — complex multi-page layout with operator sub-columns.
+- Cross-validated: subway passengers sum matches Table 24 and III summary (280,381 at 8am 2024).
 
 ## Data quality
 

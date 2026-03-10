@@ -801,12 +801,33 @@ APPIII_SECTIONS = {
         'sheets_2017': {'entering': 'Rec-Suburban_Rail_Inbound', 'leaving': 'Rec-Suburban_Rail-Outbound'},
         'sheets_pre2017': 'Rec',
     },
+    'D': {
+        'description': 'Auto occupants',
+        'file_pattern': r'SectionD',
+        'sub_cols': ['occupants'],
+        'sheets_2017': {'entering': 'REC-Inbound', 'leaving': 'REC-Outbound'},
+        'sheets_pre2017': 'REC',
+    },
+    'E': {
+        'description': 'Vehicle counts',
+        'file_pattern': r'SectionE',
+        'sub_cols': ['vehicles'],
+        'sheets_2017': {'entering': 'Rec', 'leaving': 'Rec'},
+        'sheets_pre2017': 'Rec',
+    },
     'F': {
         'description': 'Ferry/tramway',
         'file_pattern': r'SectionF',
         'sub_cols': ['passengers'],
         'sheets_2017': {'entering': 'Ferry-Inbound', 'leaving': 'Ferry-Outbound'},
         'sheets_pre2017': 'ferry',
+    },
+    'G': {
+        'description': 'Bicycle volumes',
+        'file_pattern': r'SectionG',
+        'sub_cols': ['bicycles'],
+        'sheets_2017': {'entering': 'REC-Inbound', 'leaving': 'REC-Outbound'},
+        'sheets_pre2017': 'REC',
     },
 }
 
@@ -930,6 +951,354 @@ def load_appiii_summary(
                     pass
 
     return records
+
+
+# AppendixIII detail sheet configs per section and sector
+# Each entry: (sector, sheet_name_2017+_inbound, sheet_name_2017+_outbound, sheet_name_pre2017, sub_cols)
+APPIII_DETAIL_SHEETS = {
+    'B': {  # Subway/PATH
+        '60th_street': {
+            'sheets_2017': ('60th ST Sec-Inbound', '60th ST Sec-Outbound'),
+            'sheets_pre2017': '60TH ST SEC',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',  # look for this in sub-header row
+        },
+        'brooklyn': {
+            'sheets_2017': (['Brooklyn-Inbound_pg1', 'Brooklyn-Inbound_pg2'],
+                            ['Brooklyn-Outbound_pg1', 'Brooklyn-Outbound_pg2']),
+            'sheets_pre2017': 'BRKLN',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',
+        },
+        'queens': {
+            'sheets_2017': ('Queens-Inbound', 'Queens-Outbound'),
+            'sheets_pre2017': 'QNS',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',
+        },
+        'nj': {
+            'sheets_2017': ('NJ-Inbound', 'NJ-Outbound'),
+            'sheets_pre2017': 'NJ',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',
+        },
+    },
+    'C': {  # Suburban/intercity rail
+        '60th_street': {
+            'sheets_2017': ('60th_St-Inbound', '60th_St-Outbound'),
+            'sheets_pre2017': '60th',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',
+        },
+        'queens': {
+            'sheets_2017': ('Queens-Inbound', 'Queens-Outbound'),
+            'sheets_pre2017': 'Qns',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',
+        },
+        'nj': {
+            'sheets_2017': ('NJ-Inbound', 'NJ-Outbound'),
+            'sheets_pre2017': 'NJ',
+            'sub_cols': ['trains', 'cars', 'passengers'],
+            'header_row_hint': 'TRAINS',
+        },
+    },
+    'D': {  # Auto occupants
+        '60th_street': {
+            'sheets_2017': ('60TH ST-Inbound', '60TH ST-Outbound'),
+            'sheets_pre2017': '60TH ST SEC',
+            'sub_cols': ['occupants'],
+            'header_row_hint': None,
+        },
+        'bqnj': {
+            'sheets_2017': ('BQNJ-Inbound', 'BQNJ-Outbound'),
+            'sheets_pre2017': 'BQNJSI',
+            'sub_cols': ['occupants'],
+            'header_row_hint': None,
+        },
+    },
+    'E': {  # Vehicle counts
+        '60th_street': {
+            'sheets_2017': ('60TH ST-Inbound', '60TH ST-Outbound'),
+            'sheets_pre2017': '60TH STREET',
+            'sub_cols': ['vehicles'],
+            'header_row_hint': None,
+        },
+        'bqnj': {
+            'sheets_2017': ('BQNJSI-Inbound', 'BQNJSI-Outbound'),
+            'sheets_pre2017': 'BQNJSI',
+            'sub_cols': ['vehicles'],
+            'header_row_hint': None,
+        },
+    },
+    'G': {  # Bicycle
+        '60th_street': {
+            'sheets_2017': ('60th_St-Inbound', '60th_St-Outbound'),
+            'sheets_pre2017': '60th st',
+            'sub_cols': ['bicycles'],
+            'header_row_hint': None,
+        },
+        'bqsi': {
+            'sheets_2017': ('BQSI-Inbound', 'BQSI-Outbound'),
+            'sheets_pre2017': 'BQSI',
+            'sub_cols': ['bicycles'],
+            'header_row_hint': None,
+        },
+    },
+}
+
+# Normalize facility/line names
+FACILITY_ALIASES: dict[str, str] = {
+    "B'WAY/7TH AVE EXPESS": "Broadway/7th Express",
+    "B'WAY/7TH AVE LOCAL": "Broadway/7th Local",
+    "B'WAY/7TH AVE EXPRESS": "Broadway/7th Express",
+}
+
+
+def normalize_facility_name(raw: str) -> str:
+    """Normalize facility/line names from AppendixIII detail sheets."""
+    name = re.sub(r'\s*\*+\s*$', '', str(raw).strip())
+    name = re.sub(r'\s+', ' ', name)
+    if name in FACILITY_ALIASES:
+        return FACILITY_ALIASES[name]
+    # Title-case, preserving known abbreviations
+    if name.isupper() and len(name) > 3:
+        parts = name.split()
+        result = []
+        for p in parts:
+            if p in ('FDR', 'LIRR', 'NJ', 'PATH', 'NEC', 'NJCL', 'MTA', 'RI'):
+                result.append(p)
+            elif p in ('ST.', 'ST', 'AVE', 'AVE.'):
+                result.append(p.capitalize())
+            elif re.match(r'^\d', p):
+                result.append(p.lower())
+            else:
+                result.append(p.capitalize())
+        return ' '.join(result)
+    return name
+
+
+def parse_detail_sheet(
+    ws,
+    year: int,
+    direction: str,
+    section: str,
+    sector: str,
+    sub_cols: list[str],
+    header_hint: str | None,
+) -> list[dict]:
+    """Parse an AppendixIII detail sheet with facility/line columns.
+
+    Finds facility name columns, maps their TRAINS/CARS/PSGRS (or single-value)
+    sub-columns, and extracts 24 hours of data.
+    """
+    stride = len(sub_cols)
+
+    # Find the sub-header row (TRAINS/CARS/PSGRS or similar)
+    # For single-column sections (D, E, G), look for facility names directly
+    sub_header_ri = None
+    facility_col_map: dict[int, str] = {}  # start_col -> facility_name
+
+    if header_hint and stride > 1:
+        # Multi-column: find TRAINS/CARS/PSGRS row
+        for ri in range(min(15, len(ws))):
+            for ci in range(len(ws.columns)):
+                cell = str(ws.iloc[ri, ci]).strip().upper() if not isna(ws.iloc[ri, ci]) else ''
+                if cell == header_hint:
+                    sub_header_ri = ri
+                    break
+            if sub_header_ri is not None:
+                break
+
+        if sub_header_ri is None:
+            raise ValueError(f"Could not find '{header_hint}' sub-header row")
+
+        # Facility names may be above OR below the sub-header row
+        search_rows = []
+        for delta in range(-1, -4, -1):
+            ri = sub_header_ri + delta
+            if 0 <= ri < len(ws):
+                search_rows.append(ri)
+        for delta in range(1, 4):
+            ri = sub_header_ri + delta
+            if 0 <= ri < len(ws):
+                search_rows.append(ri)
+
+        for name_ri in search_rows:
+            for ci in range(len(ws.columns)):
+                cell = ws.iloc[name_ri, ci]
+                if isna(cell):
+                    continue
+                cell_str = str(cell).strip()
+                if not cell_str or cell_str.upper() == 'HOURS':
+                    continue
+                # Check this column aligns with a sub-header column
+                # Look for the hint keyword at this col in any nearby row
+                found_sub = False
+                for sub_ri in range(max(0, name_ri - 3), min(len(ws), name_ri + 4)):
+                    sub_val = str(ws.iloc[sub_ri, ci]).strip().upper() if not isna(ws.iloc[sub_ri, ci]) else ''
+                    if sub_val == header_hint:
+                        found_sub = True
+                        break
+                if found_sub and 'TOTAL' not in cell_str.upper():
+                    facility_col_map[ci] = normalize_facility_name(cell_str)
+            if facility_col_map:
+                break
+    else:
+        # Single-column sections: facility names in header row, one value per facility
+        # Find the row with facility names (look for known road/crossing names)
+        for ri in range(min(12, len(ws))):
+            found = {}
+            for ci in range(1, len(ws.columns)):
+                cell = ws.iloc[ri, ci]
+                if isna(cell):
+                    continue
+                cell_str = str(cell).strip()
+                if not cell_str or cell_str.upper() in ('HOURS', 'TOTAL', 'SECTOR TOTAL'):
+                    continue
+                if len(cell_str) > 2 and cell_str.upper() not in ('NAN',):
+                    found[ci] = cell_str
+            if len(found) >= 3:
+                facility_col_map = {ci: normalize_facility_name(name) for ci, name in found.items()
+                                    if 'TOTAL' not in name.upper()}
+                sub_header_ri = ri
+                break
+
+    if not facility_col_map:
+        raise ValueError(f"Could not find facility names in detail sheet")
+
+    # Find data start
+    search_start = sub_header_ri + 1 if sub_header_ri is not None else 0
+    data_start = None
+    for ri in range(search_start, min(search_start + 5, len(ws))):
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val) and parse_hour(str(val)) is not None:
+                data_start = ri
+                break
+        if data_start is not None:
+            break
+
+    if data_start is None:
+        raise ValueError(f"Could not find data rows")
+
+    records = []
+    for ri in range(data_start, len(ws)):
+        hour = None
+        for ci in range(min(3, len(ws.columns))):
+            val = ws.iloc[ri, ci]
+            if not isna(val):
+                hour = parse_hour(str(val))
+                if hour is not None:
+                    break
+        if hour is None:
+            for ci in range(min(3, len(ws.columns))):
+                cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                if 'TOTAL' in cell:
+                    break
+            else:
+                continue
+            break
+
+        for start_ci, facility in facility_col_map.items():
+            for offset, sub_name in enumerate(sub_cols):
+                ci = start_ci + offset
+                if ci >= len(ws.columns):
+                    continue
+                val = ws.iloc[ri, ci]
+                try:
+                    val = int(float(val))
+                    if val >= 0:
+                        records.append({
+                            'year': year,
+                            'hour': hour,
+                            'direction': direction,
+                            'section': section,
+                            'sector': sector,
+                            'facility': facility,
+                            'measure': sub_name,
+                            'value': val,
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+    return records
+
+
+def load_appiii_detail(
+    year: int,
+    year_dir: Path,
+    section: str,
+    sector: str,
+    direction: str,
+) -> list[dict]:
+    """Load an AppendixIII detail sheet for a specific section/sector/direction."""
+    file_pattern = APPIII_SECTIONS[section]['file_pattern']
+    xl_path = find_excel(year_dir, file_pattern)
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixIII Section {section} file found for {year}")
+
+    cfg = APPIII_DETAIL_SHEETS[section][sector]
+    sub_cols = cfg['sub_cols']
+    header_hint = cfg['header_row_hint']
+
+    if year >= 2017:
+        sheets_cfg = cfg['sheets_2017']
+        dir_idx = 0 if direction == 'entering' else 1
+        sheet_names = sheets_cfg[dir_idx]
+        if isinstance(sheet_names, str):
+            sheet_names = [sheet_names]
+    else:
+        sheet_names = [cfg['sheets_pre2017']]
+
+    all_records = []
+    for sheet in sheet_names:
+        ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+        # For pre-2017 combined sheets, handle direction
+        if year < 2017 and direction == 'leaving':
+            # Try stacked layout first (outbound below inbound)
+            out_start_row = None
+            out_start_col = None
+            for ri in range(len(ws)):
+                for ci in range(len(ws.columns)):
+                    cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                    if 'OUTBOUND' in cell:
+                        if ci < 5:
+                            # Stacked: outbound section starts at this row
+                            out_start_row = ri
+                        else:
+                            # Side-by-side: outbound in right half
+                            out_start_col = ci
+                        break
+                if out_start_row is not None or out_start_col is not None:
+                    break
+            if out_start_row is not None:
+                ws = ws.iloc[out_start_row:].reset_index(drop=True)
+            elif out_start_col is not None:
+                # Shift columns: drop left half, keep right half
+                # Find the HOURS column in the right half
+                hours_col = None
+                for ci in range(out_start_col - 2, out_start_col + 3):
+                    for ri in range(min(10, len(ws))):
+                        cell = str(ws.iloc[ri, ci]).strip().upper() if ci < len(ws.columns) and not isna(ws.iloc[ri, ci]) else ''
+                        if cell == 'HOURS':
+                            hours_col = ci
+                            break
+                    if hours_col is not None:
+                        break
+                if hours_col is not None:
+                    ws = ws.iloc[:, hours_col:].reset_index(drop=True)
+                    ws.columns = list(range(len(ws.columns)))
+                else:
+                    raise ValueError(f"Could not find HOURS column for outbound in {sheet} for {year}")
+            else:
+                raise ValueError(f"Could not find OUTBOUND section in {sheet} for {year}")
+
+        records = parse_detail_sheet(ws, year, direction, section, sector, sub_cols, header_hint)
+        all_records.extend(records)
+
+    return all_records
 
 
 def load_peak_accumulation(year: int, year_dir: Path, table_b: str, measure: str):
@@ -1200,6 +1569,25 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         json.dump(all_appiii, f, indent=2)
         f.write('\n')
     print(f"Wrote {len(all_appiii)} AppendixIII records to {appiii_path}")
+
+    # Extract AppendixIII detail data (per-facility/line)
+    all_detail = []
+    for section, sectors in APPIII_DETAIL_SHEETS.items():
+        for sector in sectors:
+            for direction in ('entering', 'leaving'):
+                for year, year_dir in sorted(years.items()):
+                    try:
+                        records = load_appiii_detail(year, year_dir, section, sector, direction)
+                        all_detail.extend(records)
+                        print(f"  III-{section}/{sector} {direction} {year}: {len(records)} records")
+                    except Exception as e:
+                        print(f"  III-{section}/{sector} {direction} {year}: ERROR - {e}")
+
+    detail_path = join(output_dir, 'appendix_iii_detail.json')
+    with open(detail_path, 'w') as f:
+        json.dump(all_detail, f, indent=2)
+        f.write('\n')
+    print(f"Wrote {len(all_detail)} AppendixIII detail records to {detail_path}")
 
 
 if __name__ == '__main__':
