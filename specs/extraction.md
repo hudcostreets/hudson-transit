@@ -68,9 +68,9 @@ Note: these are **vehicle counts**, not passenger counts. Table14A gives passeng
 - Queens: 2 (Queens Midtown Tunnel, Ed Koch Queensboro Bridge)
 - NJ: 2 (Holland Tunnel, Lincoln Tunnel)
 
-### Phase 1b: Tables 18–19 (all-sector bus passengers) — TODO
+### Phase 1b: Tables 18–19 (all-sector bus passengers) ✅
 
-Same structure as 16-17 but with Local Bus / Express Bus passenger breakdowns.
+Done. Same parser (`load_all_sector_table`) with `mode_a='Local Bus'`, `mode_b='Express Bus'`. 1,191 records in `data/bus_passengers.json`. These are **passenger counts** (not vehicles).
 
 ### Phase 2: Tables 21–27 (hourly data)
 

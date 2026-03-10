@@ -400,15 +400,18 @@ def normalize_crossing_name(raw: str) -> str:
     return ' '.join(result)
 
 
-def load_all_sector_vehicles(
+def load_all_sector_table(
     year: int,
     year_dir: Path,
     table: str,
     direction: str,
+    mode_a: str = 'Auto',
+    mode_b: str = 'Bus',
 ):
-    """Parse Table16 or Table17 for all-sector motor vehicle + bus counts.
+    """Parse an all-sector AppendixII table with 3-column-group layout.
 
-    Returns records with mode='Auto' or mode='Bus' per crossing, per time period.
+    Tables 16-17 have Auto/Bus/Total; Tables 18-19 have Local Bus/Express Bus/Total.
+    We extract the first two groups (mode_a, mode_b), skip Total (derived).
     """
     xl_path = find_excel(year_dir, r"AppendixII_")
     if xl_path is None:
@@ -428,10 +431,10 @@ def load_all_sector_vehicles(
 
     data_offset = name_col + 1  # first numeric column
 
-    # Columns: Auto(1hr, 3hr, 24hr), Bus(1hr, 3hr, 24hr), Total(1hr, 3hr, 24hr)
-    # We extract Auto and Bus columns (skip Total, it's derived)
-    auto_cols = [data_offset, data_offset + 1, data_offset + 2]
-    bus_cols = [data_offset + 3, data_offset + 4, data_offset + 5]
+    # Columns: GroupA(1hr, 3hr, 24hr), GroupB(1hr, 3hr, 24hr), Total(1hr, 3hr, 24hr)
+    # We extract GroupA and GroupB columns (skip Total, it's derived)
+    a_cols = [data_offset, data_offset + 1, data_offset + 2]
+    b_cols = [data_offset + 3, data_offset + 4, data_offset + 5]
     time_periods = ['peak_1hr', 'peak_period', '24hr']
 
     records = []
@@ -453,7 +456,7 @@ def load_all_sector_vehicles(
             continue
         if 'LOCATION' in name_upper or 'TABLE' in name_upper:
             continue
-        if 'AUTOS' in name_upper or 'VANS' in name_upper:
+        if 'AUTOS' in name_upper or 'VANS' in name_upper or 'LOCAL BUS' in name_upper or 'EXPRESS BUS' in name_upper:
             continue
         if 'FALL BUSINESS' in name_upper or 'WHERE' in name_upper:
             continue
@@ -470,23 +473,14 @@ def load_all_sector_vehicles(
         crossing = normalize_crossing_name(name)
 
         for i, tp in enumerate(time_periods):
-            # Auto
-            auto_val = row.get(auto_cols[i])
-            try:
-                auto_val = int(auto_val)
-                if auto_val > 0:
-                    records.append(_rec(year, crossing, 'Auto', auto_val, direction, tp, current_sector))
-            except (ValueError, TypeError):
-                pass
-
-            # Bus
-            bus_val = row.get(bus_cols[i])
-            try:
-                bus_val = int(bus_val)
-                if bus_val > 0:
-                    records.append(_rec(year, crossing, 'Bus', bus_val, direction, tp, current_sector))
-            except (ValueError, TypeError):
-                pass
+            for cols, mode in [(a_cols, mode_a), (b_cols, mode_b)]:
+                val = row.get(cols[i])
+                try:
+                    val = int(val)
+                    if val > 0:
+                        records.append(_rec(year, crossing, mode, val, direction, tp, current_sector))
+                except (ValueError, TypeError):
+                    pass
 
     return records
 
@@ -540,12 +534,12 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         f.write('\n')
     print(f"Wrote {len(all_crossings)} crossing records to {crossings_path}")
 
-    # Extract all-sector vehicle/bus data (Tables 16-17)
+    # Extract all-sector vehicle counts (Tables 16-17)
     all_vehicles = []
     for table, direction in [('Table16', 'entering'), ('Table17', 'leaving')]:
         for year, year_dir in sorted(years.items()):
             try:
-                records = load_all_sector_vehicles(year, year_dir, table, direction)
+                records = load_all_sector_table(year, year_dir, table, direction, 'Auto', 'Bus')
                 all_vehicles.extend(records)
                 print(f"  {table} {year}: {len(records)} records")
             except Exception as e:
@@ -556,6 +550,23 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         json.dump(all_vehicles, f, indent=2)
         f.write('\n')
     print(f"Wrote {len(all_vehicles)} vehicle records to {vehicles_path}")
+
+    # Extract all-sector bus passengers (Tables 18-19)
+    all_bus = []
+    for table, direction in [('Table18', 'entering'), ('Table19', 'leaving')]:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_all_sector_table(year, year_dir, table, direction, 'Local Bus', 'Express Bus')
+                all_bus.extend(records)
+                print(f"  {table} {year}: {len(records)} records")
+            except Exception as e:
+                print(f"  {table} {year}: ERROR - {e}")
+
+    bus_path = join(output_dir, 'bus_passengers.json')
+    with open(bus_path, 'w') as f:
+        json.dump(all_bus, f, indent=2)
+        f.write('\n')
+    print(f"Wrote {len(all_bus)} bus passenger records to {bus_path}")
 
 
 if __name__ == '__main__':
