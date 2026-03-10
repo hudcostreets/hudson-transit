@@ -208,7 +208,6 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth, 
   highlight?: UseTraceHighlightReturn
 }) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
-  const tipMap = granularity === 'mode' ? MODE_TIPS : CROSSING_TIPS
   const use4 = (containerWidth ?? 0) >= 500
   const grid = use4 ? GRID_4 : GRID_2
   const cols = (grid[granularity] ?? [labels]).map(col => col.filter(l => labels.includes(l)))

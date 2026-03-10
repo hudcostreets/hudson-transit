@@ -1,3 +1,4 @@
+import type { RepelLineObstacle, RepelRectObstacle } from 'pltly/plotly'
 import type { JitterOffsets } from './JitteredPlot'
 
 function configKey(direction: string, timePeriod: string, granularity: string): string {
@@ -442,6 +443,32 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
 }
 JITTER_MAP[configKey('leaving', '24hr', 'crossing')] = LEAVING_24HR_JITTER
 
+// --- Max bubble size config ---
+// Per-view maxSize as [narrowMin, wideMax] for lerp across width 400–1000.
+// Higher values → more labels fit inside bubbles.
+type SizeRange = [number, number]
+
+const SIZE_MAP: Record<string, SizeRange> = {}
+
+export function getMaxSize(direction: string, timePeriod: string, granularity: string): SizeRange {
+  return SIZE_MAP[configKey(direction, timePeriod, granularity)] ?? [35, 75]
+}
+
+// entering
+SIZE_MAP[configKey('entering', 'peak_1hr', 'crossing')]    = [35, 75]
+SIZE_MAP[configKey('entering', 'peak_period', 'crossing')] = [45, 90]
+SIZE_MAP[configKey('entering', '24hr', 'crossing')]         = [50, 100]
+SIZE_MAP[configKey('entering', 'peak_1hr', 'mode')]         = [40, 80]
+SIZE_MAP[configKey('entering', 'peak_period', 'mode')]      = [45, 90]
+SIZE_MAP[configKey('entering', '24hr', 'mode')]             = [50, 100]
+// leaving
+SIZE_MAP[configKey('leaving', 'peak_1hr', 'crossing')]      = [35, 75]
+SIZE_MAP[configKey('leaving', 'peak_period', 'crossing')]   = [45, 90]
+SIZE_MAP[configKey('leaving', '24hr', 'crossing')]           = [50, 100]
+SIZE_MAP[configKey('leaving', 'peak_1hr', 'mode')]           = [40, 80]
+SIZE_MAP[configKey('leaving', 'peak_period', 'mode')]        = [45, 90]
+SIZE_MAP[configKey('leaving', '24hr', 'mode')]               = [50, 100]
+
 export interface AnnotationTarget {
   ay: number
   x: number
@@ -458,6 +485,7 @@ export function buildCanonicalAnnotations(
   maxSize: number,
   jx: (traceName: string, yearIdx: number) => number,
   annColors?: { font: string, bg: string, arrow: string },
+  narrow = false,
 ) {
   const fc = annColors?.font ?? 'black'
   const bg = annColors?.bg ?? 'white'
@@ -493,7 +521,7 @@ export function buildCanonicalAnnotations(
     lincolnAutosPct[prevIdx],
     hollandAutosPct[lastIdx],
     hollandAutosPct[prevIdx],
-  ) + 0.02
+  ) + (narrow ? 0.03 : 0.02)
 
   const carTargets: AnnotationTarget[] = [
     { ay: carTextYBottom + .01 , x: jx('Lincoln (Autos)', prevIdx), y: lincolnAutosPct[prevIdx], p: lincolnAutosP[prevIdx] },
@@ -502,46 +530,91 @@ export function buildCanonicalAnnotations(
     { ay: carTextYBottom + .005, x: jx('Holland (Autos)', lastIdx), y: hollandAutosPct[lastIdx], p: hollandAutosP[lastIdx] },
   ]
 
-  return [
-    ...busTargets.map(({ ay, x, y, p }) => ({
-      ax: annX, ay,
-      axref: 'x' as const, ayref: 'y' as const,
-      yanchor: 'top' as const,
-      x, y,
-      standoff: bubbleRadius(p) + 3,
-      arrowcolor: ac,
-      arrowhead: 0,
-    })),
+  // Bus text sits above busTextYTop; car text sits below carTextYBottom
+  const annotations = [
     {
-      text: '1 bus lane:<br>30k-40k ppl/lane/hr<br>20-30 ppl/vehicle',
+      text: narrow
+        ? '1 bus lane:<br>30-40k ppl/lane/hr<br>20-30 ppl/vehicle'
+        : '1 bus lane:<br>30k-40k ppl/lane/hr<br>20-30 ppl/vehicle',
       ax: annX, ay: busTextYTop,
-      yanchor: 'top' as const,
       axref: 'x' as const, ayref: 'y' as const,
-      x: years[prevIdx], y: lincolnBusPct[prevIdx],
-      font: { color: fc },
+      yanchor: 'top' as const,
+      x: annX, y: busTextYTop,
+      font: { color: fc, size: narrow ? 10 : undefined },
       arrowcolor: 'rgba(0,0,0,0)',
       bgcolor: bg,
-      borderpad: 4,
+      borderpad: narrow ? 3 : 4,
     },
-    ...carTargets.map(({ ay, x, y, p }) => ({
-      ax: annX, ay,
-      axref: 'x' as const, ayref: 'y' as const,
-      yanchor: 'bottom' as const,
-      x, y,
-      standoff: bubbleRadius(p) + 3,
-      arrowcolor: ac,
-      arrowhead: 0,
-    })),
     {
-      text: '3+2 car lanes:<br>< 2k ppl/lane/hr<br>1.3 ppl/vehicle',
+      text: narrow
+        ? '3+2 car lanes:<br>&lt; 2k ppl/lane/hr<br>1.3 ppl/vehicle'
+        : '3+2 car lanes:<br>< 2k ppl/lane/hr<br>1.3 ppl/vehicle',
       ax: annX, ay: carTextYBottom,
       axref: 'x' as const, ayref: 'y' as const,
       yanchor: 'bottom' as const,
       x: annX, y: carTextYBottom,
-      font: { color: fc },
+      font: { color: fc, size: narrow ? 10 : undefined },
       arrowcolor: 'rgba(0,0,0,0)',
       bgcolor: bg,
-      borderpad: 4,
+      borderpad: narrow ? 3 : 4,
     },
   ]
+
+  // Shorten line endpoints to stop at bubble edge + margin
+  // We work in data coords; bubbleRadius is in px, so we need approximate scale factors
+  // xRange ≈ 12 years over ~plotWidth px, yRange ≈ 0.4 over ~plotHeight px
+  // These are rough but good enough for shortening
+  const shortenLine = (x0: number, y0: number, x1: number, y1: number, passengers: number) => {
+    const r = bubbleRadius(passengers)
+    // Convert bubble radius from px to approximate data units
+    // Use a generous margin (r + 4px worth)
+    const margin = r + 4
+    const dx = x1 - x0
+    const dy = y1 - y0
+    // Approximate px distance using chart scale (~40px per year, ~1500px per 1.0 y-range)
+    const pxDx = dx * 40
+    const pxDy = dy * 1500
+    const pxDist = Math.sqrt(pxDx * pxDx + pxDy * pxDy)
+    if (pxDist < margin * 2) return { x1, y1 } // too short to shorten
+    const frac = margin / pxDist
+    return { x1: x1 - dx * frac, y1: y1 - dy * frac }
+  }
+
+  const shapes = [
+    ...busTargets.map(({ x, y, p }) => {
+      const end = shortenLine(annX, busTextYTop, x, y, p)
+      return {
+        type: 'line' as const,
+        x0: annX, y0: busTextYTop,
+        x1: end.x1, y1: end.y1,
+        line: { color: ac, width: 1, dash: 'dot' as const },
+      }
+    }),
+    ...carTargets.map(({ x, y, p }) => {
+      const end = shortenLine(annX, carTextYBottom, x, y, p)
+      return {
+        type: 'line' as const,
+        x0: annX, y0: carTextYBottom,
+        x1: end.x1, y1: end.y1,
+        line: { color: ac, width: 1, dash: 'dot' as const },
+      }
+    }),
+  ]
+
+  // Line segment obstacles for repelLabels
+  const lineObstacles: RepelLineObstacle[] = [
+    ...busTargets.map(({ x, y }) => ({ x0: annX, y0: busTextYTop, x1: x, y1: y, buffer: 6 })),
+    ...carTargets.map(({ x, y }) => ({ x0: annX, y0: carTextYBottom, x1: x, y1: y, buffer: 6 })),
+  ]
+
+  // Text box obstacles as rectangles (approximate data-coord sizes)
+  // Bus: ~2yr wide, ~3% tall; Car: ~2yr wide, ~3% tall
+  const textW = narrow ? 1.2 : 1.5
+  const textH = narrow ? 0.025 : 0.03
+  const rectObstacles: RepelRectObstacle[] = [
+    { x: annX - textW / 2, y: busTextYTop - textH, width: textW, height: textH, buffer: 6 },
+    { x: annX - textW / 2, y: carTextYBottom, width: textW, height: textH, buffer: 6 },
+  ]
+
+  return { annotations, shapes, lineObstacles, rectObstacles }
 }

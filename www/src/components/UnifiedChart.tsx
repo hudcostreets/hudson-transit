@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import Plot from 'react-plotly.js'
-import type { Data, Layout } from 'plotly.js'
+import type { Layout, PlotData } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
 import type { Param } from 'use-prms'
 import { useActions } from 'use-kbd'
@@ -14,7 +14,7 @@ import { COLOR_SCHEMES } from '../lib/colors'
 import { filterCrossings, crossingSeriesArrays, aggregateByMode, toPercentages } from '../lib/transform'
 import { repelLabels } from 'pltly/plotly'
 import type { RepelPoint, RepelObstacle } from 'pltly/plotly'
-import { getJitter, buildCanonicalAnnotations } from './scatter-config'
+import { getJitter, getMaxSize, buildCanonicalAnnotations } from './scatter-config'
 import JitteredPlot, { getJitteredX, type JitterOffsets } from './JitteredPlot'
 import Toggle, { ToggleButton, type ToggleOption } from './Toggle'
 import PalettePicker from './PalettePicker'
@@ -193,7 +193,8 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const { narrow, wide } = useBreakpoints(width)
   const legendLayout = wide ? LEGEND_RIGHT : LEGEND_BOTTOM
   const rightMargin = wide ? 160 : 10
-  const maxSize = Math.round(lerp(width || 1000, 400, 1000, 35, 75))
+  const [sizeMin, sizeMax] = getMaxSize(direction, timePeriod, granularity)
+  const maxSize = Math.round(lerp(width || 1000, 400, 1000, sizeMin, sizeMax))
 
   // Resolve effective theme for Plotly
   const isDark = useMemo(() => {
@@ -315,7 +316,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   }
 
   const content = (() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations && !narrow, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow, width, highlight)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow, width, highlight)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
     if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
     return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
@@ -576,7 +577,7 @@ function renderScatter(
     return markerDiameter >= w + 6 // 6px padding
   }
 
-  const traces: Data[] = labels.map((label) => {
+  const traces = labels.map((label) => {
     const passengers = series[label]
     const sizes = passengers.map(p => Math.sqrt(p / maxPassengers) * maxSize)
     // Large enough bubbles get text inside
@@ -597,8 +598,8 @@ function renderScatter(
       textposition: 'middle center',
       textfont: { size: textSizes as unknown as number, color: '#fff' },
       hoverinfo: 'none',
-    } as Data
-  })
+    } as Partial<PlotData>
+  }) as Partial<PlotData>[]
 
   const maxYear = Math.max(...years)
 
@@ -617,7 +618,7 @@ function renderScatter(
     marker: { size: 40, color: 'rgba(0,0,0,0)' },
     hoverinfo: 'none',
     showlegend: false,
-  } as Data)
+  } as Partial<PlotData>)
   const repelPoints: RepelPoint[] = []
   const obstacles: RepelObstacle[] = []
   for (const label of labels) {
@@ -643,6 +644,11 @@ function renderScatter(
     }
   }
 
+  // Build canonical annotations first so their bounding boxes are repel obstacles
+  const canonical_ = showAnnotations
+    ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font }, narrow)
+    : null
+
   const { annotations: repelAnnotations } = repelLabels(repelPoints, {
     plotWidth: containerWidth,
     plotHeight: narrow ? 580 : 700,
@@ -653,11 +659,11 @@ function renderScatter(
     standoff: 3,
     textColor: pt.font,
     obstacles,
+    lineObstacles: canonical_?.lineObstacles,
+    rectObstacles: canonical_?.rectObstacles,
+    distanceFactors: [1],
+    maxIter: 0,
   })
-
-  const canonicalAnnotations = showAnnotations
-    ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font })
-    : []
 
   // Fade repel labels for non-active traces
   const fadedRepelAnnotations = highlight?.activeTrace
@@ -670,7 +676,8 @@ function renderScatter(
       })
     : repelAnnotations
 
-  const annotations = [...(canonicalAnnotations ?? []), ...fadedRepelAnnotations]
+  const annotations = [...(canonical_?.annotations ?? []), ...fadedRepelAnnotations]
+  const canonicalShapes = canonical_?.shapes ?? []
 
   const lastIdx = years.length - 1
   const iconSize = 0.018
@@ -731,6 +738,7 @@ function renderScatter(
         margin,
         autosize: true,
         annotations: annotations.length ? (annotations as Layout['annotations']).map(a => ({ ...a, captureevents: false })) : undefined,
+        shapes: canonicalShapes.length ? canonicalShapes as Layout['shapes'] : undefined,
         images: images as Layout['images'],
         showlegend: !hideLegend,
         legend: legendLayout,
@@ -816,8 +824,8 @@ function renderPctBar(
       marker: { color: colorMap[label] },
       text: pcts.map(p => p >= 2 ? `${p.toFixed(1)}%` : ''),
       textposition: 'inside' as const,
-      insidetextanchor: 'middle',
-      constraintext: 'none',
+      insidetextanchor: 'middle' as const,
+      constraintext: 'none' as const,
       textfont: { size: 11 },
       hoverinfo: 'none' as const,
     }
