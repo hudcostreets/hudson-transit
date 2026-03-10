@@ -103,6 +103,26 @@ Notes:
 - 7 modes: Auto, Subway, Bus, Rail, Ferry, Tramway, Bicycle.
 - 6 sectors: 60th_street, brooklyn, queens, nj, staten_island, roosevelt_island.
 
+### Phase 2b: Tables 21B–23B (peak accumulation history) ✅
+
+Done. 148 records in `data/peak_accumulation.json`. Historical peak accumulation (max persons/vehicles in Manhattan Hub at any point during a fall business day).
+
+- `total_persons`: 49 records, 1975–2024
+- `transit_passengers`: 49 records, 1975–2024
+- `motor_vehicles`: 50 records, 1973–2024
+
+Pre-2017 files have deeper history (back to 1973/1975); 2017+ only go to 1994. Deduplication prefers earliest publication for maximum history.
+
+Schema:
+```json
+{
+  "year": 2024,
+  "category": "total_persons",
+  "peak_accumulation": 988343,
+  "peak_hour": 14
+}
+```
+
 ### Phase 3: AppendixIII (granular bus/rail/subway)
 
 AppendixIII Sections A-G contain hourly bus/rail/subway data per sector:

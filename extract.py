@@ -763,6 +763,92 @@ def load_hourly_totals(year: int, year_dir: Path, table: str, measure: str):
     return records
 
 
+def load_peak_accumulation(year: int, year_dir: Path, table_b: str, measure: str):
+    """Parse Tables 21B/22B/23B: peak accumulation historical series.
+
+    Returns records with year, peak_accumulation, and peak_hour fields.
+    measure is 'total_persons', 'transit_passengers', or 'motor_vehicles'.
+    """
+    xl_path = find_excel(year_dir, r"AppendixII_")
+    if xl_path is None:
+        raise FileNotFoundError(f"No AppendixII file found for {year} in {year_dir}")
+
+    num = re.search(r'(\d+)', table_b).group(1)
+    if year < 2017:
+        sheet = f'Table{num}A-{num}B'
+    else:
+        sheet = table_b
+
+    ws = read_excel(xl_path, sheet_name=sheet, header=None)
+
+    # For combined sheets, find where the B table starts
+    if year < 2017:
+        b_start = None
+        for ri in range(len(ws)):
+            for ci in range(min(5, len(ws.columns))):
+                cell = str(ws.iloc[ri, ci]).upper() if not isna(ws.iloc[ri, ci]) else ''
+                if f'TABLE {num}B' in cell or f'TABLE{num}B' in cell:
+                    b_start = ri
+                    break
+            if b_start is not None:
+                break
+        if b_start is None:
+            raise ValueError(f"Could not find {table_b} boundary in combined sheet for {year}")
+        ws = ws.iloc[b_start:].reset_index(drop=True)
+
+    # Find the YEAR header row and column positions
+    year_col = None
+    accum_col = None
+    hour_col = None
+    header_ri = None
+    for ri in range(min(15, len(ws))):
+        for ci in range(len(ws.columns)):
+            cell = str(ws.iloc[ri, ci]).strip().upper() if not isna(ws.iloc[ri, ci]) else ''
+            if cell == 'YEAR':
+                year_col = ci
+                header_ri = ri
+            elif 'ACCUMULATION' in cell:
+                accum_col = ci
+            elif cell == 'AT':
+                hour_col = ci
+
+    if year_col is None or accum_col is None:
+        raise ValueError(f"Could not find YEAR/ACCUMULATION headers in {table_b} for {year}")
+
+    records = []
+    for ri in range(header_ri + 1, len(ws)):
+        yr_val = ws.iloc[ri, year_col]
+        try:
+            yr = int(yr_val)
+            if not (1970 <= yr <= 2030):
+                continue
+        except (ValueError, TypeError):
+            continue
+
+        accum_val = ws.iloc[ri, accum_col]
+        try:
+            accum = round(float(accum_val))
+        except (ValueError, TypeError):
+            continue
+
+        peak_hour = None
+        if hour_col is not None:
+            h_val = ws.iloc[ri, hour_col]
+            if not isna(h_val):
+                peak_hour = parse_hour(str(h_val))
+
+        rec = {
+            'year': yr,
+            'category': measure,
+            'peak_accumulation': accum,
+        }
+        if peak_hour is not None:
+            rec['peak_hour'] = peak_hour
+        records.append(rec)
+
+    return records
+
+
 @group()
 def cli():
     """Extract NYMTC Hub Bound Travel data."""
@@ -897,6 +983,36 @@ def extract(output_dir: str, years_filter: tuple[int, ...]):
         json.dump(all_hourly, f, indent=2)
         f.write('\n')
     print(f"Wrote {len(all_hourly)} hourly records to {hourly_path}")
+
+    # Extract peak accumulation (Tables 21B-23B)
+    # Use oldest available file for deepest history, then newer files for recent years
+    all_peak = []
+    seen_peak: set[tuple] = set()
+    accum_tables = [
+        ('Table21B', 'total_persons'),
+        ('Table22B', 'transit_passengers'),
+        ('Table23B', 'motor_vehicles'),
+    ]
+    for table, measure in accum_tables:
+        for year, year_dir in sorted(years.items()):
+            try:
+                records = load_peak_accumulation(year, year_dir, table, measure)
+                new_records = []
+                for r in records:
+                    key = (r['year'], r['category'])
+                    if key not in seen_peak:
+                        seen_peak.add(key)
+                        new_records.append(r)
+                all_peak.extend(new_records)
+                print(f"  {table} {year}: {len(records)} records ({len(new_records)} new)")
+            except Exception as e:
+                print(f"  {table} {year}: ERROR - {e}")
+
+    peak_path = join(output_dir, 'peak_accumulation.json')
+    with open(peak_path, 'w') as f:
+        json.dump(all_peak, f, indent=2)
+        f.write('\n')
+    print(f"Wrote {len(all_peak)} peak accumulation records to {peak_path}")
 
 
 if __name__ == '__main__':

@@ -1,0 +1,890 @@
+[
+  {
+    "year": 1975,
+    "category": "total_persons",
+    "peak_accumulation": 1402000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1976,
+    "category": "total_persons",
+    "peak_accumulation": 1319000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1977,
+    "category": "total_persons",
+    "peak_accumulation": 1356000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1978,
+    "category": "total_persons",
+    "peak_accumulation": 1329000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1979,
+    "category": "total_persons",
+    "peak_accumulation": 1388000,
+    "peak_hour": 14
+  },
+  {
+    "year": 1980,
+    "category": "total_persons",
+    "peak_accumulation": 1436000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1981,
+    "category": "total_persons",
+    "peak_accumulation": 1446000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1982,
+    "category": "total_persons",
+    "peak_accumulation": 1487000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1983,
+    "category": "total_persons",
+    "peak_accumulation": 1500000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1984,
+    "category": "total_persons",
+    "peak_accumulation": 1511000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1985,
+    "category": "total_persons",
+    "peak_accumulation": 1485000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1986,
+    "category": "total_persons",
+    "peak_accumulation": 1471000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1987,
+    "category": "total_persons",
+    "peak_accumulation": 1448000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1988,
+    "category": "total_persons",
+    "peak_accumulation": 1447000,
+    "peak_hour": 14
+  },
+  {
+    "year": 1989,
+    "category": "total_persons",
+    "peak_accumulation": 1481000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1990,
+    "category": "total_persons",
+    "peak_accumulation": 1318000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1991,
+    "category": "total_persons",
+    "peak_accumulation": 1325000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1992,
+    "category": "total_persons",
+    "peak_accumulation": 1262000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1993,
+    "category": "total_persons",
+    "peak_accumulation": 1250000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1994,
+    "category": "total_persons",
+    "peak_accumulation": 1273000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1995,
+    "category": "total_persons",
+    "peak_accumulation": 1277000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1996,
+    "category": "total_persons",
+    "peak_accumulation": 1295000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1997,
+    "category": "total_persons",
+    "peak_accumulation": 1303000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1998,
+    "category": "total_persons",
+    "peak_accumulation": 1296000,
+    "peak_hour": 13
+  },
+  {
+    "year": 2000,
+    "category": "total_persons",
+    "peak_accumulation": 1464000,
+    "peak_hour": 13
+  },
+  {
+    "year": 2001,
+    "category": "total_persons",
+    "peak_accumulation": 1253800,
+    "peak_hour": 13
+  },
+  {
+    "year": 2002,
+    "category": "total_persons",
+    "peak_accumulation": 1265360,
+    "peak_hour": 13
+  },
+  {
+    "year": 2003,
+    "category": "total_persons",
+    "peak_accumulation": 1273519,
+    "peak_hour": 13
+  },
+  {
+    "year": 2004,
+    "category": "total_persons",
+    "peak_accumulation": 1228259,
+    "peak_hour": 14
+  },
+  {
+    "year": 2005,
+    "category": "total_persons",
+    "peak_accumulation": 1197459,
+    "peak_hour": 14
+  },
+  {
+    "year": 2006,
+    "category": "total_persons",
+    "peak_accumulation": 1244863,
+    "peak_hour": 14
+  },
+  {
+    "year": 2007,
+    "category": "total_persons",
+    "peak_accumulation": 1381852,
+    "peak_hour": 13
+  },
+  {
+    "year": 2008,
+    "category": "total_persons",
+    "peak_accumulation": 1334179,
+    "peak_hour": 13
+  },
+  {
+    "year": 2009,
+    "category": "total_persons",
+    "peak_accumulation": 1209458,
+    "peak_hour": 14
+  },
+  {
+    "year": 2010,
+    "category": "total_persons",
+    "peak_accumulation": 1231071,
+    "peak_hour": 14
+  },
+  {
+    "year": 2011,
+    "category": "total_persons",
+    "peak_accumulation": 1230220,
+    "peak_hour": 14
+  },
+  {
+    "year": 2012,
+    "category": "total_persons",
+    "peak_accumulation": 1316844,
+    "peak_hour": 14
+  },
+  {
+    "year": 2013,
+    "category": "total_persons",
+    "peak_accumulation": 1342153,
+    "peak_hour": 14
+  },
+  {
+    "year": 2014,
+    "category": "total_persons",
+    "peak_accumulation": 1365561,
+    "peak_hour": 14
+  },
+  {
+    "year": 2015,
+    "category": "total_persons",
+    "peak_accumulation": 1392132,
+    "peak_hour": 14
+  },
+  {
+    "year": 2016,
+    "category": "total_persons",
+    "peak_accumulation": 1381111,
+    "peak_hour": 14
+  },
+  {
+    "year": 2017,
+    "category": "total_persons",
+    "peak_accumulation": 1378724,
+    "peak_hour": 14
+  },
+  {
+    "year": 2018,
+    "category": "total_persons",
+    "peak_accumulation": 1378366,
+    "peak_hour": 14
+  },
+  {
+    "year": 2019,
+    "category": "total_persons",
+    "peak_accumulation": 1382597,
+    "peak_hour": 14
+  },
+  {
+    "year": 2020,
+    "category": "total_persons",
+    "peak_accumulation": 384302,
+    "peak_hour": 14
+  },
+  {
+    "year": 2021,
+    "category": "total_persons",
+    "peak_accumulation": 610279,
+    "peak_hour": 14
+  },
+  {
+    "year": 2022,
+    "category": "total_persons",
+    "peak_accumulation": 848495,
+    "peak_hour": 14
+  },
+  {
+    "year": 2023,
+    "category": "total_persons",
+    "peak_accumulation": 881000,
+    "peak_hour": 14
+  },
+  {
+    "year": 2024,
+    "category": "total_persons",
+    "peak_accumulation": 988343,
+    "peak_hour": 14
+  },
+  {
+    "year": 1975,
+    "category": "transit_passengers",
+    "peak_accumulation": 1254000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1976,
+    "category": "transit_passengers",
+    "peak_accumulation": 1209000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1977,
+    "category": "transit_passengers",
+    "peak_accumulation": 1189000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1978,
+    "category": "transit_passengers",
+    "peak_accumulation": 1167000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1979,
+    "category": "transit_passengers",
+    "peak_accumulation": 1226000,
+    "peak_hour": 14
+  },
+  {
+    "year": 1980,
+    "category": "transit_passengers",
+    "peak_accumulation": 1274000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1981,
+    "category": "transit_passengers",
+    "peak_accumulation": 1291000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1982,
+    "category": "transit_passengers",
+    "peak_accumulation": 1291000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1983,
+    "category": "transit_passengers",
+    "peak_accumulation": 1299000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1984,
+    "category": "transit_passengers",
+    "peak_accumulation": 1302000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1985,
+    "category": "transit_passengers",
+    "peak_accumulation": 1300000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1986,
+    "category": "transit_passengers",
+    "peak_accumulation": 1290000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1987,
+    "category": "transit_passengers",
+    "peak_accumulation": 1258000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1988,
+    "category": "transit_passengers",
+    "peak_accumulation": 1272000,
+    "peak_hour": 14
+  },
+  {
+    "year": 1989,
+    "category": "transit_passengers",
+    "peak_accumulation": 1305000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1990,
+    "category": "transit_passengers",
+    "peak_accumulation": 1166000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1991,
+    "category": "transit_passengers",
+    "peak_accumulation": 1170000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1992,
+    "category": "transit_passengers",
+    "peak_accumulation": 1114000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1993,
+    "category": "transit_passengers",
+    "peak_accumulation": 1107000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1994,
+    "category": "transit_passengers",
+    "peak_accumulation": 1124000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1995,
+    "category": "transit_passengers",
+    "peak_accumulation": 1134000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1996,
+    "category": "transit_passengers",
+    "peak_accumulation": 1147000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1997,
+    "category": "transit_passengers",
+    "peak_accumulation": 1214000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1998,
+    "category": "transit_passengers",
+    "peak_accumulation": 1106000,
+    "peak_hour": 13
+  },
+  {
+    "year": 2000,
+    "category": "transit_passengers",
+    "peak_accumulation": 1301700,
+    "peak_hour": 13
+  },
+  {
+    "year": 2001,
+    "category": "transit_passengers",
+    "peak_accumulation": 1143565,
+    "peak_hour": 13
+  },
+  {
+    "year": 2002,
+    "category": "transit_passengers",
+    "peak_accumulation": 1165742,
+    "peak_hour": 13
+  },
+  {
+    "year": 2003,
+    "category": "transit_passengers",
+    "peak_accumulation": 1131893,
+    "peak_hour": 13
+  },
+  {
+    "year": 2004,
+    "category": "transit_passengers",
+    "peak_accumulation": 1095947,
+    "peak_hour": 14
+  },
+  {
+    "year": 2005,
+    "category": "transit_passengers",
+    "peak_accumulation": 1084278,
+    "peak_hour": 14
+  },
+  {
+    "year": 2006,
+    "category": "transit_passengers",
+    "peak_accumulation": 1127823,
+    "peak_hour": 14
+  },
+  {
+    "year": 2007,
+    "category": "transit_passengers",
+    "peak_accumulation": 1263788,
+    "peak_hour": 13
+  },
+  {
+    "year": 2008,
+    "category": "transit_passengers",
+    "peak_accumulation": 1227692,
+    "peak_hour": 14
+  },
+  {
+    "year": 2009,
+    "category": "transit_passengers",
+    "peak_accumulation": 1113513,
+    "peak_hour": 14
+  },
+  {
+    "year": 2010,
+    "category": "transit_passengers",
+    "peak_accumulation": 1129993,
+    "peak_hour": 14
+  },
+  {
+    "year": 2011,
+    "category": "transit_passengers",
+    "peak_accumulation": 1163499,
+    "peak_hour": 14
+  },
+  {
+    "year": 2012,
+    "category": "transit_passengers",
+    "peak_accumulation": 1203234,
+    "peak_hour": 14
+  },
+  {
+    "year": 2013,
+    "category": "transit_passengers",
+    "peak_accumulation": 1230358,
+    "peak_hour": 14
+  },
+  {
+    "year": 2014,
+    "category": "transit_passengers",
+    "peak_accumulation": 1260596,
+    "peak_hour": 14
+  },
+  {
+    "year": 2015,
+    "category": "transit_passengers",
+    "peak_accumulation": 1284399,
+    "peak_hour": 14
+  },
+  {
+    "year": 2016,
+    "category": "transit_passengers",
+    "peak_accumulation": 1279601,
+    "peak_hour": 14
+  },
+  {
+    "year": 2017,
+    "category": "transit_passengers",
+    "peak_accumulation": 1280676,
+    "peak_hour": 14
+  },
+  {
+    "year": 2018,
+    "category": "transit_passengers",
+    "peak_accumulation": 1286504,
+    "peak_hour": 14
+  },
+  {
+    "year": 2019,
+    "category": "transit_passengers",
+    "peak_accumulation": 1272903,
+    "peak_hour": 14
+  },
+  {
+    "year": 2020,
+    "category": "transit_passengers",
+    "peak_accumulation": 291275,
+    "peak_hour": 14
+  },
+  {
+    "year": 2021,
+    "category": "transit_passengers",
+    "peak_accumulation": 532132,
+    "peak_hour": 15
+  },
+  {
+    "year": 2022,
+    "category": "transit_passengers",
+    "peak_accumulation": 758626,
+    "peak_hour": 14
+  },
+  {
+    "year": 2023,
+    "category": "transit_passengers",
+    "peak_accumulation": 790669,
+    "peak_hour": 14
+  },
+  {
+    "year": 2024,
+    "category": "transit_passengers",
+    "peak_accumulation": 899335,
+    "peak_hour": 14
+  },
+  {
+    "year": 1973,
+    "category": "motor_vehicles",
+    "peak_accumulation": 89300,
+    "peak_hour": 14
+  },
+  {
+    "year": 1975,
+    "category": "motor_vehicles",
+    "peak_accumulation": 84400,
+    "peak_hour": 14
+  },
+  {
+    "year": 1976,
+    "category": "motor_vehicles",
+    "peak_accumulation": 93500,
+    "peak_hour": 13
+  },
+  {
+    "year": 1977,
+    "category": "motor_vehicles",
+    "peak_accumulation": 97400,
+    "peak_hour": 14
+  },
+  {
+    "year": 1978,
+    "category": "motor_vehicles",
+    "peak_accumulation": 96900,
+    "peak_hour": 14
+  },
+  {
+    "year": 1979,
+    "category": "motor_vehicles",
+    "peak_accumulation": 101500,
+    "peak_hour": 14
+  },
+  {
+    "year": 1980,
+    "category": "motor_vehicles",
+    "peak_accumulation": 101500,
+    "peak_hour": 14
+  },
+  {
+    "year": 1981,
+    "category": "motor_vehicles",
+    "peak_accumulation": 97400,
+    "peak_hour": 14
+  },
+  {
+    "year": 1982,
+    "category": "motor_vehicles",
+    "peak_accumulation": 102100,
+    "peak_hour": 14
+  },
+  {
+    "year": 1983,
+    "category": "motor_vehicles",
+    "peak_accumulation": 105800,
+    "peak_hour": 13
+  },
+  {
+    "year": 1984,
+    "category": "motor_vehicles",
+    "peak_accumulation": 125300,
+    "peak_hour": 14
+  },
+  {
+    "year": 1985,
+    "category": "motor_vehicles",
+    "peak_accumulation": 104000,
+    "peak_hour": 13
+  },
+  {
+    "year": 1986,
+    "category": "motor_vehicles",
+    "peak_accumulation": 107200,
+    "peak_hour": 13
+  },
+  {
+    "year": 1987,
+    "category": "motor_vehicles",
+    "peak_accumulation": 110900,
+    "peak_hour": 14
+  },
+  {
+    "year": 1988,
+    "category": "motor_vehicles",
+    "peak_accumulation": 100800,
+    "peak_hour": 13
+  },
+  {
+    "year": 1989,
+    "category": "motor_vehicles",
+    "peak_accumulation": 101300,
+    "peak_hour": 14
+  },
+  {
+    "year": 1990,
+    "category": "motor_vehicles",
+    "peak_accumulation": 101800,
+    "peak_hour": 13
+  },
+  {
+    "year": 1991,
+    "category": "motor_vehicles",
+    "peak_accumulation": 102300,
+    "peak_hour": 13
+  },
+  {
+    "year": 1992,
+    "category": "motor_vehicles",
+    "peak_accumulation": 96300,
+    "peak_hour": 13
+  },
+  {
+    "year": 1993,
+    "category": "motor_vehicles",
+    "peak_accumulation": 94100,
+    "peak_hour": 14
+  },
+  {
+    "year": 1994,
+    "category": "motor_vehicles",
+    "peak_accumulation": 97100,
+    "peak_hour": 14
+  },
+  {
+    "year": 1995,
+    "category": "motor_vehicles",
+    "peak_accumulation": 94100,
+    "peak_hour": 14
+  },
+  {
+    "year": 1996,
+    "category": "motor_vehicles",
+    "peak_accumulation": 93800,
+    "peak_hour": 13
+  },
+  {
+    "year": 1997,
+    "category": "motor_vehicles",
+    "peak_accumulation": 101000,
+    "peak_hour": 14
+  },
+  {
+    "year": 1998,
+    "category": "motor_vehicles",
+    "peak_accumulation": 104000,
+    "peak_hour": 14
+  },
+  {
+    "year": 2000,
+    "category": "motor_vehicles",
+    "peak_accumulation": 102872,
+    "peak_hour": 14
+  },
+  {
+    "year": 2001,
+    "category": "motor_vehicles",
+    "peak_accumulation": 67093,
+    "peak_hour": 14
+  },
+  {
+    "year": 2002,
+    "category": "motor_vehicles",
+    "peak_accumulation": 60181,
+    "peak_hour": 14
+  },
+  {
+    "year": 2003,
+    "category": "motor_vehicles",
+    "peak_accumulation": 86909,
+    "peak_hour": 14
+  },
+  {
+    "year": 2004,
+    "category": "motor_vehicles",
+    "peak_accumulation": 91551,
+    "peak_hour": 13
+  },
+  {
+    "year": 2005,
+    "category": "motor_vehicles",
+    "peak_accumulation": 85119,
+    "peak_hour": 13
+  },
+  {
+    "year": 2006,
+    "category": "motor_vehicles",
+    "peak_accumulation": 89847,
+    "peak_hour": 13
+  },
+  {
+    "year": 2007,
+    "category": "motor_vehicles",
+    "peak_accumulation": 88629,
+    "peak_hour": 13
+  },
+  {
+    "year": 2008,
+    "category": "motor_vehicles",
+    "peak_accumulation": 79198,
+    "peak_hour": 13
+  },
+  {
+    "year": 2009,
+    "category": "motor_vehicles",
+    "peak_accumulation": 78305,
+    "peak_hour": 13
+  },
+  {
+    "year": 2010,
+    "category": "motor_vehicles",
+    "peak_accumulation": 78173,
+    "peak_hour": 13
+  },
+  {
+    "year": 2011,
+    "category": "motor_vehicles",
+    "peak_accumulation": 79651,
+    "peak_hour": 13
+  },
+  {
+    "year": 2012,
+    "category": "motor_vehicles",
+    "peak_accumulation": 81359,
+    "peak_hour": 13
+  },
+  {
+    "year": 2013,
+    "category": "motor_vehicles",
+    "peak_accumulation": 79753,
+    "peak_hour": 13
+  },
+  {
+    "year": 2014,
+    "category": "motor_vehicles",
+    "peak_accumulation": 75896,
+    "peak_hour": 13
+  },
+  {
+    "year": 2015,
+    "category": "motor_vehicles",
+    "peak_accumulation": 78750,
+    "peak_hour": 13
+  },
+  {
+    "year": 2016,
+    "category": "motor_vehicles",
+    "peak_accumulation": 72867,
+    "peak_hour": 13
+  },
+  {
+    "year": 2017,
+    "category": "motor_vehicles",
+    "peak_accumulation": 73203,
+    "peak_hour": 13
+  },
+  {
+    "year": 2018,
+    "category": "motor_vehicles",
+    "peak_accumulation": 67725,
+    "peak_hour": 13
+  },
+  {
+    "year": 2019,
+    "category": "motor_vehicles",
+    "peak_accumulation": 80998,
+    "peak_hour": 13
+  },
+  {
+    "year": 2020,
+    "category": "motor_vehicles",
+    "peak_accumulation": 70597,
+    "peak_hour": 12
+  },
+  {
+    "year": 2021,
+    "category": "motor_vehicles",
+    "peak_accumulation": 57640,
+    "peak_hour": 13
+  },
+  {
+    "year": 2022,
+    "category": "motor_vehicles",
+    "peak_accumulation": 66539,
+    "peak_hour": 13
+  },
+  {
+    "year": 2023,
+    "category": "motor_vehicles",
+    "peak_accumulation": 67643,
+    "peak_hour": 13
+  },
+  {
+    "year": 2024,
+    "category": "motor_vehicles",
+    "peak_accumulation": 64491,
+    "peak_hour": 13
+  }
+]
