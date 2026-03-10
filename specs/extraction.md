@@ -1,0 +1,137 @@
+# Full NYMTC Extraction (All Sectors)
+
+Expand `extract.py` to extract all CBD entry sectors, not just NJ. The goal is a canonical normalized multi-year distillation of the NYMTC Hub Bound Travel reports (2014–2024).
+
+## Current state
+
+`extract.py` produces two files:
+- **`crossings.json`** (528 records): NJ sector only, Tables 14A-C / 15A-C, 6 crossings × 5 modes (ish) × 2 directions × 3 time periods × 11 years
+- **`modes.json`** (165 records): NJ sector day volumes from Quick Reference Table
+
+## Available data in AppendixII
+
+### Tables 14–15 (NJ sector, currently extracted)
+
+Per-crossing mode breakdown. Already handled, including Table14B shift-correction.
+
+### Tables 16–17 (all sectors: motor vehicles entering/leaving)
+
+All 4 sectors, per-crossing, 3 time periods (1hr/3hr/24hr) in one sheet. Columns: Autos+Taxis+Vans+Trucks, Bus, Total. Rows grouped by sector header ("60TH STREET SECTOR", "BROOKLYN SECTOR", etc.).
+
+**Crossings per sector:**
+| Sector | Crossings |
+|--------|-----------|
+| 60th St | FDR Drive, York Ave, 2nd Ave, Lexington Ave, Park Ave, 5th Ave, Broadway, Columbus Ave, West End Ave, West Side Hwy |
+| Brooklyn | Williamsburg Bridge, Manhattan Bridge, Brooklyn Bridge, Hugh L. Carey Tunnel |
+| Queens | Queens Midtown Tunnel, Ed Koch Queensboro Bridge |
+| NJ | Holland Tunnel, Lincoln Tunnel |
+
+### Tables 18–19 (all sectors: bus passengers entering/leaving)
+
+Similar structure: Local Bus, Express Bus, Total per crossing. More granular bus breakdown than Tables 14-15.
+
+### Tables 20 (service levels)
+
+Comfort/frequency metrics, not volume data. **Skip for now.**
+
+### Tables 21A/B (total persons by hour, 3 years)
+
+Hourly inbound/outbound totals. 24 hours × inbound/outbound × 3 years per sheet. Rich time-of-day data.
+
+### Tables 22A/B (transit passengers by hour)
+
+Same as 21 but transit-only.
+
+### Tables 23A/B (motor vehicles by hour)
+
+Same as 21 but vehicles-only.
+
+### Tables 24–25 (persons by hour and mode, single year)
+
+24 hours × modes (Auto, Subway, Bus, Rail, Ferry, etc.). One year per sheet.
+
+### Tables 26–27 (persons by hour and sector, single year)
+
+24 hours × 4 sectors. One year per sheet.
+
+## Extraction plan
+
+### Phase 1: Tables 16–19 (all-sector crossing-level volumes)
+
+These have the same structure as Tables 14-15 but for all sectors, and with motor vehicle / bus breakdowns rather than per-mode detail.
+
+1. Parse sector headers to segment rows
+2. Extract 3 time periods from columns (1hr, 3hr, 24hr)
+3. Normalize crossing names across years
+4. Output to `crossings.json` with new sector values: `60th_street`, `brooklyn`, `queens` (NJ already present)
+
+### Phase 2: Tables 21–27 (hourly data)
+
+New output file `hourly.json`:
+```json
+{
+  "year": 2024,
+  "hour": 8,
+  "direction": "entering",
+  "sector": "nj",
+  "mode": "Bus",
+  "persons": 28883
+}
+```
+
+Tables 21-23 give 3-year comparisons; Tables 24-27 give mode/sector detail for latest year. Union them into a single hourly dataset.
+
+### Phase 3: AppendixIII (granular bus/rail/subway)
+
+AppendixIII Sections A-G contain hourly bus/rail/subway data per sector:
+- Section A: Buses and passengers by sector (hourly, inbound/outbound)
+- Sections B-G: More granular route-level data
+
+Lower priority — extract if needed for specific visualizations.
+
+## Data quality
+
+### isna-mask verification (existing, extend)
+
+For every newly extracted table:
+- Load raw data for all time-period variants
+- Compare isna masks column-by-column to detect garbled/shifted data
+- Apply corrections as needed (see Table14B precedent)
+- Verify via ratio bounds: 3hr/1hr ∈ [1.5, 4.0], 24hr/1hr ∈ [2.0, 30.0]
+
+### Cross-table consistency
+
+- Tables 16/17 motor vehicle totals should match Tables 14-15 auto+bus columns for NJ sector
+- Quick Reference Table totals should match Table 14C/15C 24hr entering/leaving
+- Flag discrepancies but don't block extraction
+
+## Output schema
+
+Same as current `crossings.json`, extended:
+```json
+{
+  "year": 2024,
+  "sector": "60th_street",
+  "crossing": "FDR Drive",
+  "mode": "Auto",
+  "direction": "entering",
+  "time_period": "peak_1hr",
+  "passengers": 4891
+}
+```
+
+Sector values: `60th_street`, `brooklyn`, `queens`, `nj`, `staten_island`.
+
+## Estimated record counts
+
+- Current: 528 (NJ crossings) + 165 (NJ modes)
+- Tables 16-19: ~18 crossings × 3 time periods × 2 directions × 11 years × 2-3 modes ≈ 2,000-3,000
+- Hourly tables: 24 hours × 2 directions × modes/sectors × years ≈ 5,000-10,000
+- Total: ~10,000-15,000 records (still small enough for static JSON)
+
+## Frontend impact
+
+- `CrossingRecord` type unchanged (sector field already exists)
+- Add sector selector toggle to `UnifiedChart`
+- Color maps needed for new crossing names
+- Jitter configs for new sector views (or auto-jitter)
