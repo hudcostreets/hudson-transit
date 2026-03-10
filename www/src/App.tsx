@@ -2,14 +2,22 @@ import { HotkeysProvider, LookupModal, Omnibar, ShortcutsModal, SpeedDial, type 
 import 'use-kbd/styles.css'
 import crossingsData from './data/crossings.json'
 import vehiclesData from './data/vehicles.json'
+import hourlyData from './data/hourly.json'
+import peakData from './data/peak_accumulation.json'
 import type { CrossingRecord } from './lib/types'
+import type { HourlyRecord, PeakRecord } from './lib/hourly-types'
 import UnifiedChart from './components/UnifiedChart'
 import SectorChart from './components/SectorChart'
+import HourlyChart from './components/HourlyChart'
+import PeakChart from './components/PeakChart'
+import ModeShareChart from './components/ModeShareChart'
 import { SDTooltipRenderer } from './components/Tooltip'
 import './App.scss'
 
 const crossings = crossingsData as CrossingRecord[]
 const vehicles = vehiclesData as CrossingRecord[]
+const hourly = hourlyData as HourlyRecord[]
+const peak = peakData as PeakRecord[]
 
 function GitHubIcon() {
   return (
@@ -53,8 +61,17 @@ function App() {
           <section id="chart">
             <UnifiedChart data={crossings} />
           </section>
+          <section id="hourly">
+            <HourlyChart data={hourly} />
+          </section>
+          <section id="mode-share">
+            <ModeShareChart data={hourly} />
+          </section>
           <section id="sectors">
             <SectorChart data={vehicles} />
+          </section>
+          <section id="peak">
+            <PeakChart data={peak} />
           </section>
         </main>
         <footer>

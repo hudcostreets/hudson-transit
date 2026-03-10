@@ -96,6 +96,10 @@ body {
 }
 
 main {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
   section {
     padding: 0;
 

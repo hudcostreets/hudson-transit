@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
-import Plot from 'react-plotly.js'
 import type { Layout, PlotData } from 'plotly.js'
-import { useContainerWidth, useBreakpoints } from 'pltly/react'
+import { Plot, useContainerWidth, useBreakpoints } from 'pltly/react'
 import { useUrlState, codeParam } from 'use-prms'
 import type { CrossingRecord, Direction, TimePeriod } from '../lib/types'
 import Toggle, { type ToggleOption } from './Toggle'
@@ -124,18 +123,17 @@ export default function SectorChart({ data }: { data: CrossingRecord[] }) {
 
   return (
     <div ref={ref}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 8 }}>
+      <Plot
+        data={traces}
+        layout={layout}
+        style={{ height: narrow ? 400 : 500 }}
+        disableTheme
+      />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
         <Toggle options={VIEW_OPTIONS} value={viewMode} onChange={setViewMode} />
         <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
         <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
       </div>
-      <Plot
-        data={traces}
-        layout={layout}
-        config={{ displayModeBar: false, responsive: true }}
-        style={{ width: '100%', height: narrow ? 400 : 500 }}
-        useResizeHandler
-      />
     </div>
   )
 }
