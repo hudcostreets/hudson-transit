@@ -99,6 +99,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  padding-top: 1.5rem;
 
   section {
     padding: 0;
@@ -349,6 +350,7 @@ footer {
 }
 
 @media (max-width: 600px) {
+  main { padding-top: 0.5rem; }
   header h1 { font-size: 1.3rem; }
 
   // Bleed chart to viewport edges on narrow screens

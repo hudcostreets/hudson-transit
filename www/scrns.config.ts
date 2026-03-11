@@ -1,4 +1,4 @@
-import type { Config } from 'scrns'
+import type { ScreenshotsMap, ScreenshotConfig } from 'scrns'
 
 const W = 1200
 const H = 800
@@ -10,9 +10,7 @@ const H = 800
 //   g: granularity — c(rossing, default), m(ode)
 //   T: theme       — d(ark, default), l(ight)
 
-type Shot = { query: string; width: number; height: number; selector: string; preScreenshotSleep: number }
-
-function shot(params: string): Shot {
+function shot(params: string): ScreenshotConfig {
   return {
     query: params ? `?${params}` : '',
     width: W,
@@ -51,7 +49,7 @@ function join(...parts: string[]): string {
   return parts.filter(Boolean).join('&')
 }
 
-const screenshots: Record<string, Shot> = {}
+const screenshots: ScreenshotsMap = {}
 
 // 6 bubble views (2 directions x 3 time periods) x 2 themes = 12
 for (const dir of dirs) {
@@ -71,11 +69,15 @@ for (const view of views) {
   }
 }
 
-const config: Config = {
-  engine: 'playwright',
-  host: 3847,
-  output: 'public/screenshots',
-  screenshots,
+// og:image — canonical bubble chart, full chart height + controls
+screenshots['og-image'] = {
+  query: '',
+  width: 1200,
+  height: 850,
+  selector: '.js-plotly-plot',
+  preScreenshotSleep: 1500,
 }
 
-export default config
+// Usage: npx scrns -h 3847 -o public/screenshots
+// og:image only: npx scrns -h 3847 -o public/screenshots -i og-image
+export default screenshots
