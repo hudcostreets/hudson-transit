@@ -27,8 +27,8 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4)
       use-kbd:
-        specifier: https://github.com/runsascoded/use-kbd#42b5a04da6e7da6b7094bab4f12581da05d80868
-        version: https://codeload.github.com/runsascoded/use-kbd/tar.gz/42b5a04da6e7da6b7094bab4f12581da05d80868(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: https://github.com/runsascoded/use-kbd#25f7c0f1719be2573117247efc340649382a56db
+        version: https://codeload.github.com/runsascoded/use-kbd/tar.gz/25f7c0f1719be2573117247efc340649382a56db(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       use-prms:
         specifier: https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811
         version: https://codeload.github.com/runsascoded/use-prms/tar.gz/e8358bc09a3b2708c5dc41f7d489d1b512092811(react@19.2.4)
@@ -2878,9 +2878,9 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/42b5a04da6e7da6b7094bab4f12581da05d80868:
-    resolution: {tarball: https://codeload.github.com/runsascoded/use-kbd/tar.gz/42b5a04da6e7da6b7094bab4f12581da05d80868}
-    version: 0.11.0-dist.50deb44
+  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/25f7c0f1719be2573117247efc340649382a56db:
+    resolution: {tarball: https://codeload.github.com/runsascoded/use-kbd/tar.gz/25f7c0f1719be2573117247efc340649382a56db}
+    version: 0.11.0-dist.eca83db
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -6134,7 +6134,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/42b5a04da6e7da6b7094bab4f12581da05d80868(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/25f7c0f1719be2573117247efc340649382a56db(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       debug: 4.4.3
       react: 19.2.4
