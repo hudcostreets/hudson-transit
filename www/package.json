@@ -14,7 +14,7 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
     "plotly.js-dist-min": "^3.4.0",
-    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/263bdcb45b860a55ce6f1fdbf2bb70ba50fb8aa9/pltly-263bdcb45b860a55ce6f1fdbf2bb70ba50fb8aa9.tar.gz",
+    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/b334ba080110e89c67f71e751557edd7185634b2/pltly-b334ba080110e89c67f71e751557edd7185634b2.tar.gz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-plotly.js": "^2.6.0",
