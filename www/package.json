@@ -17,8 +17,7 @@
     "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/b334ba080110e89c67f71e751557edd7185634b2/pltly-b334ba080110e89c67f71e751557edd7185634b2.tar.gz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-plotly.js": "^2.6.0",
-    "use-kbd": "https://github.com/runsascoded/use-kbd#25f7c0f1719be2573117247efc340649382a56db",
+    "use-kbd": "^0.12.0",
     "use-prms": "https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import Plot from 'react-plotly.js'
+import { Plot } from 'pltly/react'
 import type { Layout, PlotData } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
 import type { Param } from 'use-prms'
@@ -733,7 +733,6 @@ function renderScatter(
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
-      useResizeHandler
       style={{ width: '100%', height: narrow ? '580px' : '700px' }}
       config={mobileConfig}
       {...hp}
@@ -777,7 +776,6 @@ function renderBar(
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
-      useResizeHandler
       style={{ width: '100%', height: '600px' }}
       config={mobileConfig}
       {...hp}
@@ -836,7 +834,6 @@ function renderPctBar(
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
-      useResizeHandler
       style={{ width: '100%', height: '600px' }}
       config={mobileConfig}
       {...hp}
@@ -912,7 +909,6 @@ function renderRecovery(
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
-      useResizeHandler
       style={{ width: '100%', height: '600px' }}
       config={mobileConfig}
       {...hp}

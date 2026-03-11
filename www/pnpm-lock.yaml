@@ -23,9 +23,6 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.2.4(react@19.2.4)
-      react-plotly.js:
-        specifier: ^2.6.0
-        version: 2.6.0(plotly.js@3.4.0(mapbox-gl@1.13.3))(react@19.2.4)
       use-kbd:
         specifier: https://github.com/runsascoded/use-kbd#25f7c0f1719be2573117247efc340649382a56db
         version: https://codeload.github.com/runsascoded/use-kbd/tar.gz/25f7c0f1719be2573117247efc340649382a56db(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
