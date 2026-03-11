@@ -238,39 +238,29 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
 
   const clearHover = useCallback(() => setHoverYear(null), [])
 
-  // Direct touch handler: convert touch x to nearest year (bypasses Plotly's spotty touch events)
-  const chartMarginRef = useRef({ l: 60, r: 10 })
-  const xRangeRef = useRef<[number, number]>([years[0] - 0.8, years[years.length - 1] + 0.8])
-
-  const handleChartTouch = useCallback((e: React.TouchEvent) => {
-    const touch = e.changedTouches[0] ?? e.touches[0]
-    if (!touch) return
-    const el = chartRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const relX = touch.clientX - rect.left
-    const mL = chartMarginRef.current.l
-    const mR = chartMarginRef.current.r
-    const plotW = rect.width - mL - mR
-    const [xMin, xMax] = xRangeRef.current
-    const dataX = xMin + ((relX - mL) / plotW) * (xMax - xMin)
-    // Find nearest year
-    let bestYear = years[0]
-    let bestDist = Infinity
-    for (const y of years) {
-      const d = Math.abs(dataX - y)
-      if (d < bestDist) { bestDist = d; bestYear = y }
-    }
-    if (bestDist > 0.6) return // too far from any year
-    if (hoverYear === bestYear) {
+  // Click handler for mobile tap-to-hover (Plotly reliably fires plotly_click on touch)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleClick = useCallback((event: any) => {
+    const pt = event.points?.[0]
+    if (!pt) return
+    const year = Math.round(Number(pt.x))
+    if (!years.includes(year)) return
+    const raw = event.event
+    if (hoverYear === year) {
       setHoverYear(null)
     } else {
-      setHoverYear(bestYear)
-      setHoverPos({ x: touch.clientX, y: touch.clientY })
+      setHoverYear(year)
+      if (typeof raw?.clientX === 'number') {
+        setHoverPos({ x: raw.clientX, y: raw.clientY })
+      }
     }
   }, [years, hoverYear])
 
-  const hoverProps = { onHover: handleHover, onUnhover: clearHover }
+  // Refs for chart margin/xRange (used by touch position calculation)
+  const chartMarginRef = useRef({ l: 60, r: 10 })
+  const xRangeRef = useRef<[number, number]>([years[0] - 0.8, years[years.length - 1] + 0.8])
+
+  const hoverProps = { onHover: handleHover, onUnhover: clearHover, onClick: handleClick }
 
   const highlight = useTraceHighlight(labels)
 
@@ -381,7 +371,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     <div ref={ref}>
       <h2>NJ&rarr;NY passengers by mode/crossing</h2>
       <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
-      <div ref={chartRef} className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover} onTouchEnd={handleChartTouch}>
+      <div ref={chartRef} className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
         {content}
         {showSideLegend && (
           <LogoLegend
@@ -433,7 +423,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type HoverProps = { onHover: (e: any) => void; onUnhover: () => void }
+type HoverProps = { onHover: (e: any) => void; onUnhover: () => void; onClick?: (e: any) => void }
 
 function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, colorMap }: {
   year: number
