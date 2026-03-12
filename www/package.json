@@ -14,7 +14,7 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
     "plotly.js-dist-min": "^3.4.0",
-    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/b334ba080110e89c67f71e751557edd7185634b2/pltly-b334ba080110e89c67f71e751557edd7185634b2.tar.gz",
+    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/8ca11d0a117829cdeb0945fc1a743ec845e5cdac/pltly-8ca11d0a117829cdeb0945fc1a743ec845e5cdac.tar.gz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "use-kbd": "^0.12.0",
@@ -33,8 +33,9 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "pnpm-dep-source": "https://github.com/runsascoded/pnpm-dep-source#157b214d36963173721769447daefc65f7948ed1",
     "sass": "^1.97.3",
-    "scrns": "^0",
+    "scrns": "https://github.com/runsascoded/scrns#68cef44643cd1aab1701dc98dd285b630a271b32",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
     "vite": "^7.3.1"

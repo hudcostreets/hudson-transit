@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { pdsPlugin } from 'pnpm-dep-source/vite'
 
-const allowedHosts = process.env.VITE_ALLOWED_HOSTS?.split(',') ?? []
+const allowedHosts = [
+  'host.docker.internal',
+  ...process.env.VITE_ALLOWED_HOSTS?.split(',') ?? [],
+]
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), pdsPlugin({ extra: ['plotly.js-dist-min'] })],
 
   server: {
     port: 3847,
