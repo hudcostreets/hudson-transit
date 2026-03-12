@@ -305,7 +305,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     xRangeRef.current = [years[0] - 0.5, years[years.length - 1] + 0.5]
   }
 
-  const content = (() => {
+  const content = width <= 0 ? null : (() => {
     if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow, width, highlight)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
     if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
@@ -694,7 +694,7 @@ function renderScatter(
     }
   }).filter(Boolean)
 
-  const styledTraces = highlight ? highlight.fadeTraces(traces) : traces
+  const styledTraces = (highlight ? highlight.fadeTraces(traces) : traces) as Partial<PlotData>[]
 
   return (
     <JitteredPlot
