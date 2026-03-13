@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useMemo, useCallback, useEffect, useRef } from 'react'
 import { Plot } from 'pltly/react'
 import type { Layout, PlotData } from 'plotly.js'
 import { useUrlState, codeParam } from 'use-prms'
 import type { Param } from 'use-prms'
 import { useActions } from 'use-kbd'
-import { useContainerWidth, useBreakpoints, useTraceHighlight } from 'pltly/react'
-import type { UseTraceHighlightReturn } from 'pltly/react'
+import { useContainerWidth, useBreakpoints, useTraceHighlight, useCustomHover } from 'pltly/react'
+import type { UseTraceHighlightReturn, UseCustomHoverReturn } from 'pltly/react'
 import { lerp } from 'pltly/plotly'
 import { mobileSafeConfig, mobileSafeLayout } from 'pltly/mobile'
 import type { PlotTheme } from 'pltly/plotly'
@@ -202,9 +202,10 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     if (theme === 'light') return false
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   }, [theme])
-  const plotTheme = isDark
+  const plotTheme = useMemo(() => isDark
     ? { bg: 'rgba(0,0,0,0)', font: '#ccc', grid: '#333', annFont: '#e0e0e0', annBg: '#2a2a4a' }
-    : { bg: 'rgba(0,0,0,0)', font: '#444', grid: '#e5e5e5', annFont: '#000', annBg: '#fff' }
+    : { bg: 'rgba(0,0,0,0)', font: '#444', grid: '#e5e5e5', annFont: '#000', annBg: '#fff' },
+  [isDark])
 
   // Pre-compute recovery ratios for hover tooltip
   const recovery = useMemo(() => {
@@ -218,49 +219,43 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     return r
   }, [years, series, labels])
 
-  // Unified hover state
-  const [hoverYear, setHoverYear] = useState<number | null>(null)
-  const [hoverPos, setHoverPos] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
   const chartRef = useRef<HTMLDivElement>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleHover = useCallback((event: any) => {
-    const pt = event.points?.[0]
-    if (!pt) return
-    const year = Math.round(Number(pt.x))
-    if (!years.includes(year)) return
-    const raw = event.event
-    if (typeof raw?.clientX === 'number') {
-      setHoverPos({ x: raw.clientX, y: raw.clientY })
-    }
-    setHoverYear(year)
-  }, [years])
+  // useCustomHover wires plotly_hover/unhover/click events via Plot's customHover prop.
+  // We only use hover.x (to derive hoverYear), not groups, so groupKey is trivial.
+  const emptyData = useMemo(() => [] as import('plotly.js').Data[], [])
+  const stableGroupKey = useCallback(() => '', [])
+  const stableNormalizeX = useCallback((x: string | number) => Math.round(Number(x)), [])
+  const hover = useCustomHover({ data: emptyData, groupKey: stableGroupKey, normalizeX: stableNormalizeX })
 
-  const clearHover = useCallback(() => setHoverYear(null), [])
+  // Stable reference containing only handlers (not state) for Plot's customHover prop.
+  // hover changes reference on every state update; passing it directly to Plot causes
+  // Plotly.react() on every hover event → feedback loop / "one tap behind" bug.
+  const plotHover = useMemo((): UseCustomHoverReturn => ({
+    handleHover: hover.handleHover,
+    handleUnhover: hover.handleUnhover,
+    handleClick: hover.handleClick,
+    dismiss: hover.dismiss,
+    handleMouseLeave: hover.handleMouseLeave,
+    groups: [], x: null, position: null, isActive: false,
+  }), [hover.handleHover, hover.handleUnhover, hover.handleClick, hover.dismiss, hover.handleMouseLeave])
 
-  // Click handler for mobile tap-to-hover (Plotly reliably fires plotly_click on touch)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleClick = useCallback((event: any) => {
-    const pt = event.points?.[0]
-    if (!pt) return
-    const year = Math.round(Number(pt.x))
-    if (!years.includes(year)) return
-    const raw = event.event
-    if (hoverYear === year) {
-      setHoverYear(null)
-    } else {
-      setHoverYear(year)
-      if (typeof raw?.clientX === 'number') {
-        setHoverPos({ x: raw.clientX, y: raw.clientY })
-      }
-    }
-  }, [years, hoverYear])
-
-  // Refs for chart margin/xRange (used by touch position calculation)
+  // Refs for chart margin/xRange (used by tooltip position calculation)
   const chartMarginRef = useRef({ l: 60, r: 10 })
   const xRangeRef = useRef<[number, number]>([years[0] - 0.8, years[years.length - 1] + 0.8])
 
-  const hoverProps = { onHover: handleHover, onUnhover: clearHover, onClick: handleClick }
+  // Derive hoverYear from hover.x
+  const hoverYear = hover.isActive && hover.x != null ? Math.round(Number(hover.x)) : null
+  // Compute stable tooltip position from year's x-axis center (not jittered bubble position)
+  const hoverPos = useMemo(() => {
+    if (hoverYear == null || !chartRef.current) return { x: 0, y: 0 }
+    const rect = chartRef.current.getBoundingClientRect()
+    const { l, r } = chartMarginRef.current
+    const [x0, x1] = xRangeRef.current
+    const plotW = rect.width - l - r
+    const xFrac = (hoverYear - x0) / (x1 - x0)
+    return { x: rect.left + l + xFrac * plotW, y: rect.top + rect.height * 0.35 }
+  }, [hoverYear])
 
   const highlight = useTraceHighlight(labels)
 
@@ -305,12 +300,14 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     xRangeRef.current = [years[0] - 0.5, years[years.length - 1] + 0.5]
   }
 
-  const content = width <= 0 ? null : (() => {
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, hoverProps, true, yRange, maxSize, narrow, width, highlight)
-    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
-    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
-    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, hoverProps, true, yRange, narrow, highlight)
-  })()
+  // Memoize chart content so hover state changes don't trigger Plotly.react() re-renders.
+  const content = useMemo(() => {
+    if (width <= 0) return null
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, plotHover, true, yRange, maxSize, narrow, width, highlight)
+    if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, plotHover, true, yRange, narrow, highlight)
+    if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, plotHover, true, yRange, narrow, highlight)
+    return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, plotHover, true, yRange, narrow, highlight)
+  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, plotHover, yRange, maxSize, narrow, width, highlight])
 
   // Compute last-year y-axis values for the logo legend (varies by view)
   const lastYValues = useMemo(() => {
@@ -371,8 +368,19 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     <div ref={ref}>
       <h2>NJ&rarr;NY passengers by mode/crossing</h2>
       <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
-      <div ref={chartRef} className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={clearHover}>
+      <div ref={chartRef} className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={hover.handleMouseLeave} style={{ position: 'relative' }}>
         {content}
+        {hoverYear != null && chartRef.current && (() => {
+          const { l, r } = chartMarginRef.current
+          const [x0, x1] = xRangeRef.current
+          // Use chart div width (not outer container width) — on narrow screens
+          // .chart-bleed adds negative margins making the chart wider than the container
+          const chartW = chartRef.current!.getBoundingClientRect().width
+          const plotW = chartW - l - r
+          const xFrac = (hoverYear - x0) / (x1 - x0)
+          const leftPx = l + xFrac * plotW
+          return <div style={{ position: 'absolute', left: leftPx, top: 0, bottom: 0, width: 1, background: plotTheme.font, pointerEvents: 'none', opacity: 0.6 }} />
+        })()}
         {showSideLegend && (
           <LogoLegend
             labels={labels}
@@ -422,8 +430,6 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type HoverProps = { onHover: (e: any) => void; onUnhover: () => void; onClick?: (e: any) => void }
 
 function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, colorMap }: {
   year: number
@@ -509,6 +515,7 @@ function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, color
 const mobileLayout = mobileSafeLayout()
 const mobileConfig = mobileSafeConfig()
 
+
 function themedLayout(pt: PlotTheme): Partial<Layout> {
   return {
     ...mobileLayout,
@@ -541,7 +548,7 @@ function renderScatter(
   rightMargin: number,
   pt: PlotTheme,
   iconFns: Record<string, (color: string) => string>,
-  hp: HoverProps,
+  customHover: UseCustomHoverReturn,
   hideLegend = false,
   yRange?: [number, number],
   maxSize = 75,
@@ -598,17 +605,6 @@ function renderScatter(
   const xRange: [number, number] = [years[0] - (narrow ? 0.4 : 0.8), maxYear + (narrow ? 0.7 : 0.8)]
   const computedYRange = yRange ?? [0, 0.4]
 
-  // Anchor trace at exact integer years — spike line snaps here instead of jittered x-values
-  const midY = (computedYRange[0] + computedYRange[1]) / 2
-  traces.unshift({
-    type: 'scatter',
-    x: years,
-    y: years.map(() => midY),
-    mode: 'markers',
-    marker: { size: 40, color: 'rgba(0,0,0,0)' },
-    hoverinfo: 'none',
-    showlegend: false,
-  } as Partial<PlotData>)
   const repelPoints: RepelPoint[] = []
   const obstacles: RepelObstacle[] = []
   for (const label of labels) {
@@ -709,11 +705,7 @@ function renderScatter(
           title: { text: '' },
           hoverformat: 'd',
           gridcolor: pt.grid,
-          showspikes: true,
-          spikemode: 'across',
-          spikesnap: 'data',
-          spikecolor: pt.font,
-          spikethickness: 1,
+          showspikes: false,
           ...yearTicks(years, narrow),
         },
         yaxis: {
@@ -735,7 +727,7 @@ function renderScatter(
       }}
       style={{ width: '100%', height: narrow ? '580px' : '700px' }}
       config={mobileConfig}
-      {...hp}
+      customHover={customHover}
     />
   )
 }
@@ -748,7 +740,7 @@ function renderBar(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
-  hp: HoverProps,
+  customHover: UseCustomHoverReturn,
   hideLegend = false,
   yRange?: [number, number],
   narrow = false,
@@ -767,7 +759,7 @@ function renderBar(
       data={highlight ? highlight.fadeTraces(traces) : traces}
       layout={{
         ...themedLayout(pt),
-        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(years, narrow) },
+        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, showspikes: false, ...yearTicks(years, narrow) },
         yaxis: { fixedrange: true, title: narrow ? { text: '' } : { text: 'Passengers' }, range: yRange, gridcolor: pt.grid },
         hovermode: 'x',
         clickmode: 'event',
@@ -778,7 +770,7 @@ function renderBar(
       }}
       style={{ width: '100%', height: '600px' }}
       config={mobileConfig}
-      {...hp}
+      customHover={customHover}
     />
   )
 }
@@ -791,7 +783,7 @@ function renderPctBar(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
-  hp: HoverProps,
+  customHover: UseCustomHoverReturn,
   hideLegend = false,
   _yRange?: [number, number],
   narrow = false,
@@ -825,7 +817,7 @@ function renderPctBar(
         ...themedLayout(pt),
         barmode: 'stack',
         barnorm: 'percent',
-        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(years, narrow) },
+        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, showspikes: false, ...yearTicks(years, narrow) },
         yaxis: { fixedrange: true, title: narrow ? { text: '' } : { text: '% Passengers' }, gridcolor: pt.grid },
         hovermode: 'x',
         clickmode: 'event',
@@ -836,7 +828,7 @@ function renderPctBar(
       }}
       style={{ width: '100%', height: '600px' }}
       config={mobileConfig}
-      {...hp}
+      customHover={customHover}
     />
   )
 }
@@ -849,7 +841,7 @@ function renderRecovery(
   legendLayout: Partial<Layout['legend']>,
   rightMargin: number,
   pt: PlotTheme,
-  hp: HoverProps,
+  customHover: UseCustomHoverReturn,
   hideLegend = false,
   yRange?: [number, number],
   narrow = false,
@@ -886,7 +878,7 @@ function renderRecovery(
       data={highlight ? highlight.fadeTraces(traces) : traces}
       layout={{
         ...themedLayout(pt),
-        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, ...yearTicks(ry, narrow) },
+        xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, showspikes: false, ...yearTicks(ry, narrow) },
         yaxis: {
           fixedrange: true,
           title: narrow ? { text: '' } : { text: `% of ${BASE_YEAR} volume` },
@@ -897,13 +889,8 @@ function renderRecovery(
         hovermode: 'x',
         clickmode: 'event',
         shapes: [{
-          type: 'line',
-          x0: ry[0],
-          x1: ry[ry.length - 1],
-          y0: 1,
-          y1: 1,
-          line: { color: '#888', width: 1, dash: 'dash' },
-        }],
+          type: 'line', x0: ry[0], x1: ry[ry.length - 1], y0: 1, y1: 1, line: { color: '#888', width: 1, dash: 'dash' },
+        }] as Layout['shapes'],
         margin: { t: 10, l: narrow ? 40 : 70, r: rightMargin, b: narrow ? 50 : 40 },
         autosize: true,
         showlegend: !hideLegend,
@@ -911,7 +898,7 @@ function renderRecovery(
       }}
       style={{ width: '100%', height: '600px' }}
       config={mobileConfig}
-      {...hp}
+      customHover={customHover}
     />
   )
 }

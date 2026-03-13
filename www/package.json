@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
+    "maplibre-gl": "^5.20.0",
     "plotly.js-dist-min": "^3.4.0",
-    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/8ca11d0a117829cdeb0945fc1a743ec845e5cdac/pltly-8ca11d0a117829cdeb0945fc1a743ec845e5cdac.tar.gz",
+    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/187b977df2b270c3095907a13a64d06db886d8fd/pltly-187b977df2b270c3095907a13a64d06db886d8fd.tar.gz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-map-gl": "^8.1.0",
     "use-kbd": "^0.12.0",
     "use-prms": "https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811"
   },
