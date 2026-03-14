@@ -1,5 +1,16 @@
 # Screenshots: tracked images, CI verification, README GIFs
 
+## Status
+
+- [x] `scrns.config.ts` simplified to 7 dark-theme screenshots
+- [x] 7 PNGs generated via `scrns --docker` and committed
+- [x] 2 GIFs assembled (nj-ny.gif, ny-nj.gif) via ImageMagick
+- [x] README updated with GIF table and screenshot links
+- [ ] CI workflow (scrns verification step in deploy.yml)
+- [ ] Docker wrapper script (`www/scripts/docker-screenshots.sh`)
+- [ ] GIF assembly script (`www/scripts/make-gifs.sh`)
+- [ ] package.json scrns scripts
+
 ## Goal
 
 Git-track canonical screenshots of all 6 bubble-chart views (2 directions × 3 time periods), generate GIFs grouping them, embed in README, and verify no regressions in CI.

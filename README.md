@@ -6,6 +6,20 @@ Analysis and visualization of [NYMTC's "Hub Bound Travel" reports][NYMTC HBT] 窶
 
 Reports are also mirrored in [Hudson County Complete Streets]' [Google Drive][gdrive].
 
+## Charts
+
+| NJ竊誰Y (entering) | NY竊誰J (leaving) |
+|:-:|:-:|
+| [![NJ竊誰Y][nj-ny-gif]][nj-ny-live] | [![NY竊誰J][ny-nj-gif]][ny-nj-live] |
+
+Each GIF cycles through peak 1hr, peak period (3hr), and 24hr views. Click to open the interactive chart.
+
+| | NJ竊誰Y | NY竊誰J |
+|---|:-:|:-:|
+| Peak 1hr | [![][nj-ny-1h]][nj-ny-1h-live] | [![][ny-nj-1h]][ny-nj-1h-live] |
+| Peak period | [![][nj-ny-3h]][nj-ny-3h-live] | [![][ny-nj-3h]][ny-nj-3h-live] |
+| 24hr | [![][nj-ny-1d]][nj-ny-1d-live] | [![][ny-nj-1d]][ny-nj-1d-live] |
+
 ## Data
 
 8 normalized JSON files extracted from NYMTC AppendixII and AppendixIII Excel workbooks, totaling ~133k records. All extractions are idempotent, DVX-tracked, and cached to S3.
@@ -65,4 +79,20 @@ Data sourced from publicly available [NYMTC Hub Bound Travel reports][NYMTC HBT]
 [live]: https://cbd.hudcostreets.org
 [Plotly.js]: https://plotly.com/javascript/
 [pltly]: https://github.com/runsascoded/pltly
-[`specs/extraction.md`]: specs/extraction.md
+[`specs/extraction.md`]: specs/done/extraction.md
+[nj-ny-gif]: www/public/screenshots/nj-ny.gif
+[ny-nj-gif]: www/public/screenshots/ny-nj.gif
+[nj-ny-live]: https://cbd.hudcostreets.org
+[ny-nj-live]: https://cbd.hudcostreets.org?d=nynj
+[nj-ny-1h]: www/public/screenshots/bubble-nj-ny-1h.png
+[nj-ny-3h]: www/public/screenshots/bubble-nj-ny-3h.png
+[nj-ny-1d]: www/public/screenshots/bubble-nj-ny-1d.png
+[ny-nj-1h]: www/public/screenshots/bubble-ny-nj-1h.png
+[ny-nj-3h]: www/public/screenshots/bubble-ny-nj-3h.png
+[ny-nj-1d]: www/public/screenshots/bubble-ny-nj-1d.png
+[nj-ny-1h-live]: https://cbd.hudcostreets.org
+[nj-ny-3h-live]: https://cbd.hudcostreets.org?t=3h
+[nj-ny-1d-live]: https://cbd.hudcostreets.org?t=1d
+[ny-nj-1h-live]: https://cbd.hudcostreets.org?d=nynj
+[ny-nj-3h-live]: https://cbd.hudcostreets.org?d=nynj&t=3h
+[ny-nj-1d-live]: https://cbd.hudcostreets.org?d=nynj&t=1d
