@@ -8,7 +8,7 @@ import { filterCrossings } from '../lib/transform'
 import { useUrlState } from 'use-prms'
 import Toggle from './Toggle'
 
-const { sqrt, max, PI, sin, cos, atan2 } = Math
+const { sqrt, max, min, PI, sin, cos, atan2, pow } = Math
 
 type LatLon = [number, number]  // [lat, lon]
 
@@ -61,42 +61,113 @@ function cubicBezier(p0: LatLon, p1: LatLon, p2: LatLon, p3: LatLon, n = 20): La
   return pts
 }
 
-// S-curve: depart east (perpendicular to N-S shore), arrive east into dest
+// S-curve: depart east, arrive east. Minimum span prevents degenerate
+// straight lines when start/end are at similar longitude.
 function sBezier(start: LatLon, end: LatLon): LatLon[] {
   const dLon = end[1] - start[1]
-  const cp1: LatLon = [start[0], start[1] + Math.abs(dLon) * 0.5]
-  const cp2: LatLon = [end[0], end[1] - Math.abs(dLon) * 0.5]
+  const dLat = end[0] - start[0]
+  const dist = sqrt(dLat * dLat + dLon * dLon)
+  const span = max(Math.abs(dLon) * 0.5, dist * 0.35)
+  const cp1: LatLon = [start[0], start[1] + span]
+  const cp2: LatLon = [end[0], end[1] - span]
   return cubicBezier(start, cp1, cp2, end)
 }
 
-// Ferry Sankey groups: branches from NJ sources merge at a point, then a
-// thick trunk continues to the Manhattan destination.
-interface FerryGroup {
-  dest: string
-  destPos: LatLon
-  mergePos: LatLon
-  sources: { label: string; pos: LatLon; weight: number }[]
+/** Bezier with explicit departure and/or arrival bearings (degrees, 0=N 90=E).
+ *  Tangent at start matches departBearing; tangent at end matches arriveBearing.
+ *  Undefined bearings default to east (90°). */
+function directedBezier(start: LatLon, end: LatLon, departBearing?: number, arriveBearing?: number): LatLon[] {
+  const dLat = end[0] - start[0], dLon = end[1] - start[1]
+  const dist = sqrt(dLat * dLat + dLon * dLon)
+  const span = max(dist * 0.4, 0.001)
+
+  const dRad = (departBearing ?? 90) * PI / 180
+  const cp1: LatLon = [start[0] + cos(dRad) * span, start[1] + sin(dRad) * span]
+
+  const aRad = (arriveBearing ?? 90) * PI / 180
+  const cp2: LatLon = [end[0] - cos(aRad) * span, end[1] - sin(aRad) * span]
+
+  return cubicBezier(start, cp1, cp2, end)
 }
 
-const FERRY_GROUPS: FerryGroup[] = [
+// --- Ferry Sankey tree ---
+// Recursive merge tree: leaves are NJ ferry terminals, internal nodes are
+// merge points where tributaries combine into a wider trunk.
+//
+// Each merge specifies an explicit `bearing` (degrees, 0=N 90=E) — the
+// direction the outgoing trunk flows. The perpendicular to that bearing
+// determines the stacking axis. Children are ordered right→left relative
+// to the flow direction (S→N for an eastward bearing).
+type FerryNode =
+  | { type: 'source'; label: string; pos: LatLon; weight: number }
+  | { type: 'merge'; pos: LatLon; bearing: number; children: FerryNode[] }
+
+function ferryWeight(node: FerryNode): number {
+  return node.type === 'source'
+    ? node.weight
+    : node.children.reduce((s, c) => s + ferryWeight(c), 0)
+}
+
+/** Collect all leaf source positions from a ferry tree (for hover labels). */
+function ferrySources(node: FerryNode): { label: string; pos: LatLon }[] {
+  if (node.type === 'source') return [{ label: node.label, pos: node.pos }]
+  return node.children.flatMap(c => ferrySources(c))
+}
+
+/** Perpendicular unit vector (left of bearing) in [lat, lon] space.
+ *  bearing: degrees clockwise from north (0=N, 90=E, etc.)
+ *  Returns unit vector pointing left of the bearing direction. */
+function bearingPerpLeft(bearing: number): LatLon {
+  const rad = bearing * PI / 180
+  // Forward in (lat,lon): (cos(bearing), sin(bearing))
+  // Left = 90° CCW: (sin(bearing), -cos(bearing))
+  // But lon degrees are smaller than lat degrees, so we don't scale here —
+  // the caller applies LNG_SCALE when computing positions.
+  return [sin(rad), -cos(rad)]
+}
+
+interface FerryTree {
+  dest: string
+  destPos: LatLon
+  root: FerryNode
+}
+
+const FERRY_TREES: FerryTree[] = [
   {
     dest: 'MT39',
     destPos: [40.7603, -74.0032],   // W 39th St / Pier 79 (Manhattan)
-    mergePos: [40.7580, -74.0130],  // merge mid-Hudson
-    sources: [
-      { label: 'WHK', pos: [40.7771, -74.0136], weight: 0.30 },
-      { label: 'Hob 14', pos: [40.7505, -74.0241], weight: 0.20 },
-      { label: 'Hob So', pos: [40.7359, -74.0282], weight: 0.15 },
-    ],
+    root: {
+      type: 'merge',
+      pos: [40.7603, -74.0110],     // WHK + combined Hob merge (at MT39's latitude — trunk goes straight east in)
+      bearing: 90,                   // due east into MT39
+      children: [
+        // South side (right of eastward flow): combined Hoboken streams
+        {
+          type: 'merge',
+          pos: [40.7550, -74.0140],  // Hob14 + HobSo pre-merge (further N, between sources and main merge)
+          bearing: 50,               // trunk flows NE toward main merge
+          children: [
+            { type: 'source', label: 'Hob So', pos: [40.7359, -74.0282], weight: 0.15 },
+            { type: 'source', label: 'Hob 14', pos: [40.7505, -74.0241], weight: 0.20 },
+          ],
+        },
+        // North side (left of ENE flow): Weehawken
+        { type: 'source', label: 'WHK', pos: [40.7771, -74.0136], weight: 0.30 },
+      ],
+    },
   },
   {
     dest: 'BPT',
-    destPos: [40.7142, -74.0169],   // Brookfield Place (Manhattan)
-    mergePos: [40.7160, -74.0260],  // merge mid-Hudson
-    sources: [
-      { label: 'Hob So', pos: [40.7359, -74.0282], weight: 0.15 },
-      { label: 'PH', pos: [40.7138, -74.0337], weight: 0.20 },
-    ],
+    destPos: [40.7142, -74.0169],    // Brookfield Place (Manhattan)
+    root: {
+      type: 'merge',
+      pos: [40.7142, -74.0210],      // merge at BPT's latitude — trunk goes straight east in
+      bearing: 90,                   // due east into BPT
+      children: [
+        { type: 'source', label: 'PH', pos: [40.7138, -74.0337], weight: 0.20 },
+        { type: 'source', label: 'Hob So', pos: [40.7359, -74.0282], weight: 0.15 },
+      ],
+    },
   },
 ]
 
@@ -116,6 +187,16 @@ const MODE_ICON: Record<string, string> = {
   Rail: 'train',
   PATH: 'train',
   Ferry: 'ferry',
+}
+
+// Agency icon basenames per crossing (true-color <img> logos)
+const CROSSING_AGENCY: Record<string, string[]> = {
+  'Lincoln Tunnel': ['pa'],
+  'Holland Tunnel': ['pa'],
+  'Amtrak/N.J. Transit Tunnels': ['njt', 'amtrak'],
+  'Uptown PATH Tunnel': ['path'],
+  'Downtown PATH Tunnel': ['path'],
+  'All Ferry Points': ['nyww'],
 }
 
 // Aggregate crossing records by crossing+mode for a single year
@@ -180,6 +261,121 @@ function offsetPath(path: LatLon[], offset: number): LatLon[] {
 // Convert [lat, lon][] path to GeoJSON [lon, lat][] coordinates
 function toGeoJSON(path: LatLon[]): [number, number][] {
   return path.map(([lat, lon]) => [lon, lat])
+}
+
+// --- Ribbon polygon generation ---
+// Reference lat for cos correction (all paths are near 40.74°N)
+const REF_LAT_RAD = 40.74 * PI / 180
+const COS_REF = cos(REF_LAT_RAD)
+const LNG_SCALE = 1 / COS_REF  // lng degrees per lat degree at this latitude
+// Degrees-lat per pixel at reference zoom 12
+const DEG_PER_PX_Z12 = 156543.03 * COS_REF / (pow(2, 12) * 111320)
+
+/** Convert pixel width to half-width in degrees of latitude, accounting for zoom and geoScale */
+function pxToHalfDeg(widthPx: number, zoom: number, geoScale: number): number {
+  return (widthPx / 2) * DEG_PER_PX_Z12 * pow(2, (geoScale - 1) * (zoom - 12))
+}
+
+/** Convert pixel offset to degrees of latitude (full, not halved). */
+function pxToDeg(px: number, zoom: number, geoScale: number): number {
+  return px * DEG_PER_PX_Z12 * pow(2, (geoScale - 1) * (zoom - 12))
+}
+
+/** Perpendicular unit vector at waypoint i (in lat/lng space, not scaled) */
+function perpAt(path: LatLon[], i: number): LatLon {
+  const n = path.length
+  let dy = 0, dx = 0
+  if (i < n - 1) { dy += path[i + 1][0] - path[i][0]; dx += path[i + 1][1] - path[i][1] }
+  if (i > 0) { dy += path[i][0] - path[i - 1][0]; dx += path[i][1] - path[i - 1][1] }
+  const len = sqrt(dy * dy + dx * dx)
+  if (len === 0) return [0, 0]
+  return [-dx / len, dy / len]  // rotate 90° CCW
+}
+
+/** Forward unit vector at waypoint i */
+function fwdAt(path: LatLon[], i: number): LatLon {
+  const n = path.length
+  const next = min(i + 1, n - 1), prev = max(i - 1, 0)
+  const dy = path[next][0] - path[prev][0], dx = path[next][1] - path[prev][1]
+  const len = sqrt(dy * dy + dx * dx)
+  if (len === 0) return [0, 0]
+  return [dy / len, dx / len]
+}
+
+/** Build a ribbon polygon with integrated arrowhead.
+ *  Returns GeoJSON [lng, lat][] ring (closed). */
+function ribbonArrow(
+  path: LatLon[],
+  halfW: number,            // half ribbon width in degrees lat
+  arrowWingFactor: number,  // wing width as multiple of halfW
+  arrowLenFactor: number,   // arrow length as multiple of full width (2*halfW)
+): [number, number][] {
+  const n = path.length
+  if (n < 2) return []
+  // Compute cumulative arc length along the path
+  const cumLen = [0]
+  for (let i = 1; i < n; i++) {
+    const dy = path[i][0] - path[i - 1][0], dx = path[i][1] - path[i - 1][1]
+    cumLen.push(cumLen[i - 1] + sqrt(dy * dy + dx * dx))
+  }
+  const pathLen = cumLen[n - 1]
+  // Clamp arrow length to at most 40% of path (prevents arrowhead consuming short paths)
+  const desiredArrowLen = halfW * 2 * arrowLenFactor
+  const arrowLen = min(desiredArrowLen, pathLen * 0.4)
+  const arrowScale = desiredArrowLen > 0 ? arrowLen / desiredArrowLen : 1
+  const arrowHalfW = halfW * (1 + (arrowWingFactor - 1) * arrowScale)
+  const ls = LNG_SCALE
+
+  // Arrow base is at (pathLen - arrowLen) along the path.
+  // Only emit ribbon body points up to that distance to avoid self-intersection.
+  const baseDist = pathLen - arrowLen
+
+  const left: [number, number][] = []
+  const right: [number, number][] = []
+
+  for (let i = 0; i < n; i++) {
+    if (cumLen[i] > baseDist) break
+    const [pLat, pLng] = perpAt(path, i)
+    left.push([path[i][1] + pLng * halfW * ls, path[i][0] + pLat * halfW])
+    right.push([path[i][1] - pLng * halfW * ls, path[i][0] - pLat * halfW])
+  }
+
+  // Arrowhead at terminus
+  const [fLat, fLng] = fwdAt(path, n - 1)
+  const [pLat, pLng] = perpAt(path, n - 1)
+  const baseLat = path[n - 1][0] - fLat * arrowLen
+  const baseLng = path[n - 1][1] - fLng * arrowLen
+
+  // Ribbon→wing transition at arrow base
+  left.push([baseLng + pLng * halfW * ls, baseLat + pLat * halfW])
+  right.push([baseLng - pLng * halfW * ls, baseLat - pLat * halfW])
+  left.push([baseLng + pLng * arrowHalfW * ls, baseLat + pLat * arrowHalfW])
+  right.push([baseLng - pLng * arrowHalfW * ls, baseLat - pLat * arrowHalfW])
+
+  // Tip
+  const tip: [number, number] = [path[n - 1][1], path[n - 1][0]]
+
+  // Combine: left forward → tip → right backward → close
+  const ring = [...left, tip, ...right.reverse()]
+  ring.push(ring[0])
+  return ring
+}
+
+/** Build a ribbon polygon WITHOUT arrowhead (for fade segments, ferry branches). */
+function ribbon(path: LatLon[], halfW: number): [number, number][] {
+  const n = path.length
+  if (n < 2) return []
+  const ls = LNG_SCALE
+  const left: [number, number][] = []
+  const right: [number, number][] = []
+  for (let i = 0; i < n; i++) {
+    const [pLat, pLng] = perpAt(path, i)
+    left.push([path[i][1] + pLng * halfW * ls, path[i][0] + pLat * halfW])
+    right.push([path[i][1] - pLng * halfW * ls, path[i][0] - pLat * halfW])
+  }
+  const ring = [...left, ...right.reverse()]
+  ring.push(ring[0])
+  return ring
 }
 
 // Year param
@@ -254,7 +450,29 @@ function GeoSankeyInner({ data }: Props) {
   const selectedYear = year ?? years[years.length - 1]
 
   // Geo-scale: 0 = fixed px width, 1 = fully geo-scaled (width grows with zoom)
-  const [geoScale, setGeoScale] = useState(0.6)
+  const geoScaleParam = useMemo(() => ({
+    encode: (v: number) => v === 1 ? null : String(v),
+    decode: (s: string | null): number => s != null ? parseFloat(s) : 1,
+  }), [])
+  const [geoScale, setGeoScale] = useUrlState('gs', geoScaleParam)
+
+  // Map view: lat_lng_zoom packed into one param, `_` delimited
+  const llzParam = useMemo(() => {
+    const def = { lat: MAP_CENTER[1], lng: MAP_CENTER[0], zoom: 11.8 }
+    return {
+      encode: (v: { lat: number; lng: number; zoom: number }) => {
+        if (Math.abs(v.lat - def.lat) < 0.0001 && Math.abs(v.lng - def.lng) < 0.0001 && Math.abs(v.zoom - def.zoom) < 0.01) return null
+        return `${v.lat.toFixed(4)}_${v.lng.toFixed(4)}_${v.zoom.toFixed(2)}`
+      },
+      decode: (s: string | null) => {
+        if (!s) return def
+        const parts = s.split('_').map(Number)
+        if (parts.length < 3 || parts.some(isNaN)) return def
+        return { lat: parts[0], lng: parts[1], zoom: parts[2] }
+      },
+    }
+  }, [])
+  const [mapView, setMapView] = useUrlState('ll', llzParam)
 
   const filtered = useMemo(
     () => filterCrossings(data, direction, timePeriod),
@@ -288,7 +506,10 @@ function GeoSankeyInner({ data }: Props) {
   // Hover state: key is "crossing|mode", shared between map and panel
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
 
-  // Build GeoJSON for flow lines (visible + invisible hit-target layers)
+  // Build GeoJSON ribbon polygons (rect + arrowhead as single shapes)
+  const ARROW_WING = 1.8   // wing width as multiple of ribbon half-width
+  const ARROW_LEN = 1.2    // arrow length as multiple of full ribbon width
+
   const geojson = useMemo(() => {
     const byCrossing = new Map<string, FlowDatum[]>()
     for (const f of flows) {
@@ -297,9 +518,7 @@ function GeoSankeyInner({ data }: Props) {
       byCrossing.set(f.crossing, arr)
     }
 
-    // Uptown PATH: full opacity Hoboken→Christopher St (idx 0-2),
-    // then fading gradient continuing past to 33rd St (idx 2-6).
-    // Christopher St gets a proper arrowhead; the fade is a "ghost" extension.
+    const zoom = mapView.zoom
     const UPTOWN_NODE_OPACITY = [1, 1, 1, 0.55, 0.30, 0.12, 0.03]
     const FADE_SUBDIVISIONS = 5
 
@@ -307,6 +526,10 @@ function GeoSankeyInner({ data }: Props) {
       return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
     }
 
+    function poly(props: Record<string, any>, ring: [number, number][]): GeoJSON.Feature {
+      return { type: 'Feature', properties: props, geometry: { type: 'Polygon', coordinates: [ring] } }
+    }
+
     const features: GeoJSON.Feature[] = []
     for (const [, crossingFlows] of byCrossing) {
       crossingFlows.sort((a, b) => MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode))
@@ -314,35 +537,93 @@ function GeoSankeyInner({ data }: Props) {
         const key = flowKey(f)
         const color = MODE_COLORS[f.mode] ?? '#888'
 
-        // Ferry Sankey: smooth bezier branches merging into trunks
+        // Ferry Sankey: recursive tree of merging tributaries
         if (f.isFerry) {
           const totalPax = f.passengers
-          for (const group of FERRY_GROUPS) {
-            const groupWeight = group.sources.reduce((s, src) => s + src.weight, 0)
-            const trunkPax = Math.round(totalPax * groupWeight)
-            const trunkWidth = max(1, (trunkPax / maxPassengers) * 30)
+          const pxW = (weight: number) => max(1, (Math.round(totalPax * weight) / maxPassengers) * 30)
 
-            // Trunk: merge → dest (smooth S-curve)
-            let trunkPath = sBezier(group.mergePos, group.destPos)
-            if (direction === 'leaving') trunkPath = [...trunkPath].reverse()
-            features.push({
-              type: 'Feature',
-              properties: { crossing: f.crossing, mode: f.mode, passengers: totalPax, color, width: trunkWidth, key, opacity: 1 },
-              geometry: { type: 'LineString', coordinates: toGeoJSON(trunkPath) },
-            })
+          /** Compute pixel width for a node. For merge nodes, width is the
+           *  exact sum of children widths (not independently computed from
+           *  total weight) to ensure seamless tiling at junctions. */
+          function nodeWidth(node: FerryNode): number {
+            if (node.type === 'source') return pxW(node.weight)
+            return node.children.reduce((s, c) => s + nodeWidth(c), 0)
+          }
 
-            // Branches: each NJ source → merge (smooth S-curve)
-            for (const src of group.sources) {
-              const branchPax = Math.round(totalPax * src.weight)
-              const branchWidth = max(1, (branchPax / maxPassengers) * 30)
-              let branchPath = sBezier(src.pos, group.mergePos)
-              if (direction === 'leaving') branchPath = [...branchPath].reverse()
-              features.push({
-                type: 'Feature',
-                properties: { crossing: f.crossing, mode: f.mode, passengers: totalPax, color, width: branchWidth, key, opacity: 1 },
-                geometry: { type: 'LineString', coordinates: toGeoJSON(branchPath) },
-              })
+          /** Recursively render a ferry tree node toward targetPos.
+           *  At each merge, children are stacked laterally along the
+           *  bearing's perpendicular so the combined shape is seamlessly
+           *  composed of its tributaries.
+           *  arriveBearing: tangent direction arriving at targetPos.
+           *  straightEnd: if set, the curve goes to targetPos (approach point),
+           *  then a straight segment continues to straightEnd along the bearing.
+           *  This guarantees the ribbon is fully parallel at the junction. */
+          function renderFerryNode(node: FerryNode, targetPos: LatLon, terminal: boolean, arriveBearing?: number, straightEnd?: LatLon) {
+            const width = nodeWidth(node)
+            const hw = pxToHalfDeg(width, zoom, geoScale)
+
+            // Build path: optional straight departure + curve + optional straight arrival.
+            // Straight segments at merge junctions guarantee ribbons are fully
+            // parallel on both sides of the junction.
+            const departBearing = node.type === 'merge' ? node.bearing : undefined
+            let curveStart = node.pos
+            const straightStart: LatLon[] = []
+            if (node.type === 'merge') {
+              // Straight departure along bearing before curving — guarantees
+              // ribbon edges are exactly parallel at the junction (matching children)
+              const hw2 = pxToHalfDeg(width, zoom, geoScale)
+              const depLen = hw2 * 1.5
+              const rad = node.bearing * PI / 180
+              const ls = LNG_SCALE
+              curveStart = [node.pos[0] + cos(rad) * depLen, node.pos[1] + sin(rad) * depLen * ls]
+              straightStart.push(node.pos)
             }
+            const curvePts = directedBezier(curveStart, targetPos, departBearing, arriveBearing)
+            let path = [...straightStart, ...curvePts, ...(straightEnd ? [straightEnd] : [])]
+            if (direction === 'leaving') path = [...path].reverse()
+            const ring = terminal
+              ? ribbonArrow(path, hw, ARROW_WING, ARROW_LEN)
+              : ribbon(path, hw)
+            if (ring.length) features.push(poly({ color, width, key, opacity: 1 }, ring))
+
+            if (node.type === 'merge') {
+              const [perpLat, perpLon] = bearingPerpLeft(node.bearing)
+              const ls = LNG_SCALE
+
+              // Stack children along perpendicular (right→left).
+              // First child = right (negative offset), last = left (positive).
+              // Each child targets a point offset from the merge, with a
+              // straight approach segment along the bearing so ribbon edges
+              // are guaranteed parallel at the junction.
+              const rad = node.bearing * PI / 180
+              const fwdLat = cos(rad), fwdLon = sin(rad)
+              const approachLen = hw * 1.5  // straight run before merge (in degrees lat)
+
+              const childWidths = node.children.map(c => nodeWidth(c))
+              const totalW = childWidths.reduce((s, w) => s + w, 0)
+              let cumW = 0
+              for (let ci = 0; ci < node.children.length; ci++) {
+                const cw = childWidths[ci]
+                const centerOffset = -totalW / 2 + cumW + cw / 2
+                cumW += cw
+                const offsetDeg = pxToDeg(centerOffset, zoom, geoScale)
+                // End point: merge pos + lateral offset
+                const childEnd: LatLon = [
+                  node.pos[0] + perpLat * offsetDeg,
+                  node.pos[1] + perpLon * offsetDeg * ls,
+                ]
+                // Pre-approach point: upstream along bearing from end point
+                const childApproach: LatLon = [
+                  childEnd[0] - fwdLat * approachLen,
+                  childEnd[1] - fwdLon * approachLen * ls,
+                ]
+                renderFerryNode(node.children[ci], childApproach, false, node.bearing, childEnd)
+              }
+            }
+          }
+
+          for (const tree of FERRY_TREES) {
+            renderFerryNode(tree.root, tree.destPos, true)
           }
           return
         }
@@ -351,118 +632,102 @@ function GeoSankeyInner({ data }: Props) {
         let path = offsetPath(f.path, lateralOffset)
         if (direction === 'leaving') path = [...path].reverse()
         const width = max(1, (f.passengers / maxPassengers) * 30)
+        const hw = pxToHalfDeg(width, zoom, geoScale)
 
-        // Uptown PATH: solid line to Christopher St, then fading gradient extension
+        // Uptown PATH: solid ribbon+arrow to Christopher St, then fading ribbons
         if (f.crossing === 'Uptown PATH Tunnel' && path.length > 2) {
-          // Solid segment: Hoboken → Christopher St (indices 0..UPTOWN_FADE_START)
+          // Solid segment with arrowhead at Christopher St
           const solidPath = path.slice(0, UPTOWN_FADE_START + 1)
-          features.push({
-            type: 'Feature',
-            properties: { crossing: f.crossing, mode: f.mode, passengers: f.passengers, color, width, key, opacity: 1 },
-            geometry: { type: 'LineString', coordinates: toGeoJSON(solidPath) },
-          })
-          // Fading segments: Christopher St → 33rd St (indices UPTOWN_FADE_START..end)
-          for (let s = UPTOWN_FADE_START; s < path.length - 1; s++) {
-            const oA = UPTOWN_NODE_OPACITY[s] ?? 0
-            const oB = UPTOWN_NODE_OPACITY[s + 1] ?? 0
+          const solidRing = ribbonArrow(solidPath, hw, ARROW_WING, ARROW_LEN)
+          if (solidRing.length) {
+            features.push(poly({ color, width, key, opacity: 1 }, solidRing))
+          }
+          // Fading ribbon: subdivide the fade portion into fine points,
+          // compute ribbon edges once from the FULL path (consistent perpendiculars),
+          // then emit quad polygons with interpolated opacity.
+          const fadePath = path.slice(UPTOWN_FADE_START)
+          const fadePoints: { pt: LatLon; opacity: number }[] = []
+          for (let s = 0; s < fadePath.length - 1; s++) {
+            const oA = UPTOWN_NODE_OPACITY[UPTOWN_FADE_START + s] ?? 0
+            const oB = UPTOWN_NODE_OPACITY[UPTOWN_FADE_START + s + 1] ?? 0
             for (let sub = 0; sub < FADE_SUBDIVISIONS; sub++) {
-              const t0 = sub / FADE_SUBDIVISIONS
-              const t1 = (sub + 1) / FADE_SUBDIVISIONS
-              const p0 = lerp(path[s], path[s + 1], t0)
-              const p1 = lerp(path[s], path[s + 1], t1)
-              const opacity = oA + (oB - oA) * ((t0 + t1) / 2)
-              features.push({
-                type: 'Feature',
-                properties: { crossing: f.crossing, mode: f.mode, passengers: f.passengers, color, width, key, opacity },
-                geometry: { type: 'LineString', coordinates: toGeoJSON([p0, p1]) },
-              })
+              const t = sub / FADE_SUBDIVISIONS
+              fadePoints.push({ pt: lerp(fadePath[s], fadePath[s + 1], t), opacity: oA + (oB - oA) * t })
             }
           }
+          fadePoints.push({ pt: fadePath[fadePath.length - 1], opacity: UPTOWN_NODE_OPACITY[path.length - 1] ?? 0 })
+
+          // Compute ribbon edges using perpendiculars from the full fade path
+          const allPts = fadePoints.map(fp => fp.pt)
+          const ls = LNG_SCALE
+          const leftEdge: [number, number][] = []
+          const rightEdge: [number, number][] = []
+          for (let i = 0; i < allPts.length; i++) {
+            const [pLat, pLng] = perpAt(allPts, i)
+            leftEdge.push([allPts[i][1] + pLng * hw * ls, allPts[i][0] + pLat * hw])
+            rightEdge.push([allPts[i][1] - pLng * hw * ls, allPts[i][0] - pLat * hw])
+          }
+
+          // Emit quad polygons between consecutive edge pairs
+          for (let i = 0; i < fadePoints.length - 1; i++) {
+            const opacity = (fadePoints[i].opacity + fadePoints[i + 1].opacity) / 2
+            if (opacity < 0.01) continue
+            const ring: [number, number][] = [
+              leftEdge[i], leftEdge[i + 1],
+              rightEdge[i + 1], rightEdge[i],
+              leftEdge[i],  // close ring
+            ]
+            features.push(poly({ color, width, key, opacity }, ring))
+          }
         } else {
-          features.push({
-            type: 'Feature',
-            properties: { crossing: f.crossing, mode: f.mode, passengers: f.passengers, color, width, key, opacity: 1 },
-            geometry: { type: 'LineString', coordinates: toGeoJSON(path) },
-          })
+          // Normal flow: ribbon + arrowhead as one polygon
+          const ring = ribbonArrow(path, hw, ARROW_WING, ARROW_LEN)
+          if (ring.length) {
+            features.push(poly({ color, width, key, opacity: 1 }, ring))
+          }
         }
       })
     }
 
+    // Sort widest first so narrower flows draw on top
+    features.sort((a, b) => (b.properties?.width ?? 0) - (a.properties?.width ?? 0))
     return { type: 'FeatureCollection' as const, features }
-  }, [flows, direction, maxPassengers])
+  }, [flows, direction, maxPassengers, mapView.zoom, geoScale])
 
-  // Compute bearing from prev→end (degrees, 0=north, clockwise)
-  function bearing(prev: LatLon, end: LatLon): number {
-    const dLon = (end[1] - prev[1]) * PI / 180
-    const lat1 = prev[0] * PI / 180
-    const lat2 = end[0] * PI / 180
-    const y = sin(dLon) * cos(lat2)
-    const x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
-    return (atan2(y, x) * 180 / PI + 360) % 360
-  }
-
-  // Arrowhead points at the end of each flow line, with bearing for rotation
-  const arrowsGeojson = useMemo(() => {
+  // Centerline hit-targets (invisible LineStrings for hover detection)
+  const hitTargetGeojson = useMemo(() => {
     const byCrossing = new Map<string, FlowDatum[]>()
     for (const f of flows) {
       const arr = byCrossing.get(f.crossing) ?? []
       arr.push(f)
       byCrossing.set(f.crossing, arr)
     }
-
     const features: GeoJSON.Feature[] = []
     for (const [, crossingFlows] of byCrossing) {
       crossingFlows.sort((a, b) => MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode))
       crossingFlows.forEach((f, i) => {
         const key = flowKey(f)
-        const color = MODE_COLORS[f.mode] ?? '#888'
-
-        // Ferry: arrows at each trunk endpoint (Manhattan destinations)
         if (f.isFerry) {
-          for (const group of FERRY_GROUPS) {
-            const groupWeight = group.sources.reduce((s, src) => s + src.weight, 0)
-            const trunkWidth = max(1, (Math.round(f.passengers * groupWeight) / maxPassengers) * 30)
-            const trunkPath = sBezier(group.mergePos, group.destPos)
-            const path = direction === 'leaving' ? [...trunkPath].reverse() : trunkPath
-            const end = path[path.length - 1]
-            const prev = path[path.length - 2]
-            features.push({
-              type: 'Feature',
-              properties: { color, bearing: bearing(prev, end), width: trunkWidth, key, opacity: 1 },
-              geometry: { type: 'Point', coordinates: [end[1], end[0]] },
-            })
+          function addHitPaths(node: FerryNode, targetPos: LatLon) {
+            const nodePos = node.type === 'source' ? node.pos : node.pos
+            let path = sBezier(nodePos, targetPos)
+            if (direction === 'leaving') path = [...path].reverse()
+            features.push({ type: 'Feature', properties: { key }, geometry: { type: 'LineString', coordinates: toGeoJSON(path) } })
+            if (node.type === 'merge') {
+              for (const child of node.children) addHitPaths(child, node.pos)
+            }
           }
+          for (const tree of FERRY_TREES) addHitPaths(tree.root, tree.destPos)
           return
         }
-
         const lateralOffset = i - (crossingFlows.length - 1) / 2
         let path = offsetPath(f.path, lateralOffset)
         if (direction === 'leaving') path = [...path].reverse()
-        const end = path[path.length - 1]
-        const prev = path[path.length - 2] ?? path[0]
-        const width = max(1, (f.passengers / maxPassengers) * 30)
-
-        if (f.crossing === 'Uptown PATH Tunnel') {
-          // Primary arrow at Christopher St (the solid-line terminus)
-          const fadeStart = UPTOWN_FADE_START
-          const christopherPt = path[fadeStart]
-          const christopherPrev = path[fadeStart - 1] ?? path[0]
-          features.push({
-            type: 'Feature',
-            properties: { color, bearing: bearing(christopherPrev, christopherPt), width, key, opacity: 1 },
-            geometry: { type: 'Point', coordinates: [christopherPt[1], christopherPt[0]] },
-          })
-        } else {
-          features.push({
-            type: 'Feature',
-            properties: { color, bearing: bearing(prev, end), width, key, opacity: 1 },
-            geometry: { type: 'Point', coordinates: [end[1], end[0]] },
-          })
-        }
+        features.push({ type: 'Feature', properties: { key }, geometry: { type: 'LineString', coordinates: toGeoJSON(path) } })
       })
     }
     return { type: 'FeatureCollection' as const, features }
-  }, [flows, direction, maxPassengers])
+  }, [flows, direction])
 
   // NJ-side labels (crossing names at the start of each path)
   const labelsGeojson = useMemo(() => {
@@ -492,19 +757,17 @@ function GeoSankeyInner({ data }: Props) {
     // Ferry: show all source + destination terminals
     if (hovered.isFerry) {
       const seen = new Set<string>()
-      for (const group of FERRY_GROUPS) {
-        // Destination
-        const dKey = `${group.destPos}`
+      for (const tree of FERRY_TREES) {
+        const dKey = `${tree.destPos}`
         if (!seen.has(dKey)) {
           seen.add(dKey)
           features.push({
             type: 'Feature',
-            properties: { name: group.dest, anchor: 'left' },
-            geometry: { type: 'Point', coordinates: [group.destPos[1], group.destPos[0]] },
+            properties: { name: tree.dest, anchor: 'left' },
+            geometry: { type: 'Point', coordinates: [tree.destPos[1], tree.destPos[0]] },
           })
         }
-        // Sources
-        for (const src of group.sources) {
+        for (const src of ferrySources(tree.root)) {
           const sKey = `${src.pos}`
           if (!seen.has(sKey)) {
             seen.add(sKey)
@@ -558,81 +821,18 @@ function GeoSankeyInner({ data }: Props) {
   }, [])
   const onMouseLeave = useCallback(() => setHoveredKey(null), [])
 
-  // Line width expression: blend between fixed-px (geoScale=0) and geo-scaled (geoScale=1)
-  // At reference zoom 12, width = data value. Geo-scaled means width doubles per zoom level.
-  const zoomFactor = useMemo(() => {
-    if (geoScale === 0) return null
-    const base = Math.pow(2, geoScale)
-    const lo = Math.pow(2, -2 * geoScale)
-    const hi = Math.pow(2, 2 * geoScale)
-    return { base, lo, hi }
-  }, [geoScale])
-
-  const lineWidth = useMemo(() => {
-    if (!zoomFactor) return ['get', 'width'] as any
-    return [
-      'interpolate', ['exponential', zoomFactor.base], ['zoom'],
-      10, ['*', ['get', 'width'], zoomFactor.lo],
-      12, ['get', 'width'],
-      14, ['*', ['get', 'width'], zoomFactor.hi],
-    ] as any
-  }, [zoomFactor])
-
-  // Arrow icon-size: same zoom scaling as line-width, divided by canvas px (40)
-  const arrowSize = useMemo(() => {
-    const baseExpr = ['max', 0.08, ['/', ['get', 'width'], 40]] as any
-    if (!zoomFactor) return baseExpr
-    return [
-      'interpolate', ['exponential', zoomFactor.base], ['zoom'],
-      10, ['max', 0.08, ['/', ['*', ['get', 'width'], zoomFactor.lo], 40]],
-      12, baseExpr,
-      14, ['max', 0.08, ['/', ['*', ['get', 'width'], zoomFactor.hi], 40]],
-    ] as any
-  }, [zoomFactor])
-
-  // Line opacity expression: per-feature opacity * hover state.
+  // Fill opacity expression: per-feature opacity * hover state.
   // When hovering Uptown PATH, override faded segments to full opacity.
-  const lineOpacity = useMemo(() => {
-    if (!hoveredKey) return ['*', ['get', 'opacity'], 0.8] as any
+  const fillOpacity = useMemo(() => {
+    if (!hoveredKey) return ['*', ['get', 'opacity'], 0.85] as any
     return [
       'case',
-      ['==', ['get', 'key'], hoveredKey], 1,
+      ['==', ['get', 'key'], hoveredKey], ['get', 'opacity'],
       ['*', ['get', 'opacity'], 0.25],
     ] as any
   }, [hoveredKey])
 
-  // Add arrow triangle image to map
   const mapRef = useRef<MapRef>(null)
-  const addArrowImage = useCallback((map: any) => {
-    if (map.hasImage('arrow')) return
-    // Arrowhead: tip at top-center, base fills full width at bottom.
-    // Wide canvas so base flares beyond line width. No margins so
-    // base is flush with icon-anchor: 'bottom' at line endpoint.
-    const w = 64, h = 48
-    const canvas = document.createElement('canvas')
-    canvas.width = w
-    canvas.height = h
-    const ctx = canvas.getContext('2d')!
-    ctx.beginPath()
-    ctx.moveTo(w / 2, 0)  // tip (top center)
-    ctx.lineTo(w, h)      // right base (bottom-right corner)
-    ctx.lineTo(0, h)      // left base (bottom-left corner)
-    ctx.closePath()
-    ctx.fillStyle = '#ffffff'
-    ctx.fill()
-    const imageData = ctx.getImageData(0, 0, w, h)
-    map.addImage('arrow', imageData, { sdf: true })
-  }, [])
-  const onMapLoad = useCallback(() => {
-    const map = mapRef.current?.getMap()
-    if (map) addArrowImage(map)
-  }, [addArrowImage])
-  const onStyleImageMissing = useCallback((e: any) => {
-    if (e.id === 'arrow') {
-      const map = mapRef.current?.getMap()
-      if (map) addArrowImage(map)
-    }
-  }, [addArrowImage])
 
   const dirLabel = direction === 'entering' ? 'NJ\u2192NY' : 'NY\u2192NJ'
   const timeLabels: Record<TimePeriod, string> = {
@@ -644,17 +844,14 @@ function GeoSankeyInner({ data }: Props) {
   return (
     <div className="geo-sankey">
       <h2>Passenger Flows by Mode</h2>
-      <p className="subtitle">{dirLabel}, {timeLabels[timePeriod]}, {selectedYear}</p>
+      <p className="chart-subtitle">{dirLabel}, {timeLabels[timePeriod]}, {selectedYear}</p>
       <div style={{ width: '100%', height: '500px', position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
         <MapGL
           ref={mapRef}
-          onLoad={onMapLoad}
-          onStyleImageMissing={onStyleImageMissing}
-          initialViewState={{
-            longitude: MAP_CENTER[0],
-            latitude: MAP_CENTER[1],
-            zoom: 11.8,
-          }}
+          longitude={mapView.lng}
+          latitude={mapView.lat}
+          zoom={mapView.zoom}
+          onMove={e => setMapView({ lat: e.viewState.latitude, lng: e.viewState.longitude, zoom: e.viewState.zoom })}
           style={{ width: '100%', height: '100%' }}
           mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
           interactiveLayerIds={['flow-hit-target']}
@@ -662,49 +859,25 @@ function GeoSankeyInner({ data }: Props) {
           onMouseLeave={onMouseLeave}
           cursor={hoveredKey ? 'pointer' : ''}
         >
+          {/* Ribbon polygons (rect + arrowhead as unified shapes) */}
           <Source id="flows" type="geojson" data={geojson}>
-            {/* Invisible wide hit-target layer for easier hovering */}
+            <Layer
+              id="flow-fills"
+              type="fill"
+              paint={{
+                'fill-color': ['get', 'color'],
+                'fill-opacity': fillOpacity,
+              }}
+            />
+          </Source>
+          {/* Invisible centerline hit-targets for hover detection */}
+          <Source id="flow-hits" type="geojson" data={hitTargetGeojson}>
             <Layer
               id="flow-hit-target"
               type="line"
               paint={{
                 'line-color': 'transparent',
                 'line-width': 24,
-              }}
-            />
-            {/* Visible flow lines */}
-            <Layer
-              id="flow-lines"
-              type="line"
-              paint={{
-                'line-color': ['get', 'color'],
-                'line-width': lineWidth,
-                'line-opacity': lineOpacity,
-              }}
-              layout={{
-                'line-cap': 'butt',
-                'line-join': 'round',
-              }}
-            />
-          </Source>
-          {/* Arrowheads at flow endpoints */}
-          <Source id="arrows" type="geojson" data={arrowsGeojson}>
-            <Layer
-              id="flow-arrows"
-              type="symbol"
-              layout={{
-                'icon-image': 'arrow',
-                'icon-size': arrowSize,
-                'icon-rotate': ['get', 'bearing'],
-                'icon-rotation-alignment': 'map',
-                'icon-allow-overlap': true,
-                'icon-anchor': 'bottom',
-              }}
-              paint={{
-                'icon-color': ['get', 'color'],
-                'icon-opacity': hoveredKey
-                  ? ['*', ['get', 'opacity'], ['case', ['==', ['get', 'key'], hoveredKey], 1, 0.25]] as any
-                  : ['*', ['get', 'opacity'], 0.8] as any,
               }}
             />
           </Source>
@@ -793,7 +966,8 @@ function GeoSankeyInner({ data }: Props) {
             const active = hoveredKey === key
             const faded = hoveredKey && !active
             const color = MODE_COLORS[f.mode] ?? '#888'
-            const icon = MODE_ICON[f.mode]
+            const modeIcon = MODE_ICON[f.mode]
+            const agencies = CROSSING_AGENCY[f.crossing] ?? []
             return (
               <div
                 key={key}
@@ -801,20 +975,38 @@ function GeoSankeyInner({ data }: Props) {
                 onMouseEnter={() => setHoveredKey(key)}
                 onMouseLeave={() => setHoveredKey(null)}
               >
-                {icon && (
+                {modeIcon && (
                   <span
-                    className="geo-sankey-panel-icon"
-                    style={{
-                      backgroundColor: color,
-                      maskImage: `url(/icons/${icon}.svg)`,
-                      WebkitMaskImage: `url(/icons/${icon}.svg)`,
-                    }}
-                  />
+                    className="geo-sankey-panel-icon-pill"
+                    style={{ backgroundColor: color, borderRadius: 3, padding: '1px 2px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <span
+                      className="geo-sankey-panel-icon"
+                      style={{
+                        backgroundColor: '#fff',
+                        maskImage: `url(/icons/${modeIcon}.svg)`,
+                        WebkitMaskImage: `url(/icons/${modeIcon}.svg)`,
+                      }}
+                    />
+                  </span>
                 )}
+                {agencies.length > 1 ? (
+                  <span style={{ position: 'relative', width: 28, height: 14, flexShrink: 0 }}>
+                    {agencies.map((a, i) => (
+                      <img
+                        key={a} src={`/icons/${a}.svg`} alt={a}
+                        style={{
+                          height: 14, position: 'absolute', left: '50%', top: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          ...(i > 0 ? { filter: 'brightness(0) invert(1)' } : {}),
+                        }}
+                      />
+                    ))}
+                  </span>
+                ) : agencies.map(a => (
+                  <img key={a} src={`/icons/${a}.svg`} alt={a} style={{ height: 14, flexShrink: 0 }} />
+                ))}
                 <span className="geo-sankey-panel-label">{displayName(f.crossing)}</span>
-                <span className="geo-sankey-panel-mode" style={{ color }}>
-                  {f.mode}
-                </span>
                 <span className="geo-sankey-panel-value">
                   {f.passengers.toLocaleString()}
                 </span>
@@ -837,11 +1029,23 @@ function GeoSankeyInner({ data }: Props) {
           value={timePeriod}
           onChange={v => setTimePeriod(v as TimePeriod)}
         />
-        <Toggle
-          options={years.map(y => ({ value: String(y), label: `'${String(y).slice(2)}` }))}
+        <select
           value={String(selectedYear)}
-          onChange={v => setYear(parseInt(v))}
-        />
+          onChange={e => setYear(parseInt(e.target.value))}
+          style={{
+            background: 'var(--toggle-bg)',
+            color: 'var(--toggle-text)',
+            border: '1px solid var(--toggle-border)',
+            borderRadius: '4px',
+            padding: '0.25rem 0.4rem',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+          }}
+        >
+          {years.map(y => (
+            <option key={y} value={String(y)}>'{String(y).slice(2)}</option>
+          ))}
+        </select>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
           <span>px</span>
           <input
