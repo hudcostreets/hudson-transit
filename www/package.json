@@ -20,7 +20,7 @@
     "react-dom": "^19.2.0",
     "react-map-gl": "^8.1.0",
     "use-kbd": "^0.12.0",
-    "use-prms": "https://github.com/runsascoded/use-prms#e8358bc09a3b2708c5dc41f7d489d1b512092811"
+    "use-prms": "https://github.com/runsascoded/use-prms#b357b48290740ae53a0ccc5fe837cf312c29f81d"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
