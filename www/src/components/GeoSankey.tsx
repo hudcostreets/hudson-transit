@@ -56,24 +56,24 @@ const CROSSING_PATHS: Record<string, LatLon[]> = {
 const FERRY_TREES: FlowTree[] = [
   {
     dest: 'MT39',
-    destPos: [40.7603, -74.0032],   // W 39th St / Pier 79 (Manhattan)
+    destPos: [40.7555, -74.0060],   // waterfront coast, between Lincoln (PABT) and Amtrak (Penn)
     root: {
       type: 'merge',
-      pos: [40.7603, -74.0110],     // WHK + combined Hob merge (at MT39's latitude — trunk goes straight east in)
-      bearing: 90,                   // due east into MT39
+      pos: [40.7562, -74.0085],     // very close to dest for near-straight-in trunk
+      bearing: 110,                  // ESE, parallel to Lincoln/Amtrak tunnels
       children: [
-        // South side (right of eastward flow): combined Hoboken streams
+        // North side (left of ESE flow): Weehawken
+        { type: 'source', label: 'WHK', pos: [40.7771, -74.0136], weight: 0.30 },
+        // South side (right of ESE flow): combined Hoboken streams
         {
           type: 'merge',
-          pos: [40.7550, -74.0140],  // Hob14 + HobSo pre-merge (further N, between sources and main merge)
-          bearing: 50,               // trunk flows NE toward main merge
+          pos: [40.7530, -74.0160],  // mid-river, E and N of Hob 14 — both sources curve up to here
+          bearing: 30,               // trunk flows NNE toward main merge
           children: [
             { type: 'source', label: 'Hob So', pos: [40.7359, -74.0282], weight: 0.15 },
             { type: 'source', label: 'Hob 14', pos: [40.7505, -74.0241], weight: 0.20 },
           ],
         },
-        // North side (left of ENE flow): Weehawken
-        { type: 'source', label: 'WHK', pos: [40.7771, -74.0136], weight: 0.30 },
       ],
     },
   },
@@ -219,7 +219,7 @@ const MANHATTAN_TERMINI: { name: string; pos: LatLon }[] = [
   { name: 'Penn Station', pos: [40.7510, -74.0015] },    // Amtrak/NJT
   { name: 'Hudson Sq', pos: [40.7255, -74.0070] },       // Holland Tunnel
   { name: 'WTC PATH', pos: [40.7116, -74.0123] },        // Downtown PATH
-  { name: 'MT39', pos: [40.7603, -74.0032] },             // Ferry → 39th St
+  { name: 'MT39', pos: [40.7555, -74.0060] },             // Ferry → waterfront between tunnels
   { name: 'BPT', pos: [40.7142, -74.0169] },              // Ferry → Brookfield Place
 ]
 
@@ -237,8 +237,12 @@ const UPTOWN_FADE_START = 2
 
 // Display names: since we show one direction at a time, use singular "Tunnel"
 const DISPLAY_NAME: Record<string, string> = {
-  'Amtrak/N.J. Transit Tunnels': 'Amtrak/NJ Transit Tunnel',
-  'All Ferry Points': 'Ferry (multiple routes)',
+  'Lincoln Tunnel': 'Lincoln',
+  'Holland Tunnel': 'Holland',
+  'Amtrak/N.J. Transit Tunnels': 'Amtrak/NJT',
+  'Uptown PATH Tunnel': 'Uptown PATH',
+  'Downtown PATH Tunnel': 'Downtown PATH',
+  'All Ferry Points': 'Ferry',
 }
 function displayName(crossing: string): string {
   return DISPLAY_NAME[crossing] ?? crossing
@@ -297,7 +301,9 @@ function GeoSankeyInner({ data }: Props) {
 
   const flows = useMemo(() => aggregateFlows(filtered, selectedYear), [filtered, selectedYear])
 
-  // Sort flows by crossing order (approx north→south) then mode
+  // Panel sort: geographic (N→S) or desc by passenger count
+  const [sortDesc, setSortDesc] = useState(false)
+
   const sortedFlows = useMemo(() => {
     const crossingOrder = [
       'Lincoln Tunnel',
@@ -308,13 +314,14 @@ function GeoSankeyInner({ data }: Props) {
       'All Ferry Points',
     ]
     return [...flows].sort((a, b) => {
+      if (sortDesc) return b.passengers - a.passengers
       const ai = crossingOrder.indexOf(a.crossing)
       const bi = crossingOrder.indexOf(b.crossing)
       const ci = (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
       if (ci !== 0) return ci
       return MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode)
     })
-  }, [flows])
+  }, [flows, sortDesc])
 
   const maxPassengers = useMemo(() => max(...flows.map(f => f.passengers), 1), [flows])
   const totalPassengers = useMemo(() => flows.reduce((s, f) => s + f.passengers, 0), [flows])
@@ -568,7 +575,7 @@ function GeoSankeyInner({ data }: Props) {
     <div className="geo-sankey">
       <h2>Passenger Flows by Mode</h2>
       <p className="chart-subtitle">{dirLabel}, {timeLabels[timePeriod]}, {selectedYear}</p>
-      <div style={{ width: '100%', height: '500px', position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: '680px', position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
         <MapGL
           ref={mapRef}
           longitude={mapView.lng}
@@ -577,6 +584,7 @@ function GeoSankeyInner({ data }: Props) {
           onMove={e => setMapView({ lat: e.viewState.latitude, lng: e.viewState.longitude, zoom: e.viewState.zoom })}
           style={{ width: '100%', height: '100%' }}
           mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          cooperativeGestures
           interactiveLayerIds={['flow-hit-target']}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
@@ -689,8 +697,18 @@ function GeoSankeyInner({ data }: Props) {
         </MapGL>
         {/* Sticky info panel — always visible */}
         <div className="geo-sankey-panel">
-          <div className="geo-sankey-panel-header">
-            <strong>Total: {totalPassengers.toLocaleString()} passengers</strong>
+          <div className="geo-sankey-panel-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <strong style={{ fontSize: '14px' }}>Total: {totalPassengers.toLocaleString()}</strong>
+            <button
+              onClick={() => setSortDesc(d => !d)}
+              title={sortDesc ? 'Sorted by count' : 'Sorted N→S'}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px',
+                color: '#aaa', fontSize: '14px', lineHeight: 1,
+              }}
+            >
+              {sortDesc ? '↓' : '↕'}
+            </button>
           </div>
           {sortedFlows.map(f => {
             const key = flowKey(f)
@@ -722,12 +740,12 @@ function GeoSankeyInner({ data }: Props) {
                   </span>
                 )}
                 {agencies.length > 1 ? (
-                  <span style={{ position: 'relative', width: 28, height: 14, flexShrink: 0 }}>
+                  <span style={{ position: 'relative', width: 32, height: 18, flexShrink: 0 }}>
                     {agencies.map((a, i) => (
                       <img
                         key={a} src={`/icons/${a}.svg`} alt={a}
                         style={{
-                          height: 14, position: 'absolute', left: '50%', top: '50%',
+                          height: 18, position: 'absolute', left: '50%', top: '50%',
                           transform: 'translate(-50%, -50%)',
                           ...(i > 0 ? { filter: 'brightness(0) invert(1)' } : {}),
                         }}
@@ -735,7 +753,7 @@ function GeoSankeyInner({ data }: Props) {
                     ))}
                   </span>
                 ) : agencies.map(a => (
-                  <img key={a} src={`/icons/${a}.svg`} alt={a} style={{ height: 14, flexShrink: 0 }} />
+                  <img key={a} src={`/icons/${a}.svg`} alt={a} style={{ height: 18, flexShrink: 0 }} />
                 ))}
                 <span className="geo-sankey-panel-label">{displayName(f.crossing)}</span>
                 <span className="geo-sankey-panel-value">
