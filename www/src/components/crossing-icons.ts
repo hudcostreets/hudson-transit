@@ -20,6 +20,15 @@ function pathLogo(color: string): string {
 </svg>`)
 }
 
+/** Port Authority logo: "PA" in bold rounded rectangle */
+function paLogo(color: string): string {
+  const c = enc(color)
+  return svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 32">
+  <rect x="1" y="1" width="54" height="30" rx="5" fill="none" stroke="${c}" stroke-width="2.5"/>
+  <text x="28" y="22.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="19" fill="${c}" letter-spacing="1">PA</text>
+</svg>`)
+}
+
 /** NJ Transit logo: "NJT" in bold with underline bar */
 function njtLogo(color: string): string {
   const c = enc(color)
@@ -80,7 +89,7 @@ export const CROSSING_ICON_FNS: Record<string, IconFn> = {
 
 export const MODE_ICON_FNS: Record<string, IconFn> = {
   Bus: busIcon,
-  Autos: carIcon,
+  Autos: paLogo,
   PATH: pathLogo,
   Rail: amtrakLogo,
   Ferry: ferryIcon,

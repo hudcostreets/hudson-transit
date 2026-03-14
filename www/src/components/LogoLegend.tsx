@@ -37,7 +37,7 @@ const CROSSING_ICONS: Record<string, string[]> = {
 
 const MODE_ICONS: Record<string, string[]> = {
   'Bus':   ['njt', 'bus'],
-  'Autos': ['car'],
+  'Autos': ['pa', 'car'],
   'PATH':  ['path', 'train'],
   'Rail':  ['njt', 'amtrak', 'train'],
   'Ferry': ['nyww', 'ferry'],
