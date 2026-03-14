@@ -95,7 +95,7 @@ function App() {
       <Omnibar />
       <ShortcutsModal editable />
       <LookupModal />
-      <SpeedDial actions={sdActions} TooltipRenderer={SDTooltipRenderer} />
+      <SpeedDial actions={sdActions} chevronMode="badge" TooltipRenderer={SDTooltipRenderer} />
     </HotkeysProvider>
   )
 }

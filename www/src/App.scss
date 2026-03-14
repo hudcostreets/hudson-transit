@@ -20,6 +20,19 @@
   --ann-bg: #2a2a4a;
   --tooltip-bg: #1e2a45;
   --tooltip-border: #4a6fa5;
+  // use-kbd (SpeedDial, Omnibar, etc.) dark theme
+  --kbd-bg: #1a1a2e;
+  --kbd-bg-secondary: #16213e;
+  --kbd-text: #e0e0e0;
+  --kbd-text-secondary: #a0a0b0;
+  --kbd-border: #2a2a4a;
+  --kbd-accent: #6b9fd4;
+  --kbd-accent-hover: #4a6fa5;
+  --kbd-kbd-bg: #2a2a4a;
+  --kbd-kbd-border: #3a3a5a;
+  --kbd-kbd-text: #e0e0e0;
+  --kbd-conflict-bg: #3a1a1a;
+  --kbd-warning-bg: #3a2a1a;
 }
 
 [data-theme="light"] {
@@ -43,6 +56,19 @@
   --ann-bg: #fff;
   --tooltip-bg: #fff;
   --tooltip-border: #bbb;
+  // use-kbd light (restore defaults)
+  --kbd-bg: #ffffff;
+  --kbd-bg-secondary: #f9fafb;
+  --kbd-text: #1f2937;
+  --kbd-text-secondary: #6b7280;
+  --kbd-border: #e5e7eb;
+  --kbd-accent: #3b82f6;
+  --kbd-accent-hover: #2563eb;
+  --kbd-kbd-bg: #f3f4f6;
+  --kbd-kbd-border: #d1d5db;
+  --kbd-kbd-text: #374151;
+  --kbd-conflict-bg: #fef2f2;
+  --kbd-warning-bg: #fef3c7;
 }
 
 @media (prefers-color-scheme: light) {
@@ -67,6 +93,18 @@
     --ann-bg: #fff;
     --tooltip-bg: #fff;
     --tooltip-border: #bbb;
+    --kbd-bg: #ffffff;
+    --kbd-bg-secondary: #f9fafb;
+    --kbd-text: #1f2937;
+    --kbd-text-secondary: #6b7280;
+    --kbd-border: #e5e7eb;
+    --kbd-accent: #3b82f6;
+    --kbd-accent-hover: #2563eb;
+    --kbd-kbd-bg: #f3f4f6;
+    --kbd-kbd-border: #d1d5db;
+    --kbd-kbd-text: #374151;
+    --kbd-conflict-bg: #fef2f2;
+    --kbd-warning-bg: #fef3c7;
   }
 }
 
@@ -353,7 +391,7 @@ footer {
 // Geo-sankey map panel
 .geo-sankey-panel {
   position: absolute;
-  top: 8px;
+  bottom: 8px;
   right: 8px;
   background: rgba(0, 0, 0, 0.82);
   color: #e0e0e0;
@@ -421,6 +459,25 @@ footer {
     white-space: nowrap;
     min-width: 45px;
   }
+}
+
+// MapLibre attribution: compact dark-mode
+.maplibregl-ctrl-attrib {
+  font-size: 9px !important;
+  background: transparent !important;
+  opacity: 0.5;
+  a { color: var(--text-muted) !important; }
+}
+
+// SpeedDial badge chevron: visible on dark bg
+.kbd-speed-dial-chevron.kbd-speed-dial-badge {
+  opacity: 0.9;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: -13px;
 }
 
 @media (max-width: 600px) {
