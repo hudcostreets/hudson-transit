@@ -7,10 +7,15 @@ import { DEFAULT_SCHEME } from '../lib/colors'
 import { filterCrossings } from '../lib/transform'
 import { useUrlState } from 'use-prms'
 import Toggle from './Toggle'
+import type { LatLon, FlowNode } from '../lib/geo-sankey'
+import {
+  geoConstants, pxToHalfDeg, toGeoJSON, offsetPath,
+  smoothPath, sBezier,
+  ribbon, ribbonArrow,
+  renderFlowTree, nodeSources,
+} from '../lib/geo-sankey'
 
-const { sqrt, max, min, PI, sin, cos, atan2, pow } = Math
-
-type LatLon = [number, number]  // [lat, lon]
+const { max } = Math
 
 // Geographic paths from NJ portal/terminal → Manhattan CBD entry point.
 // Each path is an array of [lat, lon] waypoints.
@@ -47,109 +52,15 @@ const CROSSING_PATHS: Record<string, LatLon[]> = {
   ],
 }
 
-// Cubic bezier: generates smooth curve through control points
-function cubicBezier(p0: LatLon, p1: LatLon, p2: LatLon, p3: LatLon, n = 20): LatLon[] {
-  const pts: LatLon[] = []
-  for (let i = 0; i <= n; i++) {
-    const t = i / n, u = 1 - t
-    pts.push([
-      u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0],
-      u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1],
-    ])
-  }
-  return pts
-}
 
-/** Catmull-Rom spline through waypoints. Returns a smooth polyline with
- *  `segsPerSpan` samples between each consecutive pair of input points.
- *  Also returns `knots`: the output indices corresponding to each input point. */
-function smoothPath(pts: LatLon[], segsPerSpan = 12): { path: LatLon[]; knots: number[] } {
-  const n = pts.length
-  if (n < 2) return { path: [...pts], knots: pts.map((_, i) => i) }
-  const out: LatLon[] = []
-  const knots: number[] = []
-  for (let i = 0; i < n - 1; i++) {
-    const p0 = pts[max(i - 1, 0)]
-    const p1 = pts[i]
-    const p2 = pts[i + 1]
-    const p3 = pts[min(i + 2, n - 1)]
-    knots.push(out.length)
-    for (let s = 0; s < segsPerSpan; s++) {
-      const t = s / segsPerSpan, t2 = t * t, t3 = t2 * t
-      out.push([
-        0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
-        0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3),
-      ])
-    }
-  }
-  knots.push(out.length)
-  out.push(pts[n - 1])
-  return { path: out, knots }
-}
-
-// S-curve: depart east, arrive east. Minimum span prevents degenerate
-// straight lines when start/end are at similar longitude.
-function sBezier(start: LatLon, end: LatLon): LatLon[] {
-  const dLon = end[1] - start[1]
-  const dLat = end[0] - start[0]
-  const dist = sqrt(dLat * dLat + dLon * dLon)
-  const span = max(Math.abs(dLon) * 0.5, dist * 0.35)
-  const cp1: LatLon = [start[0], start[1] + span]
-  const cp2: LatLon = [end[0], end[1] - span]
-  return cubicBezier(start, cp1, cp2, end)
-}
-
-/** Bezier with explicit departure and/or arrival bearings (degrees, 0=N 90=E).
- *  Tangent at start matches departBearing; tangent at end matches arriveBearing.
- *  Undefined bearings default to east (90°). */
-function directedBezier(start: LatLon, end: LatLon, departBearing?: number, arriveBearing?: number): LatLon[] {
-  const dLat = end[0] - start[0], dLon = end[1] - start[1]
-  const dist = sqrt(dLat * dLat + dLon * dLon)
-  const span = max(dist * 0.4, 0.001)
-
-  const dRad = (departBearing ?? 90) * PI / 180
-  const cp1: LatLon = [start[0] + cos(dRad) * span, start[1] + sin(dRad) * span]
-
-  const aRad = (arriveBearing ?? 90) * PI / 180
-  const cp2: LatLon = [end[0] - cos(aRad) * span, end[1] - sin(aRad) * span]
-
-  return cubicBezier(start, cp1, cp2, end)
-}
-
-// --- Ferry Sankey tree ---
-// Recursive merge tree: leaves are NJ ferry terminals, internal nodes are
-// merge points where tributaries combine into a wider trunk.
-//
-// Each merge specifies an explicit `bearing` (degrees, 0=N 90=E) — the
-// direction the outgoing trunk flows. The perpendicular to that bearing
-// determines the stacking axis. Children are ordered right→left relative
-// to the flow direction (S→N for an eastward bearing).
+// Ferry merge tree: FerryNode extends FlowNode with `label` for display
 type FerryNode =
   | { type: 'source'; label: string; pos: LatLon; weight: number }
   | { type: 'merge'; pos: LatLon; bearing: number; children: FerryNode[] }
 
-function ferryWeight(node: FerryNode): number {
-  return node.type === 'source'
-    ? node.weight
-    : node.children.reduce((s, c) => s + ferryWeight(c), 0)
-}
-
-/** Collect all leaf source positions from a ferry tree (for hover labels). */
 function ferrySources(node: FerryNode): { label: string; pos: LatLon }[] {
   if (node.type === 'source') return [{ label: node.label, pos: node.pos }]
   return node.children.flatMap(c => ferrySources(c))
-}
-
-/** Perpendicular unit vector (left of bearing) in [lat, lon] space.
- *  bearing: degrees clockwise from north (0=N, 90=E, etc.)
- *  Returns unit vector pointing left of the bearing direction. */
-function bearingPerpLeft(bearing: number): LatLon {
-  const rad = bearing * PI / 180
-  // Forward in (lat,lon): (cos(bearing), sin(bearing))
-  // Left = 90° CCW: (sin(bearing), -cos(bearing))
-  // But lon degrees are smaller than lat degrees, so we don't scale here —
-  // the caller applies LNG_SCALE when computing positions.
-  return [sin(rad), -cos(rad)]
 }
 
 interface FerryTree {
@@ -270,149 +181,8 @@ function aggregateFlows(records: CrossingRecord[], year: number): FlowDatum[] {
   return [...byKey.values()]
 }
 
-// Offset a path laterally for stacking multiple modes on the same crossing
-function offsetPath(path: LatLon[], offset: number): LatLon[] {
-  if (path.length < 2 || offset === 0) return path
-  const [sLat, sLon] = path[0]
-  const [eLat, eLon] = path[path.length - 1]
-  const dx = eLon - sLon, dy = eLat - sLat
-  const len = sqrt(dx * dx + dy * dy)
-  if (len === 0) return path
-  const perpLat = -dx / len
-  const perpLon = dy / len
-  const k = offset * 0.0004
-  return path.map(([lat, lon]) => [lat + perpLat * k, lon + perpLon * k])
-}
-
-// Convert [lat, lon][] path to GeoJSON [lon, lat][] coordinates
-function toGeoJSON(path: LatLon[]): [number, number][] {
-  return path.map(([lat, lon]) => [lon, lat])
-}
-
-// --- Ribbon polygon generation ---
-// Reference lat for cos correction (all paths are near 40.74°N)
-const REF_LAT_RAD = 40.74 * PI / 180
-const COS_REF = cos(REF_LAT_RAD)
-const LNG_SCALE = 1 / COS_REF  // lng degrees per lat degree at this latitude
-// Degrees-lat per pixel at reference zoom 12
-const DEG_PER_PX_Z12 = 156543.03 * COS_REF / (pow(2, 12) * 111320)
-
-/** Convert pixel width to half-width in degrees of latitude, accounting for zoom and geoScale */
-function pxToHalfDeg(widthPx: number, zoom: number, geoScale: number): number {
-  return (widthPx / 2) * DEG_PER_PX_Z12 * pow(2, (geoScale - 1) * (zoom - 12))
-}
-
-/** Convert pixel offset to degrees of latitude (full, not halved). */
-function pxToDeg(px: number, zoom: number, geoScale: number): number {
-  return px * DEG_PER_PX_Z12 * pow(2, (geoScale - 1) * (zoom - 12))
-}
-
-/** Perpendicular unit vector at waypoint i (in lat/lng space, not scaled) */
-function perpAt(path: LatLon[], i: number): LatLon {
-  const n = path.length
-  let dy = 0, dx = 0
-  if (i < n - 1) { dy += path[i + 1][0] - path[i][0]; dx += path[i + 1][1] - path[i][1] }
-  if (i > 0) { dy += path[i][0] - path[i - 1][0]; dx += path[i][1] - path[i - 1][1] }
-  const len = sqrt(dy * dy + dx * dx)
-  if (len === 0) return [0, 0]
-  return [-dx / len, dy / len]  // rotate 90° CCW
-}
-
-/** Forward unit vector at waypoint i */
-function fwdAt(path: LatLon[], i: number): LatLon {
-  const n = path.length
-  const next = min(i + 1, n - 1), prev = max(i - 1, 0)
-  const dy = path[next][0] - path[prev][0], dx = path[next][1] - path[prev][1]
-  const len = sqrt(dy * dy + dx * dx)
-  if (len === 0) return [0, 0]
-  return [dy / len, dx / len]
-}
-
-/** Build a ribbon polygon with integrated arrowhead.
- *  Returns GeoJSON [lng, lat][] ring (closed). */
-function ribbonArrow(
-  path: LatLon[],
-  halfW: number,            // half ribbon width in degrees lat
-  arrowWingFactor: number,  // wing width as multiple of halfW
-  arrowLenFactor: number,   // arrow length as multiple of full width (2*halfW)
-  widthPx?: number,         // actual pixel width (for adaptive wing sizing)
-): [number, number][] {
-  const n = path.length
-  if (n < 2) return []
-  // Compute cumulative arc length along the path
-  const cumLen = [0]
-  for (let i = 1; i < n; i++) {
-    const dy = path[i][0] - path[i - 1][0], dx = path[i][1] - path[i - 1][1]
-    cumLen.push(cumLen[i - 1] + sqrt(dy * dy + dx * dx))
-  }
-  const pathLen = cumLen[n - 1]
-  // Clamp arrow length to at most 40% of path
-  const desiredArrowLen = halfW * 2 * arrowLenFactor
-  const arrowLen = min(desiredArrowLen, pathLen * 0.4)
-  const arrowScale = desiredArrowLen > 0 ? arrowLen / desiredArrowLen : 1
-  // Adaptive wing factor: wider wings on narrow arrows so they're visible
-  const effectiveWing = widthPx != null && widthPx < 8
-    ? arrowWingFactor + (8 - widthPx) * 0.15
-    : arrowWingFactor
-  const arrowHalfW = halfW * (1 + (effectiveWing - 1) * arrowScale)
-  const ls = LNG_SCALE
-
-  // Arrow base distance from start of path
-  const baseDist = pathLen - arrowLen
-
-  // Forward direction: average over last 25% of path for stability on curves
-  const avgStart = max(0, n - 1 - Math.ceil(n * 0.25))
-  let fwdLat = path[n - 1][0] - path[avgStart][0]
-  let fwdLon = path[n - 1][1] - path[avgStart][1]
-  const fwdLen = sqrt(fwdLat * fwdLat + fwdLon * fwdLon)
-  if (fwdLen > 0) { fwdLat /= fwdLen; fwdLon /= fwdLen }
-  else { fwdLat = fwdAt(path, n - 1)[0]; fwdLon = fwdAt(path, n - 1)[1] }
-  const pLat = -fwdLon, pLng = fwdLat  // perpendicular (90° CCW)
-
-  const baseLat = path[n - 1][0] - fwdLat * arrowLen
-  const baseLng = path[n - 1][1] - fwdLon * arrowLen
-
-  const left: [number, number][] = []
-  const right: [number, number][] = []
-
-  // Ribbon body: emit points up to the arrow base
-  for (let i = 0; i < n; i++) {
-    if (cumLen[i] > baseDist) break
-    const [pL, pN] = perpAt(path, i)
-    left.push([path[i][1] + pN * halfW * ls, path[i][0] + pL * halfW])
-    right.push([path[i][1] - pN * halfW * ls, path[i][0] - pL * halfW])
-  }
-
-  // Arrow base (ribbon→wing transition), using averaged direction
-  left.push([baseLng + pLng * halfW * ls, baseLat + pLat * halfW])
-  right.push([baseLng - pLng * halfW * ls, baseLat - pLat * halfW])
-  left.push([baseLng + pLng * arrowHalfW * ls, baseLat + pLat * arrowHalfW])
-  right.push([baseLng - pLng * arrowHalfW * ls, baseLat - pLat * arrowHalfW])
-
-  // Tip
-  const tip: [number, number] = [path[n - 1][1], path[n - 1][0]]
-
-  const ring = [...left, tip, ...right.reverse()]
-  ring.push(ring[0])
-  return ring
-}
-
-/** Build a ribbon polygon WITHOUT arrowhead (for fade segments, ferry branches). */
-function ribbon(path: LatLon[], halfW: number): [number, number][] {
-  const n = path.length
-  if (n < 2) return []
-  const ls = LNG_SCALE
-  const left: [number, number][] = []
-  const right: [number, number][] = []
-  for (let i = 0; i < n; i++) {
-    const [pLat, pLng] = perpAt(path, i)
-    left.push([path[i][1] + pLng * halfW * ls, path[i][0] + pLat * halfW])
-    right.push([path[i][1] - pLng * halfW * ls, path[i][0] - pLat * halfW])
-  }
-  const ring = [...left, ...right.reverse()]
-  ring.push(ring[0])
-  return ring
-}
+const REF_LAT = 40.74
+const { lngScale: LNG_SCALE, degPerPxZ12: DEG_PER_PX_Z12 } = geoConstants(REF_LAT)
 
 // Year param
 const yearParam = {
@@ -573,93 +343,17 @@ function GeoSankeyInner({ data }: Props) {
         const key = flowKey(f)
         const color = MODE_COLORS[f.mode] ?? '#888'
 
-        // Ferry Sankey: recursive tree of merging tributaries
+        // Ferry Sankey: delegate to geo-sankey library
         if (f.isFerry) {
-          const totalPax = f.passengers
-          const pxW = (weight: number) => max(1, (Math.round(totalPax * weight) / maxPassengers) * 30 * widthScale)
-
-          /** Compute pixel width for a node. For merge nodes, width is the
-           *  exact sum of children widths (not independently computed from
-           *  total weight) to ensure seamless tiling at junctions. */
-          function nodeWidth(node: FerryNode): number {
-            if (node.type === 'source') return pxW(node.weight)
-            return node.children.reduce((s, c) => s + nodeWidth(c), 0)
-          }
-
-          /** Recursively render a ferry tree node toward targetPos.
-           *  At each merge, children are stacked laterally along the
-           *  bearing's perpendicular so the combined shape is seamlessly
-           *  composed of its tributaries.
-           *  arriveBearing: tangent direction arriving at targetPos.
-           *  straightEnd: if set, the curve goes to targetPos (approach point),
-           *  then a straight segment continues to straightEnd along the bearing.
-           *  This guarantees the ribbon is fully parallel at the junction. */
-          function renderFerryNode(node: FerryNode, targetPos: LatLon, terminal: boolean, arriveBearing?: number, straightEnd?: LatLon) {
-            const width = nodeWidth(node)
-            const hw = pxToHalfDeg(width, zoom, geoScale)
-
-            // Build path: optional straight departure + curve + optional straight arrival.
-            // Straight segments at merge junctions guarantee ribbons are fully
-            // parallel on both sides of the junction.
-            const departBearing = node.type === 'merge' ? node.bearing : undefined
-            let curveStart = node.pos
-            const straightStart: LatLon[] = []
-            if (node.type === 'merge') {
-              // Straight departure along bearing before curving — guarantees
-              // ribbon edges are exactly parallel at the junction (matching children)
-              const hw2 = pxToHalfDeg(width, zoom, geoScale)
-              const depLen = hw2 * 1.5
-              const rad = node.bearing * PI / 180
-              const ls = LNG_SCALE
-              curveStart = [node.pos[0] + cos(rad) * depLen, node.pos[1] + sin(rad) * depLen * ls]
-              straightStart.push(node.pos)
-            }
-            const curvePts = directedBezier(curveStart, targetPos, departBearing, arriveBearing)
-            let path = [...straightStart, ...curvePts, ...(straightEnd ? [straightEnd] : [])]
-            if (direction === 'leaving') path = [...path].reverse()
-            const ring = terminal
-              ? ribbonArrow(path, hw, ARROW_WING, ARROW_LEN, width)
-              : ribbon(path, hw)
-            if (ring.length) features.push(poly({ color, width, key, opacity: 1 }, ring))
-
-            if (node.type === 'merge') {
-              const [perpLat, perpLon] = bearingPerpLeft(node.bearing)
-              const ls = LNG_SCALE
-
-              // Stack children along perpendicular (right→left).
-              // First child = right (negative offset), last = left (positive).
-              // Each child targets a point offset from the merge, with a
-              // straight approach segment along the bearing so ribbon edges
-              // are guaranteed parallel at the junction.
-              const rad = node.bearing * PI / 180
-              const fwdLat = cos(rad), fwdLon = sin(rad)
-              const approachLen = hw * 1.5  // straight run before merge (in degrees lat)
-
-              const childWidths = node.children.map(c => nodeWidth(c))
-              const totalW = childWidths.reduce((s, w) => s + w, 0)
-              let cumW = 0
-              for (let ci = 0; ci < node.children.length; ci++) {
-                const cw = childWidths[ci]
-                const centerOffset = -totalW / 2 + cumW + cw / 2
-                cumW += cw
-                const offsetDeg = pxToDeg(centerOffset, zoom, geoScale)
-                // End point: merge pos + lateral offset
-                const childEnd: LatLon = [
-                  node.pos[0] + perpLat * offsetDeg,
-                  node.pos[1] + perpLon * offsetDeg * ls,
-                ]
-                // Pre-approach point: upstream along bearing from end point
-                const childApproach: LatLon = [
-                  childEnd[0] - fwdLat * approachLen,
-                  childEnd[1] - fwdLon * approachLen * ls,
-                ]
-                renderFerryNode(node.children[ci], childApproach, false, node.bearing, childEnd)
-              }
-            }
-          }
-
           for (const tree of FERRY_TREES) {
-            renderFerryNode(tree.root, tree.destPos, true)
+            const flowFeatures = renderFlowTree(
+              { id: tree.dest, destPos: tree.destPos, root: tree.root as FlowNode },
+              maxPassengers, f.passengers,
+              { zoom, refLat: REF_LAT, geoScale, widthScale, arrowWingFactor: ARROW_WING, arrowLenFactor: ARROW_LEN },
+            )
+            for (const ff of flowFeatures) {
+              features.push(poly({ color, width: ff.width, key, opacity: 1 }, ff.ring))
+            }
           }
           return
         }
@@ -668,7 +362,7 @@ function GeoSankeyInner({ data }: Props) {
         let path = offsetPath(f.path, lateralOffset)
         if (direction === 'leaving') path = [...path].reverse()
         const width = max(1, (f.passengers / maxPassengers) * 30 * widthScale)
-        const hw = pxToHalfDeg(width, zoom, geoScale)
+        const hw = pxToHalfDeg(width, zoom, geoScale, DEG_PER_PX_Z12)
 
         // Uptown PATH: default ends at Christopher St, hover shows full to 33rd
         if (f.crossing === 'Uptown PATH Tunnel' && path.length > 2) {
@@ -677,19 +371,19 @@ function GeoSankeyInner({ data }: Props) {
 
           // Default: arrow at Christopher St (hidden on hover)
           const shortPath = smooth.slice(0, fadeIdx + 1)
-          const shortRing = ribbonArrow(shortPath, hw, ARROW_WING, ARROW_LEN, width)
+          const shortRing = ribbonArrow(shortPath, hw, LNG_SCALE, { wingFactor: ARROW_WING, lenFactor: ARROW_LEN, widthPx: width })
           if (shortRing.length) {
             features.push(poly({ color, width, key: key + '|short', opacity: 1 }, shortRing))
           }
 
           // Hover: full path with arrow at 33rd St (hidden by default)
-          const fullRing = ribbonArrow(smooth, hw, ARROW_WING, ARROW_LEN, width)
+          const fullRing = ribbonArrow(smooth, hw, LNG_SCALE, { wingFactor: ARROW_WING, lenFactor: ARROW_LEN, widthPx: width })
           if (fullRing.length) {
             features.push(poly({ color, width, key: key + '|full', opacity: 1 }, fullRing))
           }
         } else {
           // Normal flow: ribbon + arrowhead as one polygon
-          const ring = ribbonArrow(path, hw, ARROW_WING, ARROW_LEN, width)
+          const ring = ribbonArrow(path, hw, LNG_SCALE, { wingFactor: ARROW_WING, lenFactor: ARROW_LEN, widthPx: width })
           if (ring.length) {
             features.push(poly({ color, width, key, opacity: 1 }, ring))
           }
