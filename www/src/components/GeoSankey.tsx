@@ -7,13 +7,13 @@ import { DEFAULT_SCHEME } from '../lib/colors'
 import { filterCrossings } from '../lib/transform'
 import { useUrlState } from 'use-prms'
 import Toggle from './Toggle'
-import type { LatLon, FlowNode } from '../lib/geo-sankey'
+import type { LatLon, FlowNode, FlowTree } from 'geo-sankey'
 import {
-  geoConstants, pxToHalfDeg, toGeoJSON, offsetPath,
+  pxToHalfDeg, toGeoJSON, offsetPath,
   smoothPath, sBezier,
-  ribbon, ribbonArrow,
-  renderFlowTree, nodeSources,
-} from '../lib/geo-sankey'
+  ribbonArrow,
+  renderFlowTree, flowSources,
+} from 'geo-sankey'
 
 const { max } = Math
 
@@ -53,23 +53,7 @@ const CROSSING_PATHS: Record<string, LatLon[]> = {
 }
 
 
-// Ferry merge tree: FerryNode extends FlowNode with `label` for display
-type FerryNode =
-  | { type: 'source'; label: string; pos: LatLon; weight: number }
-  | { type: 'merge'; pos: LatLon; bearing: number; children: FerryNode[] }
-
-function ferrySources(node: FerryNode): { label: string; pos: LatLon }[] {
-  if (node.type === 'source') return [{ label: node.label, pos: node.pos }]
-  return node.children.flatMap(c => ferrySources(c))
-}
-
-interface FerryTree {
-  dest: string
-  destPos: LatLon
-  root: FerryNode
-}
-
-const FERRY_TREES: FerryTree[] = [
+const FERRY_TREES: FlowTree[] = [
   {
     dest: 'MT39',
     destPos: [40.7603, -74.0032],   // W 39th St / Pier 79 (Manhattan)
@@ -182,7 +166,6 @@ function aggregateFlows(records: CrossingRecord[], year: number): FlowDatum[] {
 }
 
 const REF_LAT = 40.74
-const { lngScale: LNG_SCALE, degPerPxZ12: DEG_PER_PX_Z12 } = geoConstants(REF_LAT)
 
 // Year param
 const yearParam = {
@@ -345,15 +328,21 @@ function GeoSankeyInner({ data }: Props) {
 
         // Ferry Sankey: delegate to geo-sankey library
         if (f.isFerry) {
+          const totalPax = f.passengers
+          const pxPerWeight = (weight: number) =>
+            max(1, (Math.round(totalPax * weight) / maxPassengers) * 30 * widthScale)
           for (const tree of FERRY_TREES) {
-            const flowFeatures = renderFlowTree(
-              { id: tree.dest, destPos: tree.destPos, root: tree.root as FlowNode },
-              maxPassengers, f.passengers,
-              { zoom, refLat: REF_LAT, geoScale, widthScale, arrowWingFactor: ARROW_WING, arrowLenFactor: ARROW_LEN },
+            const treeFeatures = renderFlowTree(
+              { dest: tree.dest, destPos: tree.destPos, root: tree.root },
+              {
+                refLat: REF_LAT, zoom, geoScale,
+                color, key,
+                pxPerWeight,
+                arrowWing: ARROW_WING, arrowLen: ARROW_LEN,
+                reverse: direction === 'leaving',
+              },
             )
-            for (const ff of flowFeatures) {
-              features.push(poly({ color, width: ff.width, key, opacity: 1 }, ff.ring))
-            }
+            features.push(...treeFeatures)
           }
           return
         }
@@ -362,7 +351,7 @@ function GeoSankeyInner({ data }: Props) {
         let path = offsetPath(f.path, lateralOffset)
         if (direction === 'leaving') path = [...path].reverse()
         const width = max(1, (f.passengers / maxPassengers) * 30 * widthScale)
-        const hw = pxToHalfDeg(width, zoom, geoScale, DEG_PER_PX_Z12)
+        const hw = pxToHalfDeg(width, zoom, geoScale, REF_LAT)
 
         // Uptown PATH: default ends at Christopher St, hover shows full to 33rd
         if (f.crossing === 'Uptown PATH Tunnel' && path.length > 2) {
@@ -371,19 +360,19 @@ function GeoSankeyInner({ data }: Props) {
 
           // Default: arrow at Christopher St (hidden on hover)
           const shortPath = smooth.slice(0, fadeIdx + 1)
-          const shortRing = ribbonArrow(shortPath, hw, LNG_SCALE, { wingFactor: ARROW_WING, lenFactor: ARROW_LEN, widthPx: width })
+          const shortRing = ribbonArrow(shortPath, hw, REF_LAT, { arrowWingFactor: ARROW_WING, arrowLenFactor: ARROW_LEN, widthPx: width })
           if (shortRing.length) {
             features.push(poly({ color, width, key: key + '|short', opacity: 1 }, shortRing))
           }
 
           // Hover: full path with arrow at 33rd St (hidden by default)
-          const fullRing = ribbonArrow(smooth, hw, LNG_SCALE, { wingFactor: ARROW_WING, lenFactor: ARROW_LEN, widthPx: width })
+          const fullRing = ribbonArrow(smooth, hw, REF_LAT, { arrowWingFactor: ARROW_WING, arrowLenFactor: ARROW_LEN, widthPx: width })
           if (fullRing.length) {
             features.push(poly({ color, width, key: key + '|full', opacity: 1 }, fullRing))
           }
         } else {
           // Normal flow: ribbon + arrowhead as one polygon
-          const ring = ribbonArrow(path, hw, LNG_SCALE, { wingFactor: ARROW_WING, lenFactor: ARROW_LEN, widthPx: width })
+          const ring = ribbonArrow(path, hw, REF_LAT, { arrowWingFactor: ARROW_WING, arrowLenFactor: ARROW_LEN, widthPx: width })
           if (ring.length) {
             features.push(poly({ color, width, key, opacity: 1 }, ring))
           }
@@ -410,7 +399,7 @@ function GeoSankeyInner({ data }: Props) {
       crossingFlows.forEach((f, i) => {
         const key = flowKey(f)
         if (f.isFerry) {
-          function addHitPaths(node: FerryNode, targetPos: LatLon) {
+          function addHitPaths(node: FlowNode, targetPos: LatLon) {
             const nodePos = node.type === 'source' ? node.pos : node.pos
             let path = sBezier(nodePos, targetPos)
             if (direction === 'leaving') path = [...path].reverse()
@@ -471,7 +460,7 @@ function GeoSankeyInner({ data }: Props) {
             geometry: { type: 'Point', coordinates: [tree.destPos[1], tree.destPos[0]] },
           })
         }
-        for (const src of ferrySources(tree.root)) {
+        for (const src of flowSources(tree.root)) {
           const sKey = `${src.pos}`
           if (!seen.has(sKey)) {
             seen.add(sKey)
