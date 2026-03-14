@@ -25,7 +25,4 @@ export default defineConfig({
       allow: ['..', '/Users/ryan/c/plotly.js/dist'],
     },
   },
-  optimizeDeps: {
-    include: ['plotly.js-dist-min'],
-  },
 })
