@@ -27,10 +27,9 @@ const CROSSING_PATHS: Record<string, LatLon[]> = {
     [40.7255, -74.0070],  // Manhattan portal (Broome St / Hudson Square)
   ],
   'Amtrak/N.J. Transit Tunnels': [
-    [40.7714, -74.0419],  // NJ portal (North Bergen, Palisades at Rt 3/US 1-9)
-    [40.7680, -74.0200],  // under Weehawken (approaching Hudson)
-    [40.7600, -74.0100],  // mid-Hudson
-    [40.7510, -74.0015],  // Manhattan portal (10th Ave & 32nd St)
+    [40.7580, -74.0350],  // NJ approach (south of Lincoln, Weehawken rail yards)
+    [40.7555, -74.0170],  // mid-Hudson (parallel to Lincoln, just south)
+    [40.7510, -74.0015],  // Manhattan portal (Penn Station, 10th Ave & 32nd St)
   ],
   'Uptown PATH Tunnel': [
     [40.7355, -74.0298],  // Hoboken terminal
@@ -59,6 +58,33 @@ function cubicBezier(p0: LatLon, p1: LatLon, p2: LatLon, p3: LatLon, n = 20): La
     ])
   }
   return pts
+}
+
+/** Catmull-Rom spline through waypoints. Returns a smooth polyline with
+ *  `segsPerSpan` samples between each consecutive pair of input points.
+ *  Also returns `knots`: the output indices corresponding to each input point. */
+function smoothPath(pts: LatLon[], segsPerSpan = 12): { path: LatLon[]; knots: number[] } {
+  const n = pts.length
+  if (n < 2) return { path: [...pts], knots: pts.map((_, i) => i) }
+  const out: LatLon[] = []
+  const knots: number[] = []
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = pts[max(i - 1, 0)]
+    const p1 = pts[i]
+    const p2 = pts[i + 1]
+    const p3 = pts[min(i + 2, n - 1)]
+    knots.push(out.length)
+    for (let s = 0; s < segsPerSpan; s++) {
+      const t = s / segsPerSpan, t2 = t * t, t3 = t2 * t
+      out.push([
+        0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+        0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3),
+      ])
+    }
+  }
+  knots.push(out.length)
+  out.push(pts[n - 1])
+  return { path: out, knots }
 }
 
 // S-curve: depart east, arrive east. Minimum span prevents degenerate
@@ -309,6 +335,7 @@ function ribbonArrow(
   halfW: number,            // half ribbon width in degrees lat
   arrowWingFactor: number,  // wing width as multiple of halfW
   arrowLenFactor: number,   // arrow length as multiple of full width (2*halfW)
+  widthPx?: number,         // actual pixel width (for adaptive wing sizing)
 ): [number, number][] {
   const n = path.length
   if (n < 2) return []
@@ -319,34 +346,44 @@ function ribbonArrow(
     cumLen.push(cumLen[i - 1] + sqrt(dy * dy + dx * dx))
   }
   const pathLen = cumLen[n - 1]
-  // Clamp arrow length to at most 40% of path (prevents arrowhead consuming short paths)
+  // Clamp arrow length to at most 40% of path
   const desiredArrowLen = halfW * 2 * arrowLenFactor
   const arrowLen = min(desiredArrowLen, pathLen * 0.4)
   const arrowScale = desiredArrowLen > 0 ? arrowLen / desiredArrowLen : 1
-  const arrowHalfW = halfW * (1 + (arrowWingFactor - 1) * arrowScale)
+  // Adaptive wing factor: wider wings on narrow arrows so they're visible
+  const effectiveWing = widthPx != null && widthPx < 8
+    ? arrowWingFactor + (8 - widthPx) * 0.15
+    : arrowWingFactor
+  const arrowHalfW = halfW * (1 + (effectiveWing - 1) * arrowScale)
   const ls = LNG_SCALE
 
-  // Arrow base is at (pathLen - arrowLen) along the path.
-  // Only emit ribbon body points up to that distance to avoid self-intersection.
+  // Arrow base distance from start of path
   const baseDist = pathLen - arrowLen
+
+  // Forward direction: average over last 25% of path for stability on curves
+  const avgStart = max(0, n - 1 - Math.ceil(n * 0.25))
+  let fwdLat = path[n - 1][0] - path[avgStart][0]
+  let fwdLon = path[n - 1][1] - path[avgStart][1]
+  const fwdLen = sqrt(fwdLat * fwdLat + fwdLon * fwdLon)
+  if (fwdLen > 0) { fwdLat /= fwdLen; fwdLon /= fwdLen }
+  else { fwdLat = fwdAt(path, n - 1)[0]; fwdLon = fwdAt(path, n - 1)[1] }
+  const pLat = -fwdLon, pLng = fwdLat  // perpendicular (90° CCW)
+
+  const baseLat = path[n - 1][0] - fwdLat * arrowLen
+  const baseLng = path[n - 1][1] - fwdLon * arrowLen
 
   const left: [number, number][] = []
   const right: [number, number][] = []
 
+  // Ribbon body: emit points up to the arrow base
   for (let i = 0; i < n; i++) {
     if (cumLen[i] > baseDist) break
-    const [pLat, pLng] = perpAt(path, i)
-    left.push([path[i][1] + pLng * halfW * ls, path[i][0] + pLat * halfW])
-    right.push([path[i][1] - pLng * halfW * ls, path[i][0] - pLat * halfW])
+    const [pL, pN] = perpAt(path, i)
+    left.push([path[i][1] + pN * halfW * ls, path[i][0] + pL * halfW])
+    right.push([path[i][1] - pN * halfW * ls, path[i][0] - pL * halfW])
   }
 
-  // Arrowhead at terminus
-  const [fLat, fLng] = fwdAt(path, n - 1)
-  const [pLat, pLng] = perpAt(path, n - 1)
-  const baseLat = path[n - 1][0] - fLat * arrowLen
-  const baseLng = path[n - 1][1] - fLng * arrowLen
-
-  // Ribbon→wing transition at arrow base
+  // Arrow base (ribbon→wing transition), using averaged direction
   left.push([baseLng + pLng * halfW * ls, baseLat + pLat * halfW])
   right.push([baseLng - pLng * halfW * ls, baseLat - pLat * halfW])
   left.push([baseLng + pLng * arrowHalfW * ls, baseLat + pLat * arrowHalfW])
@@ -355,7 +392,6 @@ function ribbonArrow(
   // Tip
   const tip: [number, number] = [path[n - 1][1], path[n - 1][0]]
 
-  // Combine: left forward → tip → right backward → close
   const ring = [...left, tip, ...right.reverse()]
   ring.push(ring[0])
   return ring
@@ -416,11 +452,11 @@ const MANHATTAN_TERMINI: { name: string; pos: LatLon }[] = [
 
 // Uptown PATH Manhattan station positions (for hover dots)
 const UPTOWN_PATH_STATIONS: { name: string; pos: LatLon }[] = [
-  { name: 'Christopher St', pos: [40.7337, -74.0068] },
-  { name: '9th St', pos: [40.7338, -74.0020] },
-  { name: '14th St', pos: [40.7361, -73.9969] },
-  { name: '23rd St', pos: [40.7427, -73.9932] },
-  { name: '33rd St', pos: [40.7486, -73.9884] },
+  { name: 'Christopher', pos: [40.7337, -74.0068] },
+  { name: '9th', pos: [40.7338, -74.0020] },
+  { name: '14th', pos: [40.7361, -73.9969] },
+  { name: '23rd', pos: [40.7427, -73.9932] },
+  // 33rd St PATH omitted — already rendered via TERMINAL_NAMES
 ]
 
 // Uptown PATH fade start index (Christopher St = index 2 in CROSSING_PATHS)
@@ -455,6 +491,13 @@ function GeoSankeyInner({ data }: Props) {
     decode: (s: string | null): number => s != null ? parseFloat(s) : 1,
   }), [])
   const [geoScale, setGeoScale] = useUrlState('gs', geoScaleParam)
+
+  // Width scale: multiplier for arrow widths (default 1)
+  const widthScaleParam = useMemo(() => ({
+    encode: (v: number) => v === 1 ? null : v.toFixed(1),
+    decode: (s: string | null): number => s != null ? parseFloat(s) : 1,
+  }), [])
+  const [widthScale, setWidthScale] = useUrlState('ws', widthScaleParam)
 
   // Map view: lat_lng_zoom packed into one param, `_` delimited
   const llzParam = useMemo(() => {
@@ -519,13 +562,6 @@ function GeoSankeyInner({ data }: Props) {
     }
 
     const zoom = mapView.zoom
-    const UPTOWN_NODE_OPACITY = [1, 1, 1, 0.55, 0.30, 0.12, 0.03]
-    const FADE_SUBDIVISIONS = 5
-
-    function lerp(a: LatLon, b: LatLon, t: number): LatLon {
-      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
-    }
-
     function poly(props: Record<string, any>, ring: [number, number][]): GeoJSON.Feature {
       return { type: 'Feature', properties: props, geometry: { type: 'Polygon', coordinates: [ring] } }
     }
@@ -540,7 +576,7 @@ function GeoSankeyInner({ data }: Props) {
         // Ferry Sankey: recursive tree of merging tributaries
         if (f.isFerry) {
           const totalPax = f.passengers
-          const pxW = (weight: number) => max(1, (Math.round(totalPax * weight) / maxPassengers) * 30)
+          const pxW = (weight: number) => max(1, (Math.round(totalPax * weight) / maxPassengers) * 30 * widthScale)
 
           /** Compute pixel width for a node. For merge nodes, width is the
            *  exact sum of children widths (not independently computed from
@@ -582,7 +618,7 @@ function GeoSankeyInner({ data }: Props) {
             let path = [...straightStart, ...curvePts, ...(straightEnd ? [straightEnd] : [])]
             if (direction === 'leaving') path = [...path].reverse()
             const ring = terminal
-              ? ribbonArrow(path, hw, ARROW_WING, ARROW_LEN)
+              ? ribbonArrow(path, hw, ARROW_WING, ARROW_LEN, width)
               : ribbon(path, hw)
             if (ring.length) features.push(poly({ color, width, key, opacity: 1 }, ring))
 
@@ -631,57 +667,29 @@ function GeoSankeyInner({ data }: Props) {
         const lateralOffset = i - (crossingFlows.length - 1) / 2
         let path = offsetPath(f.path, lateralOffset)
         if (direction === 'leaving') path = [...path].reverse()
-        const width = max(1, (f.passengers / maxPassengers) * 30)
+        const width = max(1, (f.passengers / maxPassengers) * 30 * widthScale)
         const hw = pxToHalfDeg(width, zoom, geoScale)
 
-        // Uptown PATH: solid ribbon+arrow to Christopher St, then fading ribbons
+        // Uptown PATH: default ends at Christopher St, hover shows full to 33rd
         if (f.crossing === 'Uptown PATH Tunnel' && path.length > 2) {
-          // Solid segment with arrowhead at Christopher St
-          const solidPath = path.slice(0, UPTOWN_FADE_START + 1)
-          const solidRing = ribbonArrow(solidPath, hw, ARROW_WING, ARROW_LEN)
-          if (solidRing.length) {
-            features.push(poly({ color, width, key, opacity: 1 }, solidRing))
-          }
-          // Fading ribbon: subdivide the fade portion into fine points,
-          // compute ribbon edges once from the FULL path (consistent perpendiculars),
-          // then emit quad polygons with interpolated opacity.
-          const fadePath = path.slice(UPTOWN_FADE_START)
-          const fadePoints: { pt: LatLon; opacity: number }[] = []
-          for (let s = 0; s < fadePath.length - 1; s++) {
-            const oA = UPTOWN_NODE_OPACITY[UPTOWN_FADE_START + s] ?? 0
-            const oB = UPTOWN_NODE_OPACITY[UPTOWN_FADE_START + s + 1] ?? 0
-            for (let sub = 0; sub < FADE_SUBDIVISIONS; sub++) {
-              const t = sub / FADE_SUBDIVISIONS
-              fadePoints.push({ pt: lerp(fadePath[s], fadePath[s + 1], t), opacity: oA + (oB - oA) * t })
-            }
-          }
-          fadePoints.push({ pt: fadePath[fadePath.length - 1], opacity: UPTOWN_NODE_OPACITY[path.length - 1] ?? 0 })
+          const { path: smooth, knots } = smoothPath(path)
+          const fadeIdx = knots[UPTOWN_FADE_START]  // Christopher St
 
-          // Compute ribbon edges using perpendiculars from the full fade path
-          const allPts = fadePoints.map(fp => fp.pt)
-          const ls = LNG_SCALE
-          const leftEdge: [number, number][] = []
-          const rightEdge: [number, number][] = []
-          for (let i = 0; i < allPts.length; i++) {
-            const [pLat, pLng] = perpAt(allPts, i)
-            leftEdge.push([allPts[i][1] + pLng * hw * ls, allPts[i][0] + pLat * hw])
-            rightEdge.push([allPts[i][1] - pLng * hw * ls, allPts[i][0] - pLat * hw])
+          // Default: arrow at Christopher St (hidden on hover)
+          const shortPath = smooth.slice(0, fadeIdx + 1)
+          const shortRing = ribbonArrow(shortPath, hw, ARROW_WING, ARROW_LEN, width)
+          if (shortRing.length) {
+            features.push(poly({ color, width, key: key + '|short', opacity: 1 }, shortRing))
           }
 
-          // Emit quad polygons between consecutive edge pairs
-          for (let i = 0; i < fadePoints.length - 1; i++) {
-            const opacity = (fadePoints[i].opacity + fadePoints[i + 1].opacity) / 2
-            if (opacity < 0.01) continue
-            const ring: [number, number][] = [
-              leftEdge[i], leftEdge[i + 1],
-              rightEdge[i + 1], rightEdge[i],
-              leftEdge[i],  // close ring
-            ]
-            features.push(poly({ color, width, key, opacity }, ring))
+          // Hover: full path with arrow at 33rd St (hidden by default)
+          const fullRing = ribbonArrow(smooth, hw, ARROW_WING, ARROW_LEN, width)
+          if (fullRing.length) {
+            features.push(poly({ color, width, key: key + '|full', opacity: 1 }, fullRing))
           }
         } else {
           // Normal flow: ribbon + arrowhead as one polygon
-          const ring = ribbonArrow(path, hw, ARROW_WING, ARROW_LEN)
+          const ring = ribbonArrow(path, hw, ARROW_WING, ARROW_LEN, width)
           if (ring.length) {
             features.push(poly({ color, width, key, opacity: 1 }, ring))
           }
@@ -692,7 +700,7 @@ function GeoSankeyInner({ data }: Props) {
     // Sort widest first so narrower flows draw on top
     features.sort((a, b) => (b.properties?.width ?? 0) - (a.properties?.width ?? 0))
     return { type: 'FeatureCollection' as const, features }
-  }, [flows, direction, maxPassengers, mapView.zoom, geoScale])
+  }, [flows, direction, maxPassengers, mapView.zoom, geoScale, widthScale])
 
   // Centerline hit-targets (invisible LineStrings for hover detection)
   const hitTargetGeojson = useMemo(() => {
@@ -722,6 +730,8 @@ function GeoSankeyInner({ data }: Props) {
         }
         const lateralOffset = i - (crossingFlows.length - 1) / 2
         let path = offsetPath(f.path, lateralOffset)
+        // Uptown PATH: hit target to Christopher St
+        if (f.crossing === 'Uptown PATH Tunnel') path = path.slice(0, 3)
         if (direction === 'leaving') path = [...path].reverse()
         features.push({ type: 'Feature', properties: { key }, geometry: { type: 'LineString', coordinates: toGeoJSON(path) } })
       })
@@ -800,12 +810,14 @@ function GeoSankeyInner({ data }: Props) {
       })
     }
 
-    // Uptown PATH: show all 5 Manhattan station dots on hover
+    // Uptown PATH: show station dots on hover
     if (hovered.crossing === 'Uptown PATH Tunnel') {
       for (const station of UPTOWN_PATH_STATIONS) {
+        // Christopher: label above/left; others: below/right
+        const anchor = station.name === 'Christopher' ? 'bottom' : 'top-left'
         features.push({
           type: 'Feature',
-          properties: { name: station.name, anchor: 'left' },
+          properties: { name: station.name, anchor },
           geometry: { type: 'Point', coordinates: [station.pos[1], station.pos[0]] },
         })
       }
@@ -821,12 +833,20 @@ function GeoSankeyInner({ data }: Props) {
   }, [])
   const onMouseLeave = useCallback(() => setHoveredKey(null), [])
 
-  // Fill opacity expression: per-feature opacity * hover state.
-  // When hovering Uptown PATH, override faded segments to full opacity.
+  const UT_KEY = 'Uptown PATH Tunnel|PATH'
   const fillOpacity = useMemo(() => {
-    if (!hoveredKey) return ['*', ['get', 'opacity'], 0.85] as any
+    if (!hoveredKey) return [
+      'case',
+      ['==', ['get', 'key'], UT_KEY + '|full'], 0,
+      ['*', ['get', 'opacity'], 0.85],
+    ] as any
+    const isUT = hoveredKey === UT_KEY
     return [
       'case',
+      // Uptown PATH: swap short↔full on hover
+      ['==', ['get', 'key'], UT_KEY + '|full'], isUT ? 0.85 : 0,
+      ['==', ['get', 'key'], UT_KEY + '|short'], isUT ? 0 : ['*', ['get', 'opacity'], 0.25],
+      // Normal flows
       ['==', ['get', 'key'], hoveredKey], ['get', 'opacity'],
       ['*', ['get', 'opacity'], 0.25],
     ] as any
@@ -944,8 +964,16 @@ function GeoSankeyInner({ data }: Props) {
                 'text-field': ['get', 'name'],
                 'text-size': 12,
                 'text-font': ['Open Sans Bold'],
-                'text-offset': [0, -1.2],
-                'text-anchor': 'bottom',
+                'text-offset': [
+                  'case',
+                  ['==', ['get', 'anchor'], 'top-left'], ['literal', [0.8, 0.8]],
+                  ['literal', [0, -1.2]],
+                ],
+                'text-anchor': [
+                  'case',
+                  ['==', ['get', 'anchor'], 'top-left'], 'top-left',
+                  'bottom',
+                ],
                 'text-allow-overlap': true,
               }}
               paint={{
@@ -1055,6 +1083,16 @@ function GeoSankeyInner({ data }: Props) {
             style={{ width: '60px' }}
           />
           <span>geo</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <span>width</span>
+          <input
+            type="range" min="0.3" max="2" step="0.1"
+            value={widthScale}
+            onChange={e => setWidthScale(parseFloat(e.target.value))}
+            style={{ width: '60px' }}
+          />
+          <span>{widthScale.toFixed(1)}×</span>
         </label>
       </div>
     </div>
