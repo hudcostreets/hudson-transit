@@ -100,6 +100,26 @@ const MAP_CENTER: [number, number] = [-74.012, 40.740]
 
 // Mode colors from semantic scheme
 const MODE_COLORS = DEFAULT_SCHEME.mode
+const CROSSING_COLORS = DEFAULT_SCHEME.crossing
+
+// Map (crossing, mode) → crossing color scheme key
+const FLOW_COLOR_KEY: Record<string, string> = {
+  'Lincoln Tunnel|Bus': 'Lincoln (Bus)',
+  'Lincoln Tunnel|Autos': 'Lincoln (Autos)',
+  'Amtrak/N.J. Transit Tunnels|Rail': 'Amtrak / NJ Transit',
+  'Uptown PATH Tunnel|PATH': 'PATH (Uptown)',
+  'Downtown PATH Tunnel|PATH': 'PATH (Downtown)',
+  'Holland Tunnel|Bus': 'Holland (Bus)',
+  'Holland Tunnel|Autos': 'Holland (Autos)',
+  'All Ferry Points|Ferry': 'Ferry',
+}
+
+function flowColor(f: { crossing: string; mode: string }): string {
+  const key = `${f.crossing}|${f.mode}`
+  const crossingKey = FLOW_COLOR_KEY[key]
+  if (crossingKey && CROSSING_COLORS[crossingKey]) return CROSSING_COLORS[crossingKey]
+  return MODE_COLORS[f.mode] ?? '#888'
+}
 
 // Mode icon basenames (matching /icons/*.svg)
 const MODE_ICON: Record<string, string> = {
@@ -324,7 +344,7 @@ function GeoSankeyInner({ data }: Props) {
       crossingFlows.sort((a, b) => MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode))
       crossingFlows.forEach((f, i) => {
         const key = flowKey(f)
-        const color = MODE_COLORS[f.mode] ?? '#888'
+        const color = flowColor(f)
 
         // Ferry Sankey: delegate to geo-sankey library
         if (f.isFerry) {
@@ -676,7 +696,7 @@ function GeoSankeyInner({ data }: Props) {
             const key = flowKey(f)
             const active = hoveredKey === key
             const faded = hoveredKey && !active
-            const color = MODE_COLORS[f.mode] ?? '#888'
+            const color = flowColor(f)
             const modeIcon = MODE_ICON[f.mode]
             const agencies = CROSSING_AGENCY[f.crossing] ?? []
             return (
