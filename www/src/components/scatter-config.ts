@@ -1,5 +1,9 @@
 import type { RepelLineObstacle, RepelRectObstacle } from 'pltly/plotly'
 import type { JitterOffsets } from './JitteredPlot'
+import type { CrossingRecord } from '../lib/types'
+import vehiclesData from '../data/vehicles.json'
+
+const vehicles = vehiclesData as CrossingRecord[]
 
 function configKey(direction: string, timePeriod: string, granularity: string): string {
   return `${direction}:${timePeriod}:${granularity}`
@@ -486,6 +490,7 @@ export function buildCanonicalAnnotations(
   jx: (traceName: string, yearIdx: number) => number,
   annColors?: { font: string, bg: string, arrow: string },
   narrow = false,
+  clean = false,
 ) {
   const fc = annColors?.font ?? 'black'
   const bg = annColors?.bg ?? 'white'
@@ -530,33 +535,49 @@ export function buildCanonicalAnnotations(
     { ay: carTextYBottom + .005, x: jx('Holland (Autos)', lastIdx), y: hollandAutosPct[lastIdx], p: hollandAutosP[lastIdx] },
   ]
 
+  // Compute annotation stats from data
+  const lastYear = years[lastIdx]
+  const vehLookup = (crossing: string, mode: string) =>
+    vehicles.find(r => r.year === lastYear && r.crossing === crossing && r.mode === mode && r.direction === 'entering' && r.time_period === 'peak_1hr')?.passengers ?? 0
+
+  const lincolnBusVeh = vehLookup('Lincoln Tunnel', 'Bus')
+  const lincolnAutoVeh = vehLookup('Lincoln Tunnel', 'Auto')
+  const hollandAutoVeh = vehLookup('Holland Tunnel', 'Auto')
+
+  const busPplPerVeh = lincolnBusVeh > 0 ? Math.round(lincolnBusP[lastIdx] / lincolnBusVeh) : 0
+  const busPplPerLaneHr = Math.round(lincolnBusP[lastIdx] / 1000)  // 1 bus lane
+  const carPplPerVeh = (lincolnAutoVeh + hollandAutoVeh) > 0
+    ? (lincolnAutosP[lastIdx] + hollandAutosP[lastIdx]) / (lincolnAutoVeh + hollandAutoVeh) : 0
+  // 2+2 car lanes entering (Lincoln 2, Holland 2)
+  const carLanes = 4
+  const carPplPerLaneHr = Math.round((lincolnAutosP[lastIdx] + hollandAutosP[lastIdx]) / carLanes / 1000)
+
+  const busText = `1 bus lane:<br>~${busPplPerLaneHr}k / lane-hr<br>~${busPplPerVeh} / vehicle`
+  const carText = `2+2 car lanes:<br>${narrow ? '&lt;' : '<'} ${carPplPerLaneHr + 1}k / lane-hr<br>${carPplPerVeh.toFixed(1)} / vehicle`
+
   // Bus text sits above busTextYTop; car text sits below carTextYBottom
   const annotations = [
     {
-      text: narrow
-        ? '1 bus lane:<br>30-40k ppl/lane/hr<br>20-30 ppl/vehicle'
-        : '1 bus lane:<br>30k-40k ppl/lane/hr<br>20-30 ppl/vehicle',
+      text: busText,
       ax: annX, ay: busTextYTop,
       axref: 'x' as const, ayref: 'y' as const,
       yanchor: 'top' as const,
       x: annX, y: busTextYTop,
-      font: { color: fc, size: narrow ? 10 : undefined },
+      font: { color: fc, size: clean ? 15 : narrow ? 10 : undefined },
       arrowcolor: 'rgba(0,0,0,0)',
       bgcolor: bg,
-      borderpad: narrow ? 3 : 4,
+      borderpad: clean ? 6 : narrow ? 3 : 4,
     },
     {
-      text: narrow
-        ? '3+2 car lanes:<br>&lt; 2k ppl/lane/hr<br>1.3 ppl/vehicle'
-        : '3+2 car lanes:<br>< 2k ppl/lane/hr<br>1.3 ppl/vehicle',
+      text: carText,
       ax: annX, ay: carTextYBottom,
       axref: 'x' as const, ayref: 'y' as const,
       yanchor: 'bottom' as const,
       x: annX, y: carTextYBottom,
-      font: { color: fc, size: narrow ? 10 : undefined },
+      font: { color: fc, size: clean ? 15 : narrow ? 10 : undefined },
       arrowcolor: 'rgba(0,0,0,0)',
       bgcolor: bg,
-      borderpad: narrow ? 3 : 4,
+      borderpad: clean ? 6 : narrow ? 3 : 4,
     },
   ]
 
