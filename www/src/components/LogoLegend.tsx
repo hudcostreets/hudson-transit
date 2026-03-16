@@ -185,10 +185,10 @@ const GRID_4: Record<string, string[][]> = {
 function GridItem({ label, icons, color, highlight }: { label: string; icons: string[]; color: string; highlight?: UseTraceHighlightReturn }) {
   return (
     <div
-      className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}`}
+      className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}${highlight?.pinnedTrace === label ? ' pinned' : ''}`}
       onMouseEnter={() => highlight?.setHoverTrace(label)}
       onMouseLeave={() => highlight?.setHoverTrace(null)}
-      onClick={() => highlight?.toggleSolo(label)}
+      onClick={() => highlight?.togglePin(label)}
       style={{ cursor: highlight ? 'pointer' : undefined }}
     >
       <span className="logo-legend-icons">
@@ -329,14 +329,15 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
       {entries.map(({ label, rawY }) => {
         const icons = iconMap[label] ?? []
         const faded = highlight?.activeTrace && highlight.activeTrace !== label
+        const pinned = highlight?.pinnedTrace === label
         return (
           <div
             key={label}
-            className={`logo-legend-entry${faded ? ' faded' : ''}`}
+            className={`logo-legend-entry${faded ? ' faded' : ''}${pinned ? ' pinned' : ''}`}
             style={{ top: rawY - dotCy, cursor: highlight ? 'pointer' : undefined }}
             onMouseEnter={() => highlight?.setHoverTrace(label)}
             onMouseLeave={() => highlight?.setHoverTrace(null)}
-            onClick={() => highlight?.toggleSolo(label)}
+            onClick={() => highlight?.togglePin(label)}
           >
             <Tooltip title={tipMap[label] ?? label} placement="left">
               <div className="logo-legend-content">

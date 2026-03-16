@@ -362,10 +362,16 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are set above, deps cover all changing inputs
   }, [view, years, series, pct, labels, width, rightMargin, narrow, jitter, yRange, chartHeight, chartMargin, maxSize])
 
+  const handleChartClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (target.closest('.logo-legend-entry, .logo-legend-grid-item, .js-plotly-plot')) return
+    highlight.clearPin()
+  }, [highlight])
+
   const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
 
   return (
-    <div ref={ref}>
+    <div ref={ref} onClick={handleChartClick}>
       <h2>NJ&rarr;NY passengers by mode/crossing</h2>
       <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
       <div ref={chartRef} className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={hover.handleMouseLeave} style={{ position: 'relative' }}>

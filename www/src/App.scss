@@ -200,6 +200,9 @@ main {
   &.faded {
     opacity: 0.3;
   }
+  &.pinned .logo-legend-label {
+    font-weight: 700;
+  }
 }
 
 .logo-legend-dot {
@@ -301,6 +304,9 @@ main {
 
   &.faded {
     opacity: 0.3;
+  }
+  &.pinned .logo-legend-grid-label {
+    font-weight: 700;
   }
 }
 
