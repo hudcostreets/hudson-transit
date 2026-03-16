@@ -257,7 +257,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
     return { x: rect.left + l + xFrac * plotW, y: rect.top + rect.height * 0.35 }
   }, [hoverYear])
 
-  const highlight = useTraceHighlight(labels)
+  const highlight = useTraceHighlight(labels, { debounceMs: 150 })
 
   const iconFns = granularity === 'mode' ? MODE_ICON_FNS : CROSSING_ICON_FNS
   const showSideLegend = wide
