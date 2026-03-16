@@ -14,6 +14,7 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
     "maplibre-gl": "^5.20.0",
+    "plotly.js": "https://github.com/runsascoded/plotly.js#bef8f3d7db5c2b56223b0e4bd83a9e06bea71f65",
     "plotly.js-dist-min": "^3.4.0",
     "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/0b6ac99f3270fad707d054e6f6ff0e7eb8887281/pltly-0b6ac99f3270fad707d054e6f6ff0e7eb8887281.tar.gz",
     "react": "^19.2.0",
