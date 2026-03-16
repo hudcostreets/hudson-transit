@@ -13,10 +13,9 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
-    "geo-sankey": "workspace:*",
     "maplibre-gl": "^5.20.0",
     "plotly.js-dist-min": "^3.4.0",
-    "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/187b977df2b270c3095907a13a64d06db886d8fd/pltly-187b977df2b270c3095907a13a64d06db886d8fd.tar.gz",
+    "pltly": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-map-gl": "^8.1.0",

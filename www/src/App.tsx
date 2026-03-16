@@ -11,7 +11,6 @@ import SectorChart from './components/SectorChart'
 import HourlyChart from './components/HourlyChart'
 import PeakChart from './components/PeakChart'
 import ModeShareChart from './components/ModeShareChart'
-import GeoSankey from './components/GeoSankey'
 import { SDTooltipRenderer } from './components/Tooltip'
 import './App.scss'
 
@@ -65,7 +64,6 @@ function App() {
             <UnifiedChart data={crossings} />
           </section>
           <section id="map">
-            <GeoSankey data={crossings} />
           </section>
           {showNyc && <>
             <section id="hourly">

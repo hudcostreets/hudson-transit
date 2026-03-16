@@ -22,10 +22,10 @@ export default defineConfig({
     host: true,
     allowedHosts,
     fs: {
-      allow: ['..', '/Users/ryan/c/plotly.js/dist', '/Users/ryan/c/js/geo-sankey'],
+      allow: ['..', '/Users/ryan/c/plotly.js/dist'],
     },
   },
   optimizeDeps: {
-    exclude: ['geo-sankey'],
+    exclude: ['pltly'],
   },
 })
