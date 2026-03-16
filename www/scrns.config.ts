@@ -42,10 +42,17 @@ for (const dir of dirs) {
   }
 }
 
-// og:image — canonical bubble chart, taller viewport for full chart + controls
-screenshots['og-image'] = shot('', 850)
+// og:image — canonical bubble chart, clean mode (no toggles/SpeedDial, larger text)
+// Standard og:image is 1200x630
+screenshots['og'] = {
+  query: '?clean',
+  width: W,
+  height: 630,
+  selector: '#chart',
+  preScreenshotSleep: 1500,
+}
 
 // Usage:
-//   scrns --docker -h 3847 -o public/screenshots
-//   scrns --docker -h 3847 -o public/screenshots -i og-image
+//   scrns -h 3847 -o public/scrns                    # all bubble views
+//   scrns -h 3847 -o public -i og                    # og:image → public/og.png
 export default screenshots

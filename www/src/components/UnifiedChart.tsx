@@ -115,7 +115,7 @@ function isCanonical(direction: Direction, timePeriod: TimePeriod, granularity: 
   return direction === 'entering' && timePeriod === 'peak_1hr' && granularity === 'crossing'
 }
 
-export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
+export default function UnifiedChart({ data, clean = false }: { data: CrossingRecord[]; clean?: boolean }) {
   const [view, setView] = useUrlState('y', viewParam)
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
@@ -266,8 +266,9 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const yRange = useMemo((): [number, number] => {
     if (view === 'scatter' || view === 'pct') {
       const maxPct = Math.max(...labels.flatMap(l => pct[l]))
-      // Round up to next 2% above max + 3% padding for bubble radius clearance
-      return [0, Math.ceil((maxPct + 0.03) * 50) / 50]
+      // Round up to next 2% above max + padding for bubble radius clearance
+      const pad = clean ? 0.01 : 0.03
+      return [0, Math.ceil((maxPct + pad) * 50) / 50]
     }
     if (view === 'recovery') {
       const baseIdx = years.indexOf(BASE_YEAR)
@@ -303,11 +304,11 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   // Memoize chart content so hover state changes don't trigger Plotly.react() re-renders.
   const content = useMemo(() => {
     if (width <= 0) return null
-    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, plotHover, true, yRange, maxSize, narrow, width, highlight)
+    if (view === 'scatter') return renderScatter(years, series, pct, labels, colorMap, jitter, canonical && showAnnotations && !clean, legendLayout, rightMargin, plotTheme, iconFns, plotHover, true, yRange, maxSize, narrow, width, highlight, clean)
     if (view === 'bar') return renderBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, plotHover, true, yRange, narrow, highlight)
     if (view === 'recovery') return renderRecovery(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, plotHover, true, yRange, narrow, highlight)
     return renderPctBar(years, series, labels, colorMap, legendLayout, rightMargin, plotTheme, plotHover, true, yRange, narrow, highlight)
-  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, plotHover, yRange, maxSize, narrow, width, highlight])
+  }, [view, years, series, pct, labels, colorMap, jitter, canonical, showAnnotations, legendLayout, rightMargin, plotTheme, iconFns, plotHover, yRange, maxSize, narrow, width, highlight, clean])
 
   // Compute last-year y-axis values for the logo legend (varies by view)
   const lastYValues = useMemo(() => {
@@ -328,9 +329,9 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   }, [years, series, pct, labels, view])
 
   // Chart dimensions for y-alignment — must match Plotly layout margins exactly
-  const chartHeight = view === 'scatter' ? (narrow ? 580 : 700) : 600
+  const chartHeight = view === 'scatter' ? (clean ? 550 : narrow ? 580 : 700) : 600
   const chartMargin = view === 'scatter'
-    ? { t: 5, b: narrow ? 50 : 55 }
+    ? { t: clean ? 8 : 5, b: clean ? 50 : narrow ? 50 : 55 }
     : view === 'recovery' ? { t: 10, b: narrow ? 50 : 40 } : { t: 40, b: narrow ? 50 : 40 }
 
   // Compute last-year bubble pixel positions (legend-relative) for connector lines
@@ -371,9 +372,9 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
   const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
 
   return (
-    <div ref={ref} onClick={handleChartClick}>
-      <h2>NJ&rarr;NY passengers by mode/crossing</h2>
-      <p className="chart-subtitle">{subtitleText(view, direction, timePeriod)}</p>
+    <div ref={ref} onClick={handleChartClick} style={clean ? { marginTop: -16 } : undefined}>
+      <h2 style={clean ? { fontSize: '2rem', paddingTop: 0, marginTop: 0, marginBottom: 0 } : undefined}>NJ&rarr;NY passengers by mode/crossing</h2>
+      <p className="chart-subtitle" style={clean ? { fontSize: '1.2rem', marginTop: 2, marginBottom: 0 } : undefined}>{subtitleText(view, direction, timePeriod)}</p>
       <div ref={chartRef} className={[showSideLegend ? 'chart-with-legend' : '', narrow ? 'chart-bleed' : ''].filter(Boolean).join(' ') || undefined} key={`${view}-${direction}-${timePeriod}-${granularity}`} onMouseLeave={hover.handleMouseLeave} style={{ position: 'relative' }}>
         {content}
         {hoverYear != null && chartRef.current && (() => {
@@ -398,6 +399,7 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
             yRange={yRange}
             bubblePixels={bubblePixels}
             highlight={highlight}
+            clean={clean}
           />
         )}
       </div>
@@ -416,22 +418,24 @@ export default function UnifiedChart({ data }: { data: CrossingRecord[] }) {
           colorMap={colorMap}
         />
       )}
-      <div className="toggle-bar">
-        <Toggle options={VIEW_OPTIONS} value={view} onChange={setView} />
-        <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
-        <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
-        <Toggle options={GRAN_OPTIONS} value={granularity} onChange={setGranularity} />
-        {view === 'scatter' && canonical && (
-          <ToggleButton
-            active={showAnnotations}
-            onClick={() => setShowAnnotations(!showAnnotations)}
-            tooltip={showAnnotations ? 'Hide annotations' : 'Show annotations'}
-          >
-            {'\u{1F4DD}'}
-          </ToggleButton>
-        )}
-        <PalettePicker options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
-      </div>
+      {!clean && (
+        <div className="toggle-bar">
+          <Toggle options={VIEW_OPTIONS} value={view} onChange={setView} />
+          <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
+          <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
+          <Toggle options={GRAN_OPTIONS} value={granularity} onChange={setGranularity} />
+          {view === 'scatter' && canonical && (
+            <ToggleButton
+              active={showAnnotations}
+              onClick={() => setShowAnnotations(!showAnnotations)}
+              tooltip={showAnnotations ? 'Hide annotations' : 'Show annotations'}
+            >
+              {'\u{1F4DD}'}
+            </ToggleButton>
+          )}
+          <PalettePicker options={SCHEME_OPTIONS} value={schemeName} onChange={setSchemeName} />
+        </div>
+      )}
     </div>
   )
 }
@@ -561,13 +565,14 @@ function renderScatter(
   narrow = false,
   containerWidth = 1000,
   highlight?: UseTraceHighlightReturn,
+  clean = false,
 ) {
   const maxPassengers = Math.max(...labels.flatMap(l => series[l]))
 
   const jx = (traceName: string, yearIdx: number) =>
     getJitteredX(jitter, years[yearIdx], traceName)
 
-  const fontSize = narrow ? 9 : 11
+  const fontSize = clean ? 14 : narrow ? 9 : 11
   // Measure actual text width via canvas to decide if it fits inside the bubble
   const measureCtx = (() => {
     if (typeof document === 'undefined') return null
@@ -607,7 +612,9 @@ function renderScatter(
   const maxYear = Math.max(...years)
 
   // Build repel points for small-bubble labels (text outside) + obstacles for all other bubbles
-  const margin = { t: 5, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 50 : 55 }
+  const margin = clean
+    ? { t: 8, l: 90, r: rightMargin, b: 50 }
+    : { t: 5, l: narrow ? 35 : 60, r: rightMargin, b: narrow ? 50 : 55 }
   const xRange: [number, number] = [years[0] - (narrow ? 0.4 : 0.8), maxYear + (narrow ? 0.7 : 0.8)]
   const computedYRange = yRange ?? [0, 0.4]
 
@@ -638,7 +645,7 @@ function renderScatter(
 
   // Build canonical annotations first so their bounding boxes are repel obstacles
   const canonical_ = showAnnotations
-    ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font }, narrow)
+    ? buildCanonicalAnnotations(years, pct, series, maxPassengers, maxSize, jx, { font: pt.annFont, bg: pt.annBg, arrow: pt.font }, narrow, clean)
     : null
 
   const { annotations: repelAnnotations } = repelLabels(repelPoints, {
@@ -647,7 +654,7 @@ function renderScatter(
     xRange,
     yRange: computedYRange,
     margin,
-    fontSize,
+    fontSize: clean ? 14 : fontSize,
     standoff: 3,
     textColor: pt.font,
     obstacles,
@@ -704,6 +711,7 @@ function renderScatter(
       jitter={jitter}
       layout={{
         ...themedLayout(pt),
+        ...(clean ? { font: { color: pt.font, size: 16 } } : {}),
         xaxis: {
           dtick: 1,
           range: xRange,
@@ -713,13 +721,15 @@ function renderScatter(
           gridcolor: pt.grid,
           showspikes: false,
           ...yearTicks(years, narrow),
+          ...(clean ? { tickfont: { size: 16 } } : {}),
         },
         yaxis: {
-          title: narrow ? { text: '' } : { text: '% of total passengers (mode share)' },
+          title: narrow ? { text: '' } : { text: '% of total passengers (mode share)', ...(clean ? { standoff: 18, font: { size: 15 } } : {}) },
           tickformat: ',.0%',
           range: computedYRange,
           fixedrange: true,
           gridcolor: pt.grid,
+          ...(clean ? { tickfont: { size: 15 } } : {}),
         },
         hovermode: 'x',
         clickmode: 'event',
@@ -731,7 +741,7 @@ function renderScatter(
         showlegend: !hideLegend,
         legend: legendLayout,
       }}
-      style={{ width: '100%', height: narrow ? '580px' : '700px' }}
+      style={{ width: '100%', height: clean ? '550px' : narrow ? '580px' : '700px' }}
       config={mobileConfig}
       customHover={customHover}
     />

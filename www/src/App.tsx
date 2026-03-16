@@ -54,6 +54,7 @@ const sdActions: SpeedDialAction[] = [
 ]
 
 const showNyc = location.pathname.startsWith('/nyc')
+const clean = new URLSearchParams(location.search).has('clean')
 
 function App() {
   return (
@@ -61,7 +62,7 @@ function App() {
       <div className="app">
         <main>
           <section id="chart">
-            <UnifiedChart data={crossings} />
+            <UnifiedChart data={crossings} clean={clean} />
           </section>
           <section id="map">
           </section>
@@ -93,7 +94,7 @@ function App() {
       <Omnibar />
       <ShortcutsModal editable />
       <LookupModal />
-      <SpeedDial actions={sdActions} chevronMode="badge" TooltipRenderer={SDTooltipRenderer} />
+      {!clean && <SpeedDial actions={sdActions} chevronMode="badge" TooltipRenderer={SDTooltipRenderer} />}
     </HotkeysProvider>
   )
 }

@@ -80,6 +80,7 @@ export interface LogoLegendProps {
   yRange: [number, number]
   bubblePixels?: Record<string, BubblePixel>
   highlight?: UseTraceHighlightReturn
+  clean?: boolean
 }
 
 function IconEl({ name, height, invert, color }: { name: string; height: number; invert?: boolean; color?: string }) {
@@ -224,7 +225,7 @@ export function LogoLegendGrid({ labels, colorMap, granularity, containerWidth, 
   )
 }
 
-export default function LogoLegend({ labels, colorMap, granularity, lastYValues, chartHeight, margin, yRange, bubblePixels, highlight }: LogoLegendProps) {
+export default function LogoLegend({ labels, colorMap, granularity, lastYValues, chartHeight, margin, yRange, bubblePixels, highlight, clean }: LogoLegendProps) {
   const iconMap = granularity === 'mode' ? MODE_ICONS : CROSSING_ICONS
   const tipMap = granularity === 'mode' ? MODE_TIPS : CROSSING_TIPS
 
@@ -299,7 +300,7 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
   const dotCy = 8
 
   return (
-    <div className="logo-legend" style={{ height: chartHeight }}>
+    <div className="logo-legend" style={{ height: chartHeight, ...(clean ? { fontSize: 16 } : {}) }}>
       <svg className="logo-legend-connectors" height={chartHeight} style={{ overflow: 'visible' }}>
         {entries.map(({ label, rawY }) => {
           const bp = bubblePixels?.[label]
