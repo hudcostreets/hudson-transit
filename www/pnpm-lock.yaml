@@ -18,8 +18,8 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       pltly:
-        specifier: workspace:*
-        version: link:../../../js/pltly
+        specifier: https://gitlab.com/runsascoded/js/pltly/-/archive/0b6ac99f3270fad707d054e6f6ff0e7eb8887281/pltly-0b6ac99f3270fad707d054e6f6ff0e7eb8887281.tar.gz
+        version: https://gitlab.com/runsascoded/js/pltly/-/archive/0b6ac99f3270fad707d054e6f6ff0e7eb8887281/pltly-0b6ac99f3270fad707d054e6f6ff0e7eb8887281.tar.gz(plotly.js@2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4))(react-plotly.js@2.6.0(plotly.js@2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4))(react@19.2.4))(react@19.2.4)
       react:
         specifier: ^19.2.0
         version: 19.2.4
@@ -28,7 +28,7 @@ importers:
         version: 19.2.4(react@19.2.4)
       react-map-gl:
         specifier: ^8.1.0
-        version: 8.1.0(maplibre-gl@5.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 8.1.0(mapbox-gl@1.13.3)(maplibre-gl@5.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       use-kbd:
         specifier: ^0.12.0
         version: 0.12.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -2476,6 +2476,14 @@ packages:
   plotly.js@2.35.3:
     resolution: {integrity: sha512-7RaC6FxmCUhpD6H4MpD+QLUu3hCn76I11rotRefrh3m1iDvWqGnVqVk9dSaKmRAhFD3vsNsYea0OxnR1rc2IzQ==}
 
+  pltly@https://gitlab.com/runsascoded/js/pltly/-/archive/0b6ac99f3270fad707d054e6f6ff0e7eb8887281/pltly-0b6ac99f3270fad707d054e6f6ff0e7eb8887281.tar.gz:
+    resolution: {tarball: https://gitlab.com/runsascoded/js/pltly/-/archive/0b6ac99f3270fad707d054e6f6ff0e7eb8887281/pltly-0b6ac99f3270fad707d054e6f6ff0e7eb8887281.tar.gz}
+    version: 0.1.0-dist.b85d094
+    peerDependencies:
+      plotly.js: '>=2'
+      react: '>=17'
+      react-plotly.js: '>=2'
+
   pngjs@7.0.0:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
@@ -2546,6 +2554,9 @@ packages:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
     engines: {node: '>=0.4.0'}
 
+  prop-types@15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+
   protocol-buffers-schema@3.6.0:
     resolution: {integrity: sha512-TdDRD+/QNdrCGCE7v8340QyuXd4kIWIgapsE2+n/SaGiSSbomYl4TjHlvIoCWRpE7wFt02EpB35VVA2ImcBVqw==}
 
@@ -2587,6 +2598,9 @@ packages:
     peerDependencies:
       react: ^19.2.4
 
+  react-is@16.13.1:
+    resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+
   react-map-gl@8.1.0:
     resolution: {integrity: sha512-vDx/QXR3Tb+8/ap/z6gdMjJQ8ZEyaZf6+uMSPz7jhWF5VZeIsKsGfPvwHVPPwGF43Ryn+YR4bd09uEFNR5OPdg==}
     peerDependencies:
@@ -2599,6 +2613,12 @@ packages:
         optional: true
       maplibre-gl:
         optional: true
+
+  react-plotly.js@2.6.0:
+    resolution: {integrity: sha512-g93xcyhAVCSt9kV1svqG1clAEdL6k3U+jjuSzfTV7owaSU9Go6Ph8bl25J+jKfKvIGAEYpe4qj++WHJuc9IaeA==}
+    peerDependencies:
+      plotly.js: '>1.34.0'
+      react: '>0.13.0'
 
   react-refresh@0.18.0:
     resolution: {integrity: sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==}
@@ -4125,10 +4145,12 @@ snapshots:
       '@typescript-eslint/types': 8.56.1
       eslint-visitor-keys: 5.0.1
 
-  '@vis.gl/react-mapbox@8.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@vis.gl/react-mapbox@8.1.0(mapbox-gl@1.13.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
+    optionalDependencies:
+      mapbox-gl: 1.13.3
 
   '@vis.gl/react-maplibre@8.1.0(maplibre-gl@5.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
@@ -5771,6 +5793,12 @@ snapshots:
       - supports-color
       - webpack
 
+  pltly@https://gitlab.com/runsascoded/js/pltly/-/archive/0b6ac99f3270fad707d054e6f6ff0e7eb8887281/pltly-0b6ac99f3270fad707d054e6f6ff0e7eb8887281.tar.gz(plotly.js@2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4))(react-plotly.js@2.6.0(plotly.js@2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4))(react@19.2.4))(react@19.2.4):
+    dependencies:
+      plotly.js: 2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4)
+      react: 19.2.4
+      react-plotly.js: 2.6.0(plotly.js@2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4))(react@19.2.4)
+
   pngjs@7.0.0: {}
 
   pnpm-dep-source@https://codeload.github.com/runsascoded/pnpm-dep-source/tar.gz/157b214d36963173721769447daefc65f7948ed1:
@@ -5834,6 +5862,12 @@ snapshots:
 
   progress@2.0.3:
     optional: true
+
+  prop-types@15.8.1:
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
 
   protocol-buffers-schema@3.6.0: {}
 
@@ -5910,14 +5944,23 @@ snapshots:
       react: 19.2.4
       scheduler: 0.27.0
 
-  react-map-gl@8.1.0(maplibre-gl@5.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  react-is@16.13.1: {}
+
+  react-map-gl@8.1.0(mapbox-gl@1.13.3)(maplibre-gl@5.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
-      '@vis.gl/react-mapbox': 8.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@vis.gl/react-mapbox': 8.1.0(mapbox-gl@1.13.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@vis.gl/react-maplibre': 8.1.0(maplibre-gl@5.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
     optionalDependencies:
+      mapbox-gl: 1.13.3
       maplibre-gl: 5.20.0
+
+  react-plotly.js@2.6.0(plotly.js@2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4))(react@19.2.4):
+    dependencies:
+      plotly.js: 2.35.3(mapbox-gl@1.13.3)(webpack@5.105.4)
+      prop-types: 15.8.1
+      react: 19.2.4
 
   react-refresh@0.18.0: {}
 
