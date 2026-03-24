@@ -38,14 +38,14 @@ export const COLOR_SCHEMES: ColorScheme[] = [
       'PATH (Uptown)':       '#C084FC',  // light purple
       'Holland (Bus)':       '#C89B7B',  // muted tan / light brown
       'Holland (Autos)':     '#F87171',  // light red / rose
-      'Ferry':               '#14B8A6',  // teal
+      'Ferries':               '#14B8A6',  // teal
     },
     mode: {
       Autos: '#EF4444',  // red
       Bus:   '#FFA500',  // pure orange
       PATH:  '#9333EA',  // purple
       Rail:  '#7C3AED',  // violet
-      Ferry: '#14B8A6',  // teal
+      Ferries: '#14B8A6',  // teal
     },
   },
   {
@@ -65,14 +65,14 @@ export const COLOR_SCHEMES: ColorScheme[] = [
       'PATH (Uptown)':       pc[4],
       'Holland (Bus)':       pc[5],
       'Holland (Autos)':     pc[6],
-      'Ferry':               pc[7],
+      'Ferries':               pc[7],
     },
     mode: {
       Autos: pc[1],
       Bus:   pc[0],
       PATH:  pc[3],
       Rail:  pc[2],
-      Ferry: pc[7],
+      Ferries: pc[7],
     },
   },
 ]

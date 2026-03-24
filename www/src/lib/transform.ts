@@ -10,7 +10,13 @@ export function filterCrossings(
   return records.filter(r => r.direction === direction && r.time_period === timePeriod)
 }
 
-const MODE_LABELS = ['Autos', 'Bus', 'PATH', 'Rail', 'Ferry'] as const
+const MODE_LABELS: Record<string, string> = {
+  'Autos': 'Autos',
+  'Bus': 'Bus',
+  'PATH': 'PATH',
+  'Rail': 'Rail',
+  'Ferry': 'Ferries',
+}
 
 /** Aggregate crossing records by mode (summing across crossings) */
 export function aggregateByMode(records: CrossingRecord[]) {
@@ -21,10 +27,10 @@ export function aggregateByMode(records: CrossingRecord[]) {
     const m = byYearMode.get(r.year)!
     m[r.mode] = (m[r.mode] ?? 0) + r.passengers
   }
-  const labels = [...MODE_LABELS]
+  const labels = Object.values(MODE_LABELS)
   const series: Record<string, number[]> = {}
-  for (const label of labels) {
-    series[label] = years.map(y => byYearMode.get(y)?.[label] ?? 0)
+  for (const [dataMode, label] of Object.entries(MODE_LABELS)) {
+    series[label] = years.map(y => byYearMode.get(y)?.[dataMode] ?? 0)
   }
   return { years, series, labels }
 }

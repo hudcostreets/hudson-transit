@@ -84,7 +84,7 @@ export const CROSSING_ICON_FNS: Record<string, IconFn> = {
   'PATH (Downtown)': pathLogo,
   'PATH (Uptown)': pathLogo,
   'Amtrak / NJ Transit': amtrakLogo,
-  'Ferry': ferryIcon,
+  'Ferries': ferryIcon,
 }
 
 export const MODE_ICON_FNS: Record<string, IconFn> = {
@@ -92,5 +92,5 @@ export const MODE_ICON_FNS: Record<string, IconFn> = {
   Autos: paLogo,
   PATH: pathLogo,
   Rail: amtrakLogo,
-  Ferry: ferryIcon,
+  Ferries: ferryIcon,
 }

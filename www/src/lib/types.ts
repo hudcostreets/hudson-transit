@@ -20,7 +20,7 @@ export interface CrossingLabel {
 }
 
 export const CROSSING_LABELS: CrossingLabel[] = [
-  { crossing: 'All Ferry Points', mode: 'Ferry', label: 'Ferry' },
+  { crossing: 'All Ferry Points', mode: 'Ferry', label: 'Ferries' },
   { crossing: 'Lincoln Tunnel', mode: 'Bus', label: 'Lincoln (Bus)' },
   { crossing: 'Amtrak/N.J. Transit Tunnels', mode: 'Rail', label: 'Amtrak / NJ Transit' },
   { crossing: 'Downtown PATH Tunnel', mode: 'PATH', label: 'PATH (Downtown)' },

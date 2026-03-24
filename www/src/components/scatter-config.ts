@@ -28,20 +28,20 @@ export function getJitter(direction: string, timePeriod: string, granularity: st
 const ENTERING_1HR_JITTER: JitterOffsets = {
   2014: {
     'Lincoln (Autos)': -t1,
-    'Ferry':            t1,
+    'Ferries':            t1,
     'Holland (Autos)':  0,
     'Holland (Bus)':    0,
   },
   2015: {
     'Lincoln (Autos)': -t1,
-    'Ferry':            t1,
+    'Ferries':            t1,
     'Holland (Autos)':  t,
     'Holland (Bus)':    0,
   },
   2016: {
     'PATH (Uptown)':    -t3,
     'PATH (Downtown)':   t3,
-    'Ferry':             0,
+    'Ferries':             0,
     'Lincoln (Autos)':  -t2,
     'Holland (Autos)':   t2,
     'Holland (Bus)':     0,
@@ -74,16 +74,16 @@ const ENTERING_1HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':      -t2,
     'PATH (Downtown)':    -t2,
     'Amtrak / NJ Transit': t2,
-    'Ferry':              -t,
+    'Ferries':              -t,
     'Holland (Autos)':     t,
   },
   2023: {
     'Holland (Autos)':   t1,
-    'Ferry':            -t1,
+    'Ferries':            -t1,
   },
   2024: {
     'Holland (Autos)':  -t1,
-    'Ferry':             t1,
+    'Ferries':             t1,
   },
 }
 JITTER_MAP[configKey('entering', 'peak_1hr', 'crossing')] = ENTERING_1HR_JITTER
@@ -95,7 +95,7 @@ const ENTERING_3HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':     0,  // 13.6%
     'PATH (Downtown)':   0,  // 11.5%
     'Lincoln (Autos)':   0,  // 5.9%
-    'Ferry':           -t1,  // 4.2%
+    'Ferries':           -t1,  // 4.2%
     'Holland (Autos)':  t1,  // 4.0%
     'Holland (Bus)':     0,  // 2.6%
   },
@@ -103,7 +103,7 @@ const ENTERING_3HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':      0,  // 13.8%
     'PATH (Downtown)':    0,  // 11.8%
     'Lincoln (Autos)':   t1,  // 5.3%
-    'Ferry':            -t1,  // 4.2%
+    'Ferries':            -t1,  // 4.2%
     'Holland (Autos)':   t2,  // 4.0%
     'Holland (Bus)':      0,  // 2.7%
   },
@@ -111,14 +111,14 @@ const ENTERING_3HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':    -t2,  // 13.5%
     'PATH (Downtown)':   t2,  // 13.4%
     'Lincoln (Autos)':   t2,  // 4.4%
-    'Ferry':            -t2,  // 4.1%
+    'Ferries':            -t2,  // 4.1%
     'Holland (Autos)':    t,  // 3.5%
     'Holland (Bus)':     -t,  // 2.8%
   },
   2017: {
     'PATH (Downtown)':   t2,  // 14.8%
     'PATH (Uptown)':    -t2,  // 14.0%
-    'Ferry':             t2,  // 4.8%
+    'Ferries':             t2,  // 4.8%
     'Lincoln (Autos)':  -t2,  // 4.7%
     'Holland (Autos)':    0,  // 3.5%
     'Holland (Bus)':      0,  // 2.5%
@@ -126,14 +126,14 @@ const ENTERING_3HR_JITTER: JitterOffsets = {
   2018: {
     'PATH (Downtown)':    0,  // 15.5%
     'PATH (Uptown)':      0,  // 13.6%
-    'Ferry':              0,  // 4.8%
+    'Ferries':              0,  // 4.8%
     'Lincoln (Autos)':   t3,  // 4.2%
     'Holland (Autos)':  -t3,  // 4.2%
   },
   2019: {
     'PATH (Downtown)':    0,  // 16.0%
     'PATH (Uptown)':      0,  // 13.9%
-    'Ferry':              0,  // 4.8%
+    'Ferries':              0,  // 4.8%
     'Lincoln (Autos)':   t3,  // 4.2%
     'Holland (Autos)':  -t3,  // 4.0%
   },
@@ -151,11 +151,11 @@ const ENTERING_3HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':    -t,  // 13.0%
   },
   2023: {
-    'Ferry':            -t,  // 4.3%
+    'Ferries':            -t,  // 4.3%
     'Holland (Autos)':   t,  // 4.6%
   },
   2024: {
-    'Ferry':            -t,  // 3.9%
+    'Ferries':            -t,  // 3.9%
     'Holland (Autos)':   t,  // 4.3%
   },
 }
@@ -170,14 +170,14 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'Lincoln (Autos)':    t2,  // 11.7%
     'Holland (Autos)':    t2,  // 9.7%
     'Holland (Bus)':      t1,  // 3.2%
-    'Ferry':             -t1,  // 2.9%
+    'Ferries':             -t1,  // 2.9%
   },
   2015: {
     'PATH (Uptown)':     -t2,  // 11.9%
     'PATH (Downtown)':   -t2,  // 9.7%
     'Lincoln (Autos)':    t2,  // 11.4%
     'Holland (Autos)':    t2,  // 9.2%
-    'Ferry':             -t1,  // 3.0%
+    'Ferries':             -t1,  // 3.0%
     'Holland (Bus)':      t1,  // 2.9%
   },
   2016: {
@@ -185,7 +185,7 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':   t3,  // 10.8%
     'Lincoln (Autos)':  -t3,  // 10.7%
     'Holland (Autos)':   -0,  // 8.7%
-    'Ferry':             -t1,  // 3.1%
+    'Ferries':             -t1,  // 3.1%
     'Holland (Bus)':      t1,  // 2.9%
   },
   2017: {
@@ -193,7 +193,7 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':   t3,  // 11.3%
     'Lincoln (Autos)':    0,  // 10.9%
     'Holland (Autos)':    0,  // 8.6%
-    'Ferry':             -t1,  // 3.3%
+    'Ferries':             -t1,  // 3.3%
     'Holland (Bus)':      t1,  // 2.8%
   },
   2018: {
@@ -201,7 +201,7 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':    -t2,  // 11.3%
     'Lincoln (Autos)':   t2,  // 9.8%
     'Holland (Autos)':  -t2,  // 9.2%
-    'Ferry':             -t1,  // 3.4%
+    'Ferries':             -t1,  // 3.4%
     'Holland (Bus)':      t1,  // 2.7%
   },
   2019: {
@@ -209,7 +209,7 @@ const ENTERING_24HR_JITTER: JitterOffsets = {
     'PATH (Uptown)':    -t2,  // 11.8%
     'Holland (Autos)':   t2,  // 9.5%
     'Lincoln (Autos)':  -t2,  // 9.4%
-    'Ferry':             -t,  // 3.3%
+    'Ferries':             -t,  // 3.3%
     'Holland (Bus)':      t,  // 2.3%
   },
   2020: {
@@ -271,11 +271,11 @@ const LEAVING_1HR_JITTER: JitterOffsets = {
   },
   2018: {
     'Lincoln (Autos)':   t,
-    'Ferry':            -t,
+    'Ferries':            -t,
   },
   2019: {
     'Lincoln (Autos)':   t,
-    'Ferry':            -t,
+    'Ferries':            -t,
   },
   2020: {
     'PATH (Uptown)':    -t1,
@@ -288,11 +288,11 @@ const LEAVING_1HR_JITTER: JitterOffsets = {
   },
   2023: {
     'Holland (Autos)':   t,
-    'Ferry':            -t,
+    'Ferries':            -t,
   },
   2024: {
     'Holland (Autos)':   t,
-    'Ferry':            -t,
+    'Ferries':            -t,
   },
 }
 JITTER_MAP[configKey('leaving', 'peak_1hr', 'crossing')] = LEAVING_1HR_JITTER
@@ -303,38 +303,38 @@ const LEAVING_3HR_JITTER: JitterOffsets = {
   2014: {
     'PATH (Uptown)':       -t3,  // 12.6%
     'PATH (Downtown)':      t3,  // 11.9%
-    'Ferry':               -t2,  // 3.9%
+    'Ferries':               -t2,  // 3.9%
     'Holland (Autos)':       t,  // 3.6%
     'Holland (Bus)':        -t,  // 2.4%
   },
   2015: {
     'PATH (Uptown)':       -t3,  // 11.5%
     'PATH (Downtown)':      t3,  // 11.3%
-    'Ferry':               -t1,  // 3.9%
+    'Ferries':               -t1,  // 3.9%
     'Holland (Autos)':      t1,  // 3.3%
   },
   2016: {
     'PATH (Uptown)':       -t2,  // 12.1%
     'PATH (Downtown)':      t2,  // 13.4%
-    'Ferry':                -t,  // 4.4%
+    'Ferries':                -t,  // 4.4%
     'Holland (Autos)':       t,  // 3.3%
   },
   2017: {
     'PATH (Uptown)':        -t,  // 12.5%
     'PATH (Downtown)':       t,  // 14.6%
-    'Ferry':                -t,  // 4.2%
+    'Ferries':                -t,  // 4.2%
     'Holland (Autos)':       t,  // 3.1%
   },
   2018: {
     'PATH (Uptown)':        -t,  // 12.4%
     'PATH (Downtown)':       t,  // 15.3%
-    'Ferry':                -t,  // 4.3%
+    'Ferries':                -t,  // 4.3%
     'Holland (Autos)':       t,  // 3.1%
   },
   2019: {
     'PATH (Uptown)':        -t,  // 12.6%
     'PATH (Downtown)':       t,  // 15.1%
-    'Ferry':                -t,  // 4.5%
+    'Ferries':                -t,  // 4.5%
     'Holland (Autos)':       t,  // 3.4%
   },
   2020: {
@@ -350,19 +350,19 @@ const LEAVING_3HR_JITTER: JitterOffsets = {
   2022: {
     'PATH (Uptown)':        -t,  // 12.2%
     'PATH (Downtown)':       t,  // 13.9%
-    'Ferry':                -t,  // 4.6%
+    'Ferries':                -t,  // 4.6%
     'Holland (Autos)':       t,  // 5.5%
   },
   2023: {
     'PATH (Uptown)':        -t,  // 11.0%
     'PATH (Downtown)':       t,  // 14.4%
-    'Ferry':                -t,  // 4.0%
+    'Ferries':                -t,  // 4.0%
     'Holland (Autos)':       t,  // 4.3%
   },
   2024: {
     'PATH (Uptown)':        -t,  // 11.8%
     'PATH (Downtown)':       t,  // 14.6%
-    'Ferry':                -t,  // 3.7%
+    'Ferries':                -t,  // 3.7%
     'Holland (Autos)':       t,  // 4.1%
   },
 }
@@ -376,7 +376,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':     -t2,  // 9.0%
     'Lincoln (Autos)':      t1,  // 13.3%
     'Holland (Autos)':      t3,  // 9.7%
-    'Ferry':                -t,  // 2.6%
+    'Ferries':                -t,  // 2.6%
     'Holland (Bus)':         t,  // 2.2%
   },
   2015: {
@@ -384,7 +384,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':     -t2,  // 9.0%
     'Lincoln (Autos)':      t1,  // 12.7%
     'Holland (Autos)':      t3,  // 8.8%
-    'Ferry':                -t,  // 2.9%
+    'Ferries':                -t,  // 2.9%
     'Holland (Bus)':         t,  // 2.1%
   },
   2016: {
@@ -392,7 +392,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':      t3,  // 10.4%
     'Lincoln (Autos)':       t,  // 12.4%
     'Holland (Autos)':      -t,  // 9.4%
-    'Ferry':                -t,  // 3.0%
+    'Ferries':                -t,  // 3.0%
     'Holland (Bus)':         t,  // 2.4%
   },
   2017: {
@@ -400,7 +400,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':      t3,  // 11.1%
     'Lincoln (Autos)':       t,  // 12.4%
     'Holland (Autos)':       0,  // 8.9%
-    'Ferry':                -t,  // 2.8%
+    'Ferries':                -t,  // 2.8%
     'Holland (Bus)':         t,  // 2.0%
   },
   2018: {
@@ -408,7 +408,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':      t3,  // 11.8%
     'Lincoln (Autos)':      -t,  // 12.6%
     'Holland (Autos)':       0,  // 8.9%
-    'Ferry':                 0,  // 2.9%
+    'Ferries':                 0,  // 2.9%
     'Holland (Bus)':         0,  // 1.7%
   },
   2019: {
@@ -416,7 +416,7 @@ const LEAVING_24HR_JITTER: JitterOffsets = {
     'PATH (Downtown)':      t3,  // 11.6%
     'Lincoln (Autos)':       0,  // 12.4%
     'Holland (Autos)':       0,  // 9.1%
-    'Ferry':                 0,  // 3.0%
+    'Ferries':                 0,  // 3.0%
     'Holland (Bus)':         0,  // 1.5%
   },
   2020: {

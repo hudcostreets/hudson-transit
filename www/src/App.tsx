@@ -40,7 +40,7 @@ const sdActions: SpeedDialAction[] = [
     key: 'github',
     label: 'GitHub',
     icon: <GitHubIcon />,
-    href: 'https://github.com/hccs-org/hub-bound-travel',
+    href: 'https://github.com/hudcostreets/hudson-transit',
   },
   {
     key: 'theme',

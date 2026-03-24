@@ -13,14 +13,14 @@ const CROSSING_TIPS: Record<string, string> = {
   'PATH (Downtown)':     'PATH train — downtown (WTC)',
   'PATH (Uptown)':       'PATH train — uptown (33rd St)',
   'Amtrak / NJ Transit': 'Rail — Amtrak & NJ Transit via Penn Station',
-  'Ferry':               'NY Waterway ferry',
+  'Ferries':               'NY Waterway ferry',
 }
 const MODE_TIPS: Record<string, string> = {
   'Bus':   'NJ Transit bus (Lincoln & Holland tunnels)',
   'Autos': 'Cars & trucks (Lincoln & Holland tunnels)',
   'PATH':  'PATH rapid transit (downtown & uptown)',
   'Rail':  'Amtrak & NJ Transit rail (Penn Station)',
-  'Ferry': 'NY Waterway ferry',
+  'Ferries': 'NY Waterway ferry',
 }
 
 // Crossing → [agency icons, mode icon] (file basenames under /icons/)
@@ -32,7 +32,7 @@ const CROSSING_ICONS: Record<string, string[]> = {
   'PATH (Downtown)':     ['path', 'train'],
   'PATH (Uptown)':       ['path', 'train'],
   'Amtrak / NJ Transit': ['njt', 'amtrak', 'train'],
-  'Ferry':               ['nyww', 'ferry'],
+  'Ferries':               ['nyww', 'ferry'],
 }
 
 const MODE_ICONS: Record<string, string[]> = {
@@ -40,7 +40,7 @@ const MODE_ICONS: Record<string, string[]> = {
   'Autos': ['pa', 'car'],
   'PATH':  ['path', 'train'],
   'Rail':  ['njt', 'amtrak', 'train'],
-  'Ferry': ['nyww', 'ferry'],
+  'Ferries': ['nyww', 'ferry'],
 }
 
 // Mode icons rendered as CSS masks (theme-adaptive); agency icons as <img> (true color)
@@ -162,11 +162,11 @@ function IconRow({ icons, color }: { icons: string[]; color?: string }) {
 const GRID_2: Record<string, string[][]> = {
   crossing: [
     ['Lincoln (Bus)', 'Lincoln (Autos)', 'Holland (Autos)', 'Holland (Bus)'],
-    ['Amtrak / NJ Transit', 'PATH (Downtown)', 'PATH (Uptown)', 'Ferry'],
+    ['Amtrak / NJ Transit', 'PATH (Downtown)', 'PATH (Uptown)', 'Ferries'],
   ],
   mode: [
     ['Bus', 'Autos', 'Rail'],
-    ['PATH', 'Ferry'],
+    ['PATH', 'Ferries'],
   ],
 }
 const GRID_4: Record<string, string[][]> = {
@@ -174,12 +174,12 @@ const GRID_4: Record<string, string[][]> = {
     ['Lincoln (Bus)', 'Lincoln (Autos)'],
     ['Holland (Autos)', 'Holland (Bus)'],
     ['Amtrak / NJ Transit', 'PATH (Downtown)'],
-    ['PATH (Uptown)', 'Ferry'],
+    ['PATH (Uptown)', 'Ferries'],
   ],
   mode: [
     ['Bus', 'Autos'],
     ['PATH', 'Rail'],
-    ['Ferry'],
+    ['Ferries'],
   ],
 }
 
