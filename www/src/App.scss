@@ -394,6 +394,129 @@ footer {
   }
 }
 
+// Geo-sankey fullscreen mode
+.geo-sankey-fullscreen {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: #000;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+// Geo-sankey inline legend labels (positioned at termini on map)
+.geo-sankey-inline-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #e0e0e0;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &.faded { opacity: 0.3; }
+  &.active { opacity: 1; background: rgba(0, 0, 0, 0.9); }
+  .geo-sankey-panel-icon { width: 24px; height: 24px; }
+  img { height: 24px; }
+}
+
+// Geo-sankey map: resize handle styling
+.geo-sankey div[style*="resize"] {
+  &::-webkit-resizer {
+    background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.3) 60%, transparent 65%, rgba(255,255,255,0.3) 75%, transparent 75%);
+  }
+}
+
+// Geo-sankey map panel
+.geo-sankey-panel {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #e0e0e0;
+  border-radius: 6px;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: auto;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  min-width: 200px;
+
+  .geo-sankey-panel-header {
+    padding: 2px 10px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 2px;
+    font-size: 13px;
+  }
+
+  .geo-sankey-panel-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: background 0.1s;
+
+    &:hover, &.active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    &.faded {
+      opacity: 0.3;
+    }
+  }
+
+  .geo-sankey-panel-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+  }
+
+  .geo-sankey-panel-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .geo-sankey-panel-mode {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .geo-sankey-panel-value {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+    min-width: 45px;
+  }
+}
+
+// MapLibre attribution: compact dark-mode, no toggle button
+.maplibregl-ctrl-attrib {
+  font-size: 9px !important;
+  background: transparent !important;
+  opacity: 0.5;
+  a { color: var(--text-muted) !important; }
+}
+.maplibregl-ctrl-attrib-button { display: none !important; }
+
 // SpeedDial badge chevron: visible on dark bg
 .kbd-speed-dial-chevron.kbd-speed-dial-badge {
   opacity: 0.9;

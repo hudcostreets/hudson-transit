@@ -15,4 +15,7 @@ export default defineConfig({
     host: true,
     allowedHosts,
   },
+  optimizeDeps: {
+    exclude: ['geo-sankey'],
+  },
 })
