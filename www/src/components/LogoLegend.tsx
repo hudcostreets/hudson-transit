@@ -189,7 +189,10 @@ function GridItem({ label, icons, color, highlight }: { label: string; icons: st
       className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}${highlight?.pinnedTrace === label ? ' pinned' : ''}`}
       onMouseEnter={() => highlight?.setHoverTrace(label)}
       onMouseLeave={() => highlight?.setHoverTrace(null)}
-      onClick={() => highlight?.togglePin(label)}
+      onClick={() => {
+        if (highlight?.pinnedTrace === label) highlight.setHoverTrace(null)
+        highlight?.togglePin(label)
+      }}
       style={{ cursor: highlight ? 'pointer' : undefined }}
     >
       <span className="logo-legend-icons">
@@ -338,7 +341,10 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
             style={{ top: rawY - dotCy, cursor: highlight ? 'pointer' : undefined }}
             onMouseEnter={() => highlight?.setHoverTrace(label)}
             onMouseLeave={() => highlight?.setHoverTrace(null)}
-            onClick={() => highlight?.togglePin(label)}
+            onClick={() => {
+              if (highlight?.pinnedTrace === label) highlight.setHoverTrace(null)
+              highlight?.togglePin(label)
+            }}
           >
             <Tooltip title={tipMap[label] ?? label} placement="left">
               <div className="logo-legend-content">

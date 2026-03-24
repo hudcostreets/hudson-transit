@@ -365,7 +365,7 @@ export default function UnifiedChart({ data, clean = false }: { data: CrossingRe
 
   const handleChartClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement
-    if (target.closest('.logo-legend-entry, .logo-legend-grid-item, .js-plotly-plot')) return
+    if (target.closest('.logo-legend-entry, .logo-legend-grid-item, .toggle-bar')) return
     highlight.clearPin()
   }, [highlight])
 
@@ -416,6 +416,7 @@ export default function UnifiedChart({ data, clean = false }: { data: CrossingRe
           pct={pct}
           recovery={recovery}
           colorMap={colorMap}
+          activeTrace={highlight.activeTrace}
         />
       )}
       {!clean && (
@@ -441,7 +442,7 @@ export default function UnifiedChart({ data, clean = false }: { data: CrossingRe
 }
 
 
-function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, colorMap }: {
+function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, colorMap, activeTrace }: {
   year: number
   yearIdx: number
   pos: { x: number; y: number }
@@ -450,6 +451,7 @@ function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, color
   pct: Record<string, number[]>
   recovery: Record<string, number[]> | undefined
   colorMap: Record<string, string>
+  activeTrace?: string | null
 }) {
   const rows = labels
     .map(label => ({
@@ -497,7 +499,7 @@ function HoverTooltip({ year, yearIdx, pos, labels, series, pct, recovery, color
         </thead>
         <tbody>
           {rows.map(r => (
-            <tr key={r.label}>
+            <tr key={r.label} style={activeTrace === r.label ? { fontWeight: 700 } : undefined}>
               <td><span className="color-dot" style={{ background: r.color }} /></td>
               <td className="hover-name">{r.label}</td>
               <td className="hover-num">{r.passengers.toLocaleString()}</td>
