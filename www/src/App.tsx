@@ -1,4 +1,5 @@
 import { HotkeysProvider, LookupModal, Omnibar, ShortcutsModal, SpeedDial, type SpeedDialAction } from 'use-kbd'
+import { PlotlyProvider } from 'pltly/react'
 import 'use-kbd/styles.css'
 import crossingsData from './data/crossings.json'
 import vehiclesData from './data/vehicles.json'
@@ -58,6 +59,7 @@ const clean = new URLSearchParams(location.search).has('clean')
 
 function App() {
   return (
+    <PlotlyProvider loader={() => import('plotly.js/lib/index-basic.js').then(m => (m as any).default ?? m)}>
     <HotkeysProvider config={{ storageKey: 'hub-bound-travel' }}>
       <div className="app">
         <main>
@@ -96,6 +98,7 @@ function App() {
       <LookupModal />
       {!clean && <SpeedDial actions={sdActions} chevronMode="badge" TooltipRenderer={SDTooltipRenderer} />}
     </HotkeysProvider>
+    </PlotlyProvider>
   )
 }
 
