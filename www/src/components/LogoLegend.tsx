@@ -4,6 +4,20 @@
 import type { UseTraceHighlightReturn } from 'pltly/react'
 import Tooltip from './Tooltip'
 
+const hasHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches
+
+/** Legend item event handlers — touch-aware (skip hover-only state on touch devices) */
+function legendHandlers(highlight: UseTraceHighlightReturn | undefined, label: string) {
+  return {
+    onMouseEnter: () => { if (hasHover) highlight?.setHoverTrace(label) },
+    onMouseLeave: () => { if (hasHover) highlight?.setHoverTrace(null) },
+    onClick: () => {
+      if (highlight?.pinnedTrace === label) highlight.setHoverTrace(null)
+      highlight?.togglePin(label)
+    },
+  }
+}
+
 // Descriptive tooltips for legend items
 const CROSSING_TIPS: Record<string, string> = {
   'Lincoln (Bus)':       'Lincoln Tunnel — NJ Transit bus',
@@ -187,12 +201,7 @@ function GridItem({ label, icons, color, highlight }: { label: string; icons: st
   return (
     <div
       className={`logo-legend-grid-item${highlight?.activeTrace && highlight.activeTrace !== label ? ' faded' : ''}${highlight?.pinnedTrace === label ? ' pinned' : ''}`}
-      onMouseEnter={() => highlight?.setHoverTrace(label)}
-      onMouseLeave={() => highlight?.setHoverTrace(null)}
-      onClick={() => {
-        if (highlight?.pinnedTrace === label) highlight.setHoverTrace(null)
-        highlight?.togglePin(label)
-      }}
+      {...legendHandlers(highlight, label)}
       style={{ cursor: highlight ? 'pointer' : undefined }}
     >
       <span className="logo-legend-icons">
@@ -339,12 +348,7 @@ export default function LogoLegend({ labels, colorMap, granularity, lastYValues,
             key={label}
             className={`logo-legend-entry${faded ? ' faded' : ''}${pinned ? ' pinned' : ''}`}
             style={{ top: rawY - dotCy, cursor: highlight ? 'pointer' : undefined }}
-            onMouseEnter={() => highlight?.setHoverTrace(label)}
-            onMouseLeave={() => highlight?.setHoverTrace(null)}
-            onClick={() => {
-              if (highlight?.pinnedTrace === label) highlight.setHoverTrace(null)
-              highlight?.togglePin(label)
-            }}
+            {...legendHandlers(highlight, label)}
           >
             <Tooltip title={tipMap[label] ?? label} placement="left">
               <div className="logo-legend-content">
