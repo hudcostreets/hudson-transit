@@ -11,6 +11,8 @@ export function Abbr({ title, children }: { title: string, children: ReactNode }
   )
 }
 
+const hasHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches
+
 export default function Tooltip({ title, children, placement = 'bottom' }: {
   title: string
   children: ReactNode
@@ -23,7 +25,7 @@ export default function Tooltip({ title, children, placement = 'bottom' }: {
     placement,
     middleware: [offset(6), flip(), shift({ padding: 8 })],
   })
-  const hover = useHover(context)
+  const hover = useHover(context, { enabled: hasHover })
   const { getReferenceProps, getFloatingProps } = useInteractions([hover])
 
   return (
