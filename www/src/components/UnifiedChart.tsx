@@ -145,9 +145,10 @@ export default function UnifiedChart({ data, clean = false }: { data: CrossingRe
   const toggleAnnotations = useCallback(() => {
     setShowAnnotations(!showAnnotations)
   }, [showAnnotations, setShowAnnotations])
-  const cycleScheme = useCallback(() => {
+  const cycleScheme = useCallback((reverse = false) => {
     const names = COLOR_SCHEMES.map(s => s.name) as SchemeName[]
-    setSchemeName(names[(names.indexOf(schemeName) + 1) % names.length])
+    const delta = reverse ? names.length - 1 : 1
+    setSchemeName(names[(names.indexOf(schemeName) + delta) % names.length])
   }, [schemeName, setSchemeName])
   const THEMES: Theme[] = ['dark', 'light', 'system']
   const cycleTheme = useCallback(() => {
@@ -163,7 +164,8 @@ export default function UnifiedChart({ data, clean = false }: { data: CrossingRe
     'time:cycle': { label: 'Cycle time period', group: 'Controls', defaultBindings: ['t'], handler: cycleTime },
     'gran:toggle': { label: 'Toggle granularity', group: 'Controls', defaultBindings: ['g'], handler: toggleGranularity },
     'ann:toggle': { label: 'Toggle annotations', group: 'Controls', defaultBindings: ['a'], handler: toggleAnnotations },
-    'scheme:cycle': { label: 'Cycle color scheme', group: 'Controls', defaultBindings: ['c'], handler: cycleScheme },
+    'scheme:cycle': { label: 'Cycle color scheme', group: 'Controls', defaultBindings: ['c'], handler: () => cycleScheme() },
+    'scheme:cycle-rev': { label: 'Cycle color scheme (reverse)', group: 'Controls', defaultBindings: ['shift+c'], handler: () => cycleScheme(true) },
     'theme:cycle': { label: 'Cycle theme', group: 'Controls', defaultBindings: ['shift+t'], handler: cycleTheme },
   })
 
