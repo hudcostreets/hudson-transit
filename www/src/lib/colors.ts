@@ -22,30 +22,59 @@ export interface ColorScheme {
 export const COLOR_SCHEMES: ColorScheme[] = [
   {
     name: 'Semantic',
-    // Mode colors: red=cars, orange=bus, purple=train, blue=ferry
+    // Mode colors: red=cars, orange=bus, purple=train, teal=ferry
+    // Amtrak shifted toward blue to distinguish from PATH purples
     dayMode: {
       AUTO:  '#DC3545',  // red
       BUS:   '#EF8D2E',  // orange
       PATH:  '#9333EA',  // purple
-      RAIL:  '#7C3AED',  // violet (train)
+      RAIL:  '#4F46E5',  // indigo (shifted from violet → blue)
       FERRY: '#14B8A6',  // teal
     },
     crossing: {
-      'Lincoln (Bus)':       '#FFA500',  // pure orange (bright, toward yellow)
+      'Lincoln (Bus)':       '#FFA500',  // pure orange
       'Lincoln (Autos)':     '#EF4444',  // bright red
-      'Amtrak / NJ Transit': '#7C3AED',  // violet (train family)
+      'Amtrak / NJ Transit': '#4F46E5',  // indigo (distinct from PATH purple)
       'PATH (Downtown)':     '#9333EA',  // purple
       'PATH (Uptown)':       '#C084FC',  // light purple
-      'Holland (Bus)':       '#C89B7B',  // muted tan / light brown
+      'Holland (Bus)':       '#C89B7B',  // muted tan
       'Holland (Autos)':     '#F87171',  // light red / rose
-      'Ferries':               '#14B8A6',  // teal
+      'Ferries':             '#14B8A6',  // teal
     },
     mode: {
-      Autos: '#EF4444',  // red
-      Bus:   '#FFA500',  // pure orange
-      PATH:  '#9333EA',  // purple
-      Rail:  '#7C3AED',  // violet
+      Autos:   '#EF4444',  // red
+      Bus:     '#FFA500',  // pure orange
+      PATH:    '#9333EA',  // purple
+      Rail:    '#4F46E5',  // indigo
       Ferries: '#14B8A6',  // teal
+    },
+  },
+  {
+    name: 'Tyler',
+    // High-contrast palette: warmer Amtrak, cooler PATH, distinct from each other
+    dayMode: {
+      AUTO:  '#E11D48',  // rose
+      BUS:   '#F59E0B',  // amber
+      PATH:  '#8B5CF6',  // violet
+      RAIL:  '#2563EB',  // blue
+      FERRY: '#059669',  // emerald
+    },
+    crossing: {
+      'Lincoln (Bus)':       '#F59E0B',  // amber
+      'Lincoln (Autos)':     '#E11D48',  // rose
+      'Amtrak / NJ Transit': '#2563EB',  // blue (clearly not purple)
+      'PATH (Downtown)':     '#8B5CF6',  // violet
+      'PATH (Uptown)':       '#A78BFA',  // light violet
+      'Holland (Bus)':       '#D97706',  // dark amber
+      'Holland (Autos)':     '#FB7185',  // pink
+      'Ferries':             '#059669',  // emerald
+    },
+    mode: {
+      Autos:   '#E11D48',  // rose
+      Bus:     '#F59E0B',  // amber
+      PATH:    '#8B5CF6',  // violet
+      Rail:    '#2563EB',  // blue
+      Ferries: '#059669',  // emerald
     },
   },
   {

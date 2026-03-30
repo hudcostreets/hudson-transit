@@ -39,9 +39,9 @@ const granParam = codeParam<Granularity>('crossing', [
   ['crossing', 'c'], ['mode', 'm'],
 ])
 
-type SchemeName = 'Plotly' | 'Semantic'
+type SchemeName = 'Semantic' | 'Tyler' | 'Plotly'
 const schemeParam = codeParam<SchemeName>('Semantic', [
-  ['Semantic', 's'], ['Plotly', 'p'],
+  ['Semantic', 's'], ['Tyler', 't'], ['Plotly', 'p'],
 ])
 const SCHEME_OPTIONS: ToggleOption<SchemeName>[] =
   COLOR_SCHEMES.map(s => ({ value: s.name as SchemeName, label: <SchemeSwatch scheme={s} />, tooltip: s.name }))
