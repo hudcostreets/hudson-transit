@@ -60,7 +60,7 @@ const clean = new URLSearchParams(location.search).has('clean')
 
 function App() {
   return (
-    <PlotlyProvider loader={() => import('plotly.js/lib/index-basic.js').then(m => (m as any).default ?? m)}>
+    <PlotlyProvider loader={() => import('plotly.js/lib/index-basic.js').then(m => (m as any).default ?? m)} deferAutoMargin>
     <HotkeysProvider config={{ storageKey: 'hub-bound-travel' }}>
       <div className="app">
         <main>

@@ -707,11 +707,10 @@ function renderScatter(
     }
   }).filter(Boolean)
 
-  const styledTraces = (highlight ? highlight.fadeTraces(traces) : traces) as Partial<PlotData>[]
-
   return (
     <JitteredPlot
-      data={styledTraces}
+      data={traces}
+      highlight={highlight}
       jitter={jitter}
       layout={{
         ...themedLayout(pt),
@@ -776,7 +775,8 @@ function renderBar(
   }))
   return (
     <Plot
-      data={highlight ? highlight.fadeTraces(traces) : traces}
+      data={traces}
+      highlight={highlight}
       layout={{
         ...themedLayout(pt),
         xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, showspikes: false, ...yearTicks(years, narrow) },
@@ -832,7 +832,8 @@ function renderPctBar(
   })
   return (
     <Plot
-      data={highlight ? highlight.fadeTraces(traces) : traces}
+      data={traces}
+      highlight={highlight}
       layout={{
         ...themedLayout(pt),
         barmode: 'stack',
@@ -895,7 +896,8 @@ function renderRecovery(
   }))
   return (
     <Plot
-      data={highlight ? highlight.fadeTraces(traces) : traces}
+      data={traces}
+      highlight={highlight}
       layout={{
         ...themedLayout(pt),
         xaxis: { dtick: 1, fixedrange: true, title: { text: '' }, gridcolor: pt.grid, showspikes: false, ...yearTicks(ry, narrow) },
