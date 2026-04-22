@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
-    "geo-sankey": "workspace:*",
+    "geo-sankey": "https://github.com/runsascoded/geo-sankey#2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f",
     "maplibre-gl": "^5.20.0",
     "plotly.js": "https://github.com/runsascoded/plotly.js#651eb8fcde923155e36cc3fc0bacd1188d801e52",
     "pltly": "https://gitlab.com/runsascoded/js/pltly/-/archive/e39548b3c7f06af03eacc0730f64d0894d6a3d91/pltly-e39548b3c7f06af03eacc0730f64d0894d6a3d91.tar.gz",

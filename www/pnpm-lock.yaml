@@ -12,8 +12,8 @@ importers:
         specifier: ^0.27.19
         version: 0.27.19(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       geo-sankey:
-        specifier: workspace:*
-        version: link:../../../js/geo-sankey
+        specifier: https://github.com/runsascoded/geo-sankey#2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f
+        version: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       maplibre-gl:
         specifier: ^5.20.0
         version: 5.20.0
@@ -1360,6 +1360,7 @@ packages:
   basic-ftp@5.2.0:
     resolution: {integrity: sha512-VoMINM2rqJwJgfdHq6RiUudKt2BV+FY5ZFezP/ypmwayk68+NzzAQy4XXLlqsGD4MCzq3DrmNFD/uUmBJuGoXw==}
     engines: {node: '>=10.0.0'}
+    deprecated: Security vulnerability fixed in 5.2.1, please upgrade
 
   binary-search-bounds@2.0.5:
     resolution: {integrity: sha512-H0ea4Fd3lS1+sTEB2TgcLoK21lLhwEJzlQv3IN47pJS976Gx4zoWe0ak3q+uYh60ppQxg9F16Ri4tS1sfD4+jA==}
@@ -1980,6 +1981,15 @@ packages:
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
+
+  geo-sankey@https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f:
+    resolution: {tarball: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f}
+    version: 0.1.0-dist.c623407
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   geojson-vt@3.2.1:
     resolution: {integrity: sha512-EvGQQi/zPrDA6zr6BnJD/YhwAkBP8nnJ9emh3EnHQKVMfg/MRVtPbMYdgVy/IaEmn4UfagD2a6fafPDL5hbtwg==}
@@ -3088,6 +3098,13 @@ packages:
 
   use-kbd@0.12.0:
     resolution: {integrity: sha512-mt5BchpLyYi1tm0brENlZYYk6ta92JIZlVmLzGBrdjHpjKR2aEzst7b1BbWJcVn/nzXfJxf8DOwibt0YsGOOeg==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+
+  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/e8de7954c2d39b639dc1b99203659b91fd8fd269:
+    resolution: {tarball: https://codeload.github.com/runsascoded/use-kbd/tar.gz/e8de7954c2d39b639dc1b99203659b91fd8fd269}
+    version: 0.12.0-dist.7d2aa3d
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -5232,6 +5249,15 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
+  geo-sankey@https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      use-kbd: https://codeload.github.com/runsascoded/use-kbd/tar.gz/e8de7954c2d39b639dc1b99203659b91fd8fd269(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+    optionalDependencies:
+      react: 19.2.4
+    transitivePeerDependencies:
+      - react-dom
+      - supports-color
+
   geojson-vt@3.2.1: {}
 
   geojson-vt@4.0.2: {}
@@ -6575,6 +6601,14 @@ snapshots:
       punycode: 2.3.1
 
   use-kbd@0.12.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      debug: 4.4.3
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+    transitivePeerDependencies:
+      - supports-color
+
+  use-kbd@https://codeload.github.com/runsascoded/use-kbd/tar.gz/e8de7954c2d39b639dc1b99203659b91fd8fd269(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       debug: 4.4.3
       react: 19.2.4

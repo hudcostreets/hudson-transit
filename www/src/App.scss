@@ -424,6 +424,7 @@ footer {
   transition: opacity 0.15s;
   &.faded { opacity: 0.3; }
   &.active { opacity: 1; background: rgba(0, 0, 0, 0.9); }
+  &.pinned { font-weight: 700; }
   .geo-sankey-panel-icon { width: 24px; height: 24px; }
   img { height: 24px; }
 }
@@ -435,11 +436,50 @@ footer {
   }
 }
 
+// Geo-sankey ferry edit drawer (above legend)
+.geo-sankey-edit-panel {
+  position: absolute;
+  right: 8px;
+  // Stack above the legend (legend `bottom:8` + rough legend height ~320px).
+  // Legend's own max-height keeps it below the edit drawer.
+  bottom: calc(50% + 8px);
+  z-index: 11;
+  background: rgba(0, 0, 0, 0.88);
+  color: #e0e0e0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: auto;
+  min-width: 220px;
+  max-width: 280px;
+
+  .geo-sankey-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 6px;
+  }
+
+  .geo-sankey-edit-body {
+    padding: 2px 0;
+  }
+
+  button {
+    font-size: 12px;
+  }
+}
+
 // Geo-sankey map panel
 .geo-sankey-panel {
   position: absolute;
   bottom: 8px;
   right: 8px;
+  // Above MapLibre attribution (which expands leftward in compact-show
+  // mode and otherwise absorbs clicks meant for the panel buttons).
+  z-index: 10;
   background: rgba(0, 0, 0, 0.82);
   color: #e0e0e0;
   border-radius: 6px;
@@ -450,6 +490,11 @@ footer {
   max-height: calc(100% - 16px);
   overflow-y: auto;
   min-width: 200px;
+
+  // When edit drawer is open, legend is capped so they can coexist.
+  .geo-sankey:has(.geo-sankey-edit-panel) & {
+    max-height: calc(50% - 8px);
+  }
 
   .geo-sankey-panel-header {
     padding: 2px 10px 4px;
@@ -472,6 +517,10 @@ footer {
 
     &.faded {
       opacity: 0.3;
+    }
+
+    &.pinned {
+      font-weight: 700;
     }
   }
 

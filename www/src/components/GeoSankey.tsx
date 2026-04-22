@@ -7,13 +7,19 @@ import { DEFAULT_SCHEME } from '../lib/colors'
 import { filterCrossings } from '../lib/transform'
 import { useUrlState } from 'use-prms'
 import Toggle from './Toggle'
-import type { LatLon, FlowNode, FlowTree } from 'geo-sankey'
+import type { LatLon, FlowGraph } from 'geo-sankey'
 import {
-  pxToHalfDeg, offsetPath,
+  pxToHalfDeg, pxToDeg, offsetPath,
   smoothPath,
   ribbonArrow,
-  renderFlows, flowSources,
+  renderFlowGraphSinglePoly, renderNodes,
+  flowFillPaint,
 } from 'geo-sankey'
+import {
+  useGraphState, useGraphSelection, useGraphMutations,
+  useNodeDrag, useSceneIO,
+  NodeOverlay,
+} from 'geo-sankey/react'
 
 const { max } = Math
 
@@ -55,66 +61,43 @@ const CROSSING_PATHS: Record<string, LatLon[]> = {
 
 
 
-// Hob So split point: combined trunk E from terminal, then branches fan out
-const HOB_SO_SPLIT: LatLon = [40.7359, -74.0230]
-// Merge positions (referenced by both merge trees and split branches)
-const UT_MERGE: LatLon = [40.7530, -74.0160]
-const DT_MERGE: LatLon = [40.7142, -74.0210]
+// FlowGraph literal for the ferry Sankey. Positions/bearings/velocities
+// round-tripped from the geo-sankey editor (specs/ferry-graph.json).
+// Source-edge weights (30/20/30/20) sum to FERRY_WEIGHT_TOTAL and are
+// normalized to passenger fractions in the pxPerWeight callback below.
+const FERRY_WEIGHT_TOTAL = 100
+const FERRY_GRAPH: FlowGraph = {
+  nodes: [
+    { id: 'bpt',       pos: [40.71500873644837, -74.01763141805306], bearing: 100, label: 'Brookfield Place' },
+    { id: 'dt-merge',  pos: [40.715562912131446, -74.02118470868655], bearing: 104 },
+    { id: 'hob-14',    pos: [40.75391277970118, -74.0231608871139],   bearing: 100, velocity: 0.007159651779943488, label: 'Hob 14th' },
+    { id: 'hob-so',    pos: [40.73536254629653, -74.02793860498223],  bearing: 104, velocity: 0.002403020923443469, label: 'Hob So' },
+    { id: 'hob-split', pos: [40.73492379942883, -74.0255833826839],   bearing: 101 },
+    { id: 'mt-merge',  pos: [40.75994551185576, -74.00787150192113],  bearing: 110 },
+    { id: 'mt39',      pos: [40.7574314723291, -73.99965492075728],   bearing: 110, label: 'MT 39th St' },
+    { id: 'ph',        pos: [40.71386196262006, -74.03248345388602],  bearing: 100, label: 'Paulus Hook' },
+    { id: 'ut-merge',  pos: [40.75667266380634, -74.01384177043765],  bearing: 30 },
+    { id: 'whk',       pos: [40.77684409809737, -74.01108054584255],  bearing: 116, velocity: 0.013192930858358846, label: 'Weehawken' },
+  ],
+  edges: [
+    { from: 'dt-merge',  to: 'bpt',       weight: 'auto' },
+    { from: 'hob-14',    to: 'ut-merge',  weight: 20 },
+    { from: 'hob-so',    to: 'hob-split', weight: 30 },
+    { from: 'hob-split', to: 'dt-merge',  weight: 15 },
+    { from: 'hob-split', to: 'ut-merge',  weight: 15 },
+    { from: 'mt-merge',  to: 'mt39',      weight: 'auto' },
+    { from: 'ph',        to: 'dt-merge',  weight: 20 },
+    { from: 'ut-merge',  to: 'mt-merge',  weight: 'auto' },
+    { from: 'whk',       to: 'mt-merge',  weight: 30 },
+  ],
+}
 
-const FERRY_TREES: FlowTree[] = [
-  {
-    dest: 'MT39',
-    destPos: [40.7555, -74.0060],
-    root: {
-      type: 'merge',
-      pos: [40.7565, -74.0120],
-      bearing: 110,
-      children: [
-        {
-          type: 'merge',
-          pos: UT_MERGE,
-          bearing: 30,
-          children: [
-            // Weight-only placeholder (visual path drawn by split tree)
-            { type: 'source', label: '', pos: UT_MERGE, weight: 0.15 },
-            { type: 'source', label: 'Hob 14', pos: [40.7505, -74.0241], weight: 0.20, bearing: 90 },
-          ],
-        },
-        { type: 'source', label: 'WHK', pos: [40.7771, -74.0136], weight: 0.30 },
-      ],
-    },
-  },
-  {
-    dest: 'BPT',
-    destPos: [40.7142, -74.0169],
-    root: {
-      type: 'merge',
-      pos: DT_MERGE,
-      bearing: 90,
-      children: [
-        { type: 'source', label: 'PH', pos: [40.7138, -74.0337], weight: 0.20 },
-        // Weight-only placeholder (visual path drawn by split tree)
-        { type: 'source', label: '', pos: DT_MERGE, weight: 0.15 },
-      ],
-    },
-  },
-  // Hob So split: combined trunk E, then N/S branches to merges
-  {
-    dest: 'Hob So',
-    destPos: [40.7359, -74.0275],
-    root: {
-      type: 'split',
-      pos: HOB_SO_SPLIT,
-      bearing: 90,
-      children: [
-        // S branch (right of eastward flow) → DT merge
-        { type: 'source', label: '', pos: DT_MERGE, weight: 0.15, bearing: 90 },
-        // N branch (left of eastward flow) → UT sub-merge
-        { type: 'source', label: '', pos: UT_MERGE, weight: 0.15, bearing: 90 },
-      ],
-    },
-  },
-]
+function reverseGraph(g: FlowGraph): FlowGraph {
+  return {
+    nodes: g.nodes,
+    edges: g.edges.map(e => ({ ...e, from: e.to, to: e.from })),
+  }
+}
 
 // Representative path for "All Ferry Points" (for label positioning)
 const FERRY_LABEL_POS: LatLon = [40.7505, -74.0241]  // Hoboken 14th St
@@ -244,7 +227,7 @@ const FLOW_TERMINUS: Record<string, LatLon> = {
   'Uptown PATH Tunnel': [40.7337, -74.0068],  // Christopher St (arrow tip)
   'Holland Tunnel': [40.7255, -74.0070],
   'Downtown PATH Tunnel': [40.7116, -74.0123],
-  'All Ferry Points': [40.7450, -74.0180],     // mid-river, in empty area
+  'All Ferry Points': [40.7450, -74.0170],     // approx bezier lng of hob-split → ut-merge at lat 40.7450; marker + 10px offset keeps LI a fixed px distance east of the trace at any zoom
 }
 
 // Manhattan-side terminus labels (always shown on map)
@@ -355,7 +338,35 @@ function GeoSankeyInner({ data }: Props) {
 
   // Panel sort: geographic (N→S) or desc by passenger count
   const [sortDesc, setSortDesc] = useState(false)
-  const [inlineLegend, setInlineLegend] = useState(false)
+  const [inlineLegend, setInlineLegend] = useUrlState('il', {
+    encode: (v: boolean) => v ? '1' : undefined,
+    decode: (s: string | null) => s === '1',
+  })
+
+  const mapRef = useRef<MapRef>(null)
+
+  // Ferry graph editor state. Hooks are called unconditionally (React rules);
+  // the graph only *appears* editable in the UI when `editMode` is true. The
+  // rendered ferry Sankey always reads from `ferryGS.graph` so edits are
+  // reflected live without re-wiring the render path.
+  const ferryGS = useGraphState(FERRY_GRAPH)
+  const ferrySel = useGraphSelection(ferryGS.graph)
+  const ferryMut = useGraphMutations(ferryGS, ferrySel)
+  const ferryDrag = useNodeDrag(mapRef, ferryGS, ferrySel)
+  const ferryIO = useSceneIO({
+    graph: ferryGS.graph,
+    opts: {
+      color: '#14B8A6', pxPerWeight: 0.15, refLat: REF_LAT,
+      wing: 0.4, angle: 60, bezierN: 20, nodeApproach: 0.5,
+      widthScale: 1, creaseSkip: 1,
+    },
+    view: { lat: mapView.lat, lng: mapView.lng, zoom: mapView.zoom },
+    title: 'hbt-ferry-flows',
+    pushGraph: ferryGS.pushGraph,
+    applyOpts: () => { /* ferry render opts are not editable from the scene for now */ },
+    setView: v => setMapView({ lat: v.lat, lng: v.lng, zoom: v.zoom }),
+    mapRef,
+  })
 
   const sortedFlows = useMemo(() => {
     const crossingOrder = [
@@ -379,8 +390,31 @@ function GeoSankeyInner({ data }: Props) {
   const maxPassengers = useMemo(() => max(...flows.map(f => f.passengers), 1), [flows])
   const totalPassengers = useMemo(() => flows.reduce((s, f) => s + f.passengers, 0), [flows])
 
-  // Hover state: key is "crossing|mode", shared between map and panel
+  // Hover state: key is "crossing|mode", shared between map and panel.
+  // `pinnedKey` is set by clicking a legend row and persists until the user
+  // clicks outside any legend row — then it's cleared.
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
+  const [pinnedKey, setPinnedKey] = useState<string | null>(null)
+  const activeKey = pinnedKey ?? hoveredKey
+  // Edit mode is implicit: the ferry editor engages whenever the ferry flow
+  // is pinned (click ferry ribbon on the map, or the "Ferries" legend row).
+  // Click anywhere outside to exit.
+  const FERRY_KEY = 'All Ferry Points|Ferry'
+  const editMode = pinnedKey === FERRY_KEY
+  const togglePin = useCallback((key: string) => {
+    setPinnedKey(k => (k === key ? null : key))
+  }, [])
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null
+      // Legend rows + inline labels + the map canvas all manage their own
+      // pin state; any other click unpins.
+      if (t?.closest?.('.geo-sankey-panel-row, .geo-sankey-inline-label, .maplibregl-canvas-container')) return
+      setPinnedKey(null)
+    }
+    document.addEventListener('click', onDocClick)
+    return () => document.removeEventListener('click', onDocClick)
+  }, [])
 
   // Build GeoJSON ribbon polygons (rect + arrowhead as single shapes)
   const ARROW_WING = 1.8   // wing width as multiple of ribbon half-width
@@ -399,35 +433,61 @@ function GeoSankeyInner({ data }: Props) {
       return { type: 'Feature', properties: props, geometry: { type: 'Polygon', coordinates: [ring] } }
     }
 
+    // Small gap (px) between stacked ribbons so they don't touch.
+    const STACK_GAP = 2
+
     const features: GeoJSON.Feature[] = []
     for (const [, crossingFlows] of byCrossing) {
       crossingFlows.sort((a, b) => MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode))
+      // Compute each non-ferry flow's width once so we can stack them
+      // edge-to-edge (no overlap) rather than using a fixed lateralOffset.
+      const nonFerryWidths = crossingFlows.map(ff =>
+        ff.isFerry ? 0 : (ff.passengers / maxPassengers) * 30 * widthScale,
+      )
+      const totalStackW = nonFerryWidths.reduce((a, b) => a + b, 0)
+        + STACK_GAP * Math.max(0, nonFerryWidths.filter(w => w > 0).length - 1)
+      const lateralPx: number[] = []
+      let running = -totalStackW / 2
+      for (const w of nonFerryWidths) {
+        lateralPx.push(running + w / 2)
+        running += w + (w > 0 ? STACK_GAP : 0)
+      }
       crossingFlows.forEach((f, i) => {
         const key = flowKey(f)
         const color = flowColor(f)
 
-        // Ferry Sankey: delegate to geo-sankey library (with compilation)
+        // Ferry Sankey: delegate to geo-sankey library (single-poly graph render).
+        // Weights in FERRY_GRAPH are integers summing to FERRY_WEIGHT_TOTAL at
+        // each of the source and sink boundaries; divide by that total to
+        // recover the fractional share of ferry passengers per edge.
         if (f.isFerry) {
           const totalPax = f.passengers
           const pxPerWeight = (weight: number) =>
-            max(1, (Math.round(totalPax * weight) / maxPassengers) * 30 * widthScale)
-          const fc = renderFlows(FERRY_TREES, {
-            refLat: REF_LAT, zoom, geoScale,
-            color, key,
+            (totalPax * weight / FERRY_WEIGHT_TOTAL / maxPassengers) * 30 * widthScale
+          const graphForDir = direction === 'leaving' ? reverseGraph(ferryGS.graph) : ferryGS.graph
+          const fc = renderFlowGraphSinglePoly(graphForDir, {
+            refLat: REF_LAT, zoom, geoScale, color,
             pxPerWeight,
             arrowWing: ARROW_WING, arrowLen: ARROW_LEN,
-            reverse: direction === 'leaving',
-            // TODO: singlePoly doesn't work with cross-tree split→merge coordination yet
-            // singlePoly: true,
           })
+          // Tag every ferry feature with the legend key so hover/highlight
+          // treats the whole Sankey as a single flow.
+          for (const feat of fc.features) {
+            if (!feat.properties) feat.properties = {}
+            feat.properties.key = key
+          }
           features.push(...fc.features)
           return
         }
 
-        const lateralOffset = i - (crossingFlows.length - 1) / 2
-        let path = offsetPath(f.path, lateralOffset)
+        // Stack ribbons side-by-side: offset each flow's centerline so its
+        // edges meet (+ STACK_GAP) the neighbor's. `offsetPath` scales its
+        // `offset` arg by 0.0004 geo units, so convert our px offset through
+        // that factor.
+        const lateralOffsetUnits = pxToDeg(lateralPx[i], zoom, geoScale, REF_LAT) / 0.0004
+        let path = offsetPath(f.path, lateralOffsetUnits)
         if (direction === 'leaving') path = [...path].reverse()
-        const width = max(1, (f.passengers / maxPassengers) * 30 * widthScale)
+        const width = nonFerryWidths[i]
         const hw = pxToHalfDeg(width, zoom, geoScale, REF_LAT)
 
         // Uptown PATH: smooth curve, arrow ends at Christopher St
@@ -452,7 +512,7 @@ function GeoSankeyInner({ data }: Props) {
     // Sort widest first so narrower flows draw on top
     features.sort((a, b) => (b.properties?.width ?? 0) - (a.properties?.width ?? 0))
     return { type: 'FeatureCollection' as const, features }
-  }, [flows, direction, maxPassengers, mapView.zoom, geoScale, widthScale])
+  }, [flows, direction, maxPassengers, mapView.zoom, geoScale, widthScale, ferryGS.graph])
 
 
 
@@ -473,39 +533,25 @@ function GeoSankeyInner({ data }: Props) {
     return { type: 'FeatureCollection' as const, features }
   }, [flows])
 
-  // Terminal markers: show start/end point names when a flow is hovered
+  // Terminal markers: show start/end point names when a flow is hovered or pinned
   const terminalMarkers = useMemo(() => {
-    if (!hoveredKey) return { type: 'FeatureCollection' as const, features: [] }
-    const hovered = flows.find(f => flowKey(f) === hoveredKey)
+    if (!activeKey) return { type: 'FeatureCollection' as const, features: [] }
+    const hovered = flows.find(f => flowKey(f) === activeKey)
     if (!hovered) return { type: 'FeatureCollection' as const, features: [] }
 
     const features: GeoJSON.Feature[] = []
 
-    // Ferry: show all source + destination terminals
+    // Ferry: show all source + destination terminals (labeled nodes)
     if (hovered.isFerry) {
-      const seen = new Set<string>()
-      for (const tree of FERRY_TREES) {
-        const dKey = `${tree.destPos}`
-        if (!seen.has(dKey)) {
-          seen.add(dKey)
-          features.push({
-            type: 'Feature',
-            properties: { name: tree.dest, anchor: 'left' },
-            geometry: { type: 'Point', coordinates: [tree.destPos[1], tree.destPos[0]] },
-          })
-        }
-        for (const src of flowSources(tree.root)) {
-          if (!src.label) continue
-          const sKey = `${src.pos}`
-          if (!seen.has(sKey)) {
-            seen.add(sKey)
-            features.push({
-              type: 'Feature',
-              properties: { name: src.label, anchor: 'right' },
-              geometry: { type: 'Point', coordinates: [src.pos[1], src.pos[0]] },
-            })
-          }
-        }
+      const hasOut = new Set(ferryGS.graph.edges.map(e => e.from))
+      for (const n of ferryGS.graph.nodes) {
+        if (!n.label) continue
+        const anchor = hasOut.has(n.id) ? 'right' : 'left'
+        features.push({
+          type: 'Feature',
+          properties: { name: n.label, anchor },
+          geometry: { type: 'Point', coordinates: [n.pos[1], n.pos[0]] },
+        })
       }
       return { type: 'FeatureCollection' as const, features }
     }
@@ -533,7 +579,7 @@ function GeoSankeyInner({ data }: Props) {
 
 
     return { type: 'FeatureCollection' as const, features }
-  }, [hoveredKey, flows])
+  }, [activeKey, flows, ferryGS.graph])
 
   // Map hover: query a padded bbox around cursor, then pick the feature
   // whose polygon edge is closest to the cursor. Distance 0 = cursor is
@@ -621,15 +667,13 @@ function GeoSankeyInner({ data }: Props) {
   const onMouseLeave = useCallback(() => setHoveredKey(null), [])
 
   const fillOpacity = useMemo(() => {
-    if (!hoveredKey) return ['*', ['get', 'opacity'], 0.85] as any
+    if (!activeKey) return ['*', ['get', 'opacity'], 0.85] as any
     return [
       'case',
-      ['==', ['get', 'key'], hoveredKey], ['get', 'opacity'],
+      ['==', ['get', 'key'], activeKey], ['get', 'opacity'],
       ['*', ['get', 'opacity'], 0.25],
     ] as any
-  }, [hoveredKey])
-
-  const mapRef = useRef<MapRef>(null)
+  }, [activeKey])
 
   const dirLabel = direction === 'entering' ? 'NJ\u2192NY' : 'NY\u2192NJ'
   const timeLabels: Record<TimePeriod, string> = {
@@ -713,44 +757,112 @@ function GeoSankeyInner({ data }: Props) {
           longitude={mapView.lng}
           latitude={mapView.lat}
           zoom={mapView.zoom}
-          onMove={e => setMapView({ lat: e.viewState.latitude, lng: e.viewState.longitude, zoom: e.viewState.zoom })}
+          onMove={editMode && ferryDrag.dragging ? undefined : e => setMapView({ lat: e.viewState.latitude, lng: e.viewState.longitude, zoom: e.viewState.zoom })}
           style={{ width: '100%', height: '100%' }}
           mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
           onLoad={() => { if (!fullscreen) mapRef.current?.getMap()?.scrollZoom.disable() }}
-          onClick={focusMap}
+          onClick={e => {
+            focusMap()
+            const shift = (e.originalEvent as MouseEvent | undefined)?.shiftKey
+            // In edit mode, clicks on a ferry node select/toggle that node
+            // instead of interacting with the ribbon pin.
+            if (editMode) {
+              const nodeF = e.features?.filter((f: any) => f.layer?.id === 'ferry-node-circles')
+              if (nodeF?.length) {
+                ferrySel.toggleOrReplace({ type: 'node', id: nodeF[0].properties.id }, !!shift)
+                return
+              }
+              // Click on the ferry ribbon while already pinned: stay pinned
+              // (otherwise users accidentally exit edit mode). Unpin only via
+              // empty click or legend.
+              if (hoveredKey === pinnedKey) return
+            }
+            if (hoveredKey) {
+              // Switching to a different flow (or pinning one for the first
+              // time) — replace the pin. Also clear any ferry-node selection.
+              setPinnedKey(hoveredKey)
+              if (hoveredKey !== FERRY_KEY) ferrySel.setSelections([])
+            } else {
+              // Empty map: unpin + deselect.
+              setPinnedKey(null)
+              ferrySel.setSelections([])
+            }
+          }}
+          onMouseDown={editMode ? ferryDrag.onDragStart : undefined}
+          dragPan={!editMode || ferryDrag.dragPan}
+          interactiveLayerIds={editMode ? ['ferry-node-circles'] : undefined}
           onMouseMove={onMouseMove}
           onMouseLeave={() => { onMouseLeave(); unfocusMap() }}
-          cursor={hoveredKey ? 'pointer' : ''}
+          cursor={editMode ? (ferryDrag.dragging ? 'grabbing' : '') : (hoveredKey ? 'pointer' : '')}
         >
           {/* Ribbon polygons (rect + arrowhead as unified shapes) */}
           <Source id="flows" type="geojson" data={geojson}>
             <Layer
               id="flow-fills"
               type="fill"
-              paint={{
-                'fill-color': ['get', 'color'],
-                'fill-opacity': fillOpacity,
-              }}
+              paint={flowFillPaint({ 'fill-opacity': fillOpacity }) as any}
             />
           </Source>
-          {/* Crossing name labels at NJ-side endpoints */}
-          <Source id="labels" type="geojson" data={labelsGeojson}>
-            <Layer
-              id="crossing-labels"
-              type="symbol"
-              layout={{
-                'text-field': ['get', 'name'],
-                'text-size': 11,
-                'text-offset': [0, 1.5],
-                'text-anchor': 'top',
-              }}
-              paint={{
-                'text-color': '#ccc',
-                'text-halo-color': '#000',
-                'text-halo-width': 1,
-              }}
-            />
-          </Source>
+          {/* Crossing name labels at NJ-side endpoints.
+              Hidden when inline legend is active — the inline LIs already
+              name each flow, and these layer labels just clutter the arrows. */}
+          {!inlineLegend && (
+            <Source id="labels" type="geojson" data={labelsGeojson}>
+              <Layer
+                id="crossing-labels"
+                type="symbol"
+                layout={{
+                  'text-field': ['get', 'name'],
+                  'text-size': 11,
+                  'text-offset': [0, 1.5],
+                  'text-anchor': 'top',
+                }}
+                paint={{
+                  'text-color': '#ccc',
+                  'text-halo-color': '#000',
+                  'text-halo-width': 1,
+                }}
+              />
+            </Source>
+          )}
+          {/* Ferry graph nodes (edit mode): draggable circles + labels */}
+          {editMode && (
+            <Source id="ferry-nodes" type="geojson" data={renderNodes(ferryGS.graph, 'all')}>
+              <Layer id="ferry-node-circles" type="circle"
+                paint={{
+                  'circle-radius': ['case',
+                    ['in', ['get', 'id'], ['literal', ferrySel.selectedNodeIds]], 8,
+                    ['coalesce', ['get', 'radius'], 6],
+                  ],
+                  'circle-color': ['case',
+                    ['in', ['get', 'id'], ['literal', ferrySel.selectedNodeIds]], '#14B8A6',
+                    ['coalesce', ['get', 'color'], '#fff'],
+                  ],
+                  'circle-stroke-color': ['case',
+                    ['in', ['get', 'id'], ['literal', ferrySel.selectedNodeIds]], '#fff',
+                    '#000',
+                  ],
+                  'circle-stroke-width': ['case',
+                    ['in', ['get', 'id'], ['literal', ferrySel.selectedNodeIds]], 2.5,
+                    1.5,
+                  ],
+                }} />
+              <Layer id="ferry-node-labels" type="symbol"
+                layout={{
+                  'text-field': ['coalesce', ['get', 'label'], ['get', 'id']],
+                  'text-size': 11,
+                  'text-offset': [0, 1.4],
+                  'text-anchor': 'top',
+                  'text-font': ['Open Sans Semibold', 'Arial Unicode MS Regular'],
+                  'text-allow-overlap': true,
+                }}
+                paint={{
+                  'text-color': '#fff',
+                  'text-halo-color': 'rgba(0,0,0,0.8)',
+                  'text-halo-width': 1.5,
+                }} />
+            </Source>
+          )}
           {/* Manhattan terminus labels (always visible) */}
           <Source id="manhattan-termini" type="geojson" data={{
             type: 'FeatureCollection',
@@ -775,6 +887,7 @@ function GeoSankeyInner({ data }: Props) {
                 'text-color': '#ddd',
                 'text-halo-color': '#000',
                 'text-halo-width': 2,
+                'text-opacity': activeKey ? 0.2 : 1,
               }}
             />
           </Source>
@@ -816,7 +929,11 @@ function GeoSankeyInner({ data }: Props) {
               }}
             />
           </Source>
-          {/* Inline legend: flow labels at termini, grouped by crossing */}
+          {/* Inline legend: one label per flow, positioned at that flow's
+              arrow tip. For crossings with 2 flows (Lincoln, Holland), the
+              upper flow anchors at its tip's bottom-left (LI sits above)
+              and the lower flow at top-left (LI sits below) so the pair
+              splits away from each other, avoiding overlap at any zoom. */}
           {inlineLegend && (() => {
             const byCrossing = new Map<string, FlowDatum[]>()
             for (const f of sortedFlows) {
@@ -824,53 +941,204 @@ function GeoSankeyInner({ data }: Props) {
               arr.push(f)
               byCrossing.set(f.crossing, arr)
             }
-            return [...byCrossing.entries()].map(([crossing, cFlows]) => {
-              const pos = FLOW_TERMINUS[crossing]
-              if (!pos) return null
-              return (
-                <Marker key={crossing} longitude={pos[1]} latitude={pos[0]} anchor="top-left"
+            // Px offset between LI and arrow tip on the horizontal axis.
+            const LI_X_OFFSET = 10
+            const LI_HEIGHT = 36
+            const LI_GAP = 0
+            // Actual screen px per degree of latitude at current zoom (MapLibre
+            // Mercator). `pxToDeg(…, geoScale=1)` returns zoom-12 units and
+            // doesn't scale with zoom, so we compute the projection factor
+            // directly.
+            const degPerPx = 360 * Math.cos(REF_LAT * Math.PI / 180) / (512 * Math.pow(2, mapView.zoom))
+            type LIData = {
+              flow: FlowDatum
+              key: string
+              pos: LatLon
+              anchor: 'left'
+              centerY: number  // natural effective screen-y of the LI's center, relative to map center lat (positive = south)
+            }
+            const lis: LIData[] = []
+            for (const [, cFlows] of byCrossing) {
+              const sorted = [...cFlows].sort((a, b) => MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode))
+              // Replicate the stacking offsets from geojson-generation so
+              // each label sits at the actual arrow tip of its ribbon.
+              const widths = sorted.map(ff => ff.isFerry ? 0 : (ff.passengers / maxPassengers) * 30 * widthScale)
+              const nVisible = widths.filter(w => w > 0).length
+              const STACK_GAP = 2
+              const totalStackW = widths.reduce((a, b) => a + b, 0) + STACK_GAP * Math.max(0, nVisible - 1)
+              const lateralPx: number[] = []
+              let running = -totalStackW / 2
+              for (const w of widths) {
+                lateralPx.push(running + w / 2)
+                running += w + (w > 0 ? STACK_GAP : 0)
+              }
+              sorted.forEach((f, i) => {
+                const key = flowKey(f)
+                let pos: LatLon | undefined
+                if (f.isFerry) {
+                  pos = FLOW_TERMINUS[f.crossing]
+                } else {
+                  // End of this flow's offset path = arrow tip. Match the
+                  // geojson path transforms: offset + (for leaving) reverse.
+                  const lateralOffsetUnits = pxToDeg(lateralPx[i], mapView.zoom, geoScale, REF_LAT) / 0.0004
+                  let p = offsetPath(f.path, lateralOffsetUnits)
+                  if (direction === 'leaving') p = [...p].reverse()
+                  if (f.crossing === 'Uptown PATH Tunnel' && p.length > 2) {
+                    const { path: smooth, knots } = smoothPath(p)
+                    pos = smooth[knots[UPTOWN_FADE_START]]
+                  } else {
+                    pos = p[p.length - 1]
+                  }
+                }
+                if (!pos) return
+                // Always anchor vertically at the tip's center; de-bunch
+                // handles spacing when multiple LIs would overlap.
+                const anchor: 'left' = 'left'
+                const posY = (mapView.lat - pos[0]) / degPerPx
+                lis.push({ flow: f, key, pos, anchor, centerY: posY })
+              })
+            }
+            // De-bunch: greedy top-down spread so no two LIs overlap
+            // vertically. Only shifts down — LIs stay at their ideal y when
+            // there's room. Over the map's visible lat range, small lat deltas
+            // can produce sub-LI-height spacing at low zoom; this forces a
+            // readable column then.
+            const sortedByY = [...lis].sort((a, b) => a.centerY - b.centerY)
+            const yShift = new Map<string, number>()
+            let prevY = -Infinity
+            for (const li of sortedByY) {
+              const targetY = Math.max(li.centerY, prevY + LI_HEIGHT + LI_GAP)
+              yShift.set(li.key, targetY - li.centerY)
+              prevY = targetY
+            }
+            // Leader lines: one Marker per LI anchored at the LI's intended
+            // geographic point, containing an SVG line that points at the
+            // LI's actual rendered position. All pixel offsets live inside
+            // SVG so leader + LI stay aligned at any zoom.
+            const markers: React.ReactNode[] = []
+            for (const li of lis) {
+              const { flow: f, key, pos, anchor } = li
+              const yOff = yShift.get(key) ?? 0
+              const totalYShift = yOff
+              const active = activeKey === key
+              const pinned = pinnedKey === key
+              const faded = activeKey && !active
+              const color = flowColor(f)
+              const modeIcon = MODE_ICON[f.mode]
+              const agencies = CROSSING_AGENCY[f.crossing] ?? []
+              // Leader line: only draw when LI is visibly displaced
+              if (Math.abs(totalYShift) >= 4) {
+                const w = LI_X_OFFSET + 4
+                const h = Math.abs(totalYShift) + 4
+                const y1 = totalYShift >= 0 ? 0 : h
+                const y2 = totalYShift >= 0 ? h : 0
+                markers.push(
+                  <Marker key={`leader-${key}`} longitude={pos[1]} latitude={pos[0]} anchor="top-left"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    <svg width={w} height={h} style={{ overflow: 'visible', display: 'block' }}>
+                      <line x1={0} y1={y1} x2={LI_X_OFFSET} y2={y2}
+                        stroke={color} strokeWidth={1} strokeDasharray="2 2" opacity={0.7} />
+                    </svg>
+                  </Marker>,
+                )
+              }
+              markers.push(
+                <Marker key={key} longitude={pos[1]} latitude={pos[0]} anchor={anchor}
+                  offset={[LI_X_OFFSET, yOff]}
                   style={{ pointerEvents: 'auto' }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    {cFlows.map(f => {
-                      const key = flowKey(f)
-                      const active = hoveredKey === key
-                      const faded = hoveredKey && !active
-                      const color = flowColor(f)
-                      const modeIcon = MODE_ICON[f.mode]
-                      const agencies = CROSSING_AGENCY[f.crossing] ?? []
-                      return (
-                        <div
-                          key={key}
-                          className={`geo-sankey-inline-label${active ? ' active' : ''}${faded ? ' faded' : ''}`}
-                          onMouseEnter={() => setHoveredKey(key)}
-                          onMouseLeave={() => setHoveredKey(null)}
-                        >
-                          {modeIcon && (
-                            <span style={{ backgroundColor: color, borderRadius: 3, padding: '1px 2px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <span className="geo-sankey-panel-icon" style={{
-                                backgroundColor: '#fff',
-                                maskImage: `url(/icons/${modeIcon}.svg)`,
-                                WebkitMaskImage: `url(/icons/${modeIcon}.svg)`,
-                              }} />
-                            </span>
-                          )}
-                          {agencies.map(a => (
-                            <img key={a} src={`/icons/${a}.svg`} alt={a} style={{ flexShrink: 0 }} />
-                          ))}
-                          <span style={{ whiteSpace: 'nowrap' }}>{displayName(f.crossing, f.mode)}</span>
-                          <span style={{ fontVariantNumeric: 'tabular-nums', marginLeft: 'auto' }}>
-                            {f.passengers.toLocaleString()}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </Marker>
+                    <div
+                      className={`geo-sankey-inline-label${active ? ' active' : ''}${faded ? ' faded' : ''}${pinned ? ' pinned' : ''}`}
+                      onMouseEnter={() => setHoveredKey(key)}
+                      onMouseLeave={() => setHoveredKey(null)}
+                      onClick={() => togglePin(key)}
+                    >
+                      {modeIcon && (
+                        <span style={{ backgroundColor: color, borderRadius: 3, padding: '1px 2px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="geo-sankey-panel-icon" style={{
+                            backgroundColor: '#fff',
+                            maskImage: `url(/icons/${modeIcon}.svg)`,
+                            WebkitMaskImage: `url(/icons/${modeIcon}.svg)`,
+                          }} />
+                        </span>
+                      )}
+                      {agencies.map(a => (
+                        <img key={a} src={`/icons/${a}.svg`} alt={a} style={{ flexShrink: 0 }} />
+                      ))}
+                      <span style={{ whiteSpace: 'nowrap' }}>{displayName(f.crossing, f.mode)}</span>
+                      <span style={{ fontVariantNumeric: 'tabular-nums', marginLeft: 'auto' }}>
+                        {f.passengers.toLocaleString()}
+                      </span>
+                    </div>
+                </Marker>,
               )
-            })
+            }
+            return markers
           })()}
         </MapGL>
+        {/* Ferry edit mode: per-node rotation/velocity handles */}
+        {editMode && ferrySel.selection?.type === 'node' && (() => {
+          const sel = ferrySel.selection
+          if (sel.type !== 'node') return null
+          const node = ferryGS.graph.nodes.find(n => n.id === sel.id)
+          if (!node) return null
+          return (
+            <NodeOverlay
+              key={node.id}
+              nodeId={node.id}
+              label={node.label ?? ''}
+              bearing={Math.round(node.bearing ?? 90)}
+              pos={node.pos}
+              velocity={node.velocity}
+              refLat={REF_LAT}
+              mapRef={mapRef}
+              onBeginRotate={() => ferryGS.pushHistory(ferryGS.graph)}
+              onRotateTransient={b => ferryGS.setGraph(g => ({ ...g, nodes: g.nodes.map(n => n.id === node.id ? { ...n, bearing: b } : n) }))}
+              onBeginVelocity={() => ferryGS.pushHistory(ferryGS.graph)}
+              onVelocityTransient={v => ferryGS.setGraph(g => ({ ...g, nodes: g.nodes.map(n => n.id === node.id ? { ...n, velocity: v } : n) }))}
+              onResetVelocity={() => ferryMut.updateNode(node.id, { velocity: undefined } as any)}
+            />
+          )
+        })()}
+        {/* Ferry edit drawer (sits above the legend panel in LR) */}
+        {editMode && (
+          <div className="geo-sankey-edit-panel">
+            <div className="geo-sankey-edit-header">
+              <strong>Edit Ferry</strong>
+              <span style={{ display: 'flex', gap: 4 }}>
+                <button onClick={ferryGS.undo} disabled={ferryGS.pastLen === 0} title="Undo" style={{ background: 'none', border: 'none', color: ferryGS.pastLen ? '#aaa' : '#555', cursor: ferryGS.pastLen ? 'pointer' : 'default', padding: '0 4px' }}>↶</button>
+                <button onClick={ferryGS.redo} disabled={ferryGS.futureLen === 0} title="Redo" style={{ background: 'none', border: 'none', color: ferryGS.futureLen ? '#aaa' : '#555', cursor: ferryGS.futureLen ? 'pointer' : 'default', padding: '0 4px' }}>↷</button>
+                <button onClick={ferryIO.copyGraphAsTS} title="Copy graph as TS literal" style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '0 4px' }}>⧉ TS</button>
+                <button onClick={ferryIO.exportSceneJSON} title="Export scene JSON" style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '0 4px' }}>⇣ JSON</button>
+                <button onClick={ferryIO.openPaste} title="Paste scene/graph" style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '0 4px' }}>📋</button>
+                <button onClick={() => { setPinnedKey(null); ferrySel.setSelections([]) }} title="Exit edit mode" style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '0 4px' }}>✕</button>
+              </span>
+            </div>
+            <div className="geo-sankey-edit-body">
+              {ferrySel.selectedNodes.length === 1 ? (() => {
+                const n = ferrySel.selectedNodes[0]
+                return (
+                  <div style={{ display: 'grid', gap: 4, fontSize: 12 }}>
+                    <div><strong>{n.id}</strong>{n.label ? ` — ${n.label}` : ''}</div>
+                    <div>pos: {n.pos[0].toFixed(5)}, {n.pos[1].toFixed(5)}</div>
+                    <div>bearing: {Math.round(n.bearing ?? 90)}°</div>
+                    {n.velocity != null && <div>velocity: {n.velocity.toFixed(4)}</div>}
+                    <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                      <button onClick={() => ferryMut.deleteNode(n.id)} style={{ fontSize: 11 }}>Delete</button>
+                      <button onClick={() => ferrySel.setSelections([])} style={{ fontSize: 11 }}>Deselect</button>
+                    </div>
+                  </div>
+                )
+              })() : (
+                <div style={{ fontSize: 11, color: '#aaa' }}>
+                  Click a node to select. Shift-click to toggle. Drag to move.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {ferryIO.ui}
         {/* Sticky info panel */}
         <div className="geo-sankey-panel">
           <div className="geo-sankey-panel-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -882,7 +1150,7 @@ function GeoSankeyInner({ data }: Props) {
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: '#aaa', fontSize: '14px', lineHeight: 1 }}
               >{sortDesc ? '↓' : '↕'}</button>
               <button
-                onClick={() => setInlineLegend(v => !v)}
+                onClick={() => setInlineLegend(!inlineLegend)}
                 title={inlineLegend ? 'Panel legend' : 'Inline legend'}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: '#aaa', fontSize: '13px', lineHeight: 1 }}
               >{inlineLegend ? '☰' : '📍'}</button>
@@ -895,17 +1163,19 @@ function GeoSankeyInner({ data }: Props) {
           </div>
           {!inlineLegend && sortedFlows.map(f => {
             const key = flowKey(f)
-            const active = hoveredKey === key
-            const faded = hoveredKey && !active
+            const active = activeKey === key
+            const pinned = pinnedKey === key
+            const faded = activeKey && !active
             const color = flowColor(f)
             const modeIcon = MODE_ICON[f.mode]
             const agencies = CROSSING_AGENCY[f.crossing] ?? []
             return (
               <div
                 key={key}
-                className={`geo-sankey-panel-row${active ? ' active' : ''}${faded ? ' faded' : ''}`}
+                className={`geo-sankey-panel-row${active ? ' active' : ''}${faded ? ' faded' : ''}${pinned ? ' pinned' : ''}`}
                 onMouseEnter={() => setHoveredKey(key)}
                 onMouseLeave={() => setHoveredKey(null)}
+                onClick={() => togglePin(key)}
               >
                 {modeIcon && (
                   <span
