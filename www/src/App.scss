@@ -413,20 +413,21 @@ footer {
 .geo-sankey-inline-label {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.44em;
   background: rgba(0, 0, 0, 0.75);
   color: #e0e0e0;
-  padding: 5px 12px;
+  padding: 0.31em 0.75em;
   border-radius: 5px;
-  font-size: 16px;
+  // Smoothly scales 12px → 16px across viewport widths 400px → 1200px
+  font-size: clamp(12px, 10px + 0.5vw, 16px);
   white-space: nowrap;
   cursor: pointer;
   transition: opacity 0.15s;
   &.faded { opacity: 0.3; }
   &.active { opacity: 1; background: rgba(0, 0, 0, 0.9); }
   &.pinned { font-weight: 700; }
-  .geo-sankey-panel-icon { width: 24px; height: 24px; }
-  img { height: 24px; }
+  .geo-sankey-panel-icon { width: 1.5em; height: 1.5em; }
+  img { height: 1.5em; }
 }
 
 // Geo-sankey map: resize handle styling

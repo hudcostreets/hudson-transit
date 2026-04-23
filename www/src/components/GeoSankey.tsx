@@ -102,8 +102,49 @@ function reverseGraph(g: FlowGraph): FlowGraph {
 // Representative path for "All Ferry Points" (for label positioning)
 const FERRY_LABEL_POS: LatLon = [40.7505, -74.0241]  // Hoboken 14th St
 
-// Map center + zoom to fit all crossings (Amtrak NJ portal W to Manhattan E, PATH downtown S)
-const MAP_CENTER: [number, number] = [-74.0111, 40.7430]
+// BB of all map elements (crossings + ferry graph). We frame this BB inside
+// the viewport (minus padding), reserving extra right-side space for LI labels
+// which extend east of termini.
+const MAP_BB = {
+  latMin: 40.7116,  // Downtown PATH (WTC)
+  latMax: 40.7768,  // Weehawken ferry node
+  lngMin: -74.0370, // Lincoln Tunnel NJ approach
+  lngMax: -73.9884, // Uptown PATH 33rd St
+}
+
+// Mirror of .geo-sankey-inline-label clamp(): fontPx for a given viewport width.
+function labelFontPx(w: number): number {
+  return Math.min(16, Math.max(12, 10 + 0.005 * w))
+}
+
+// Derive the initial { lat, lng, zoom } from viewport + map height, fitting
+// MAP_BB into the content area. Padding reserves LI-label space on the right
+// (labels grow east) and modest gutters elsewhere.
+function defaultView(): { lat: number; lng: number; zoom: number } {
+  const W = typeof window !== 'undefined' ? window.innerWidth : 1400
+  const H = defaultMapHeight()
+  const fontPx = labelFontPx(W)
+  const padLeft = 20
+  const padRight = 14 * fontPx + 20   // ~longest LI width
+  const padTop = 20
+  const padBottom = 20
+  const contentW = Math.max(100, W - padLeft - padRight)
+  const contentH = Math.max(100, H - padTop - padBottom)
+  const refLat = (MAP_BB.latMin + MAP_BB.latMax) / 2
+  const latDelta = MAP_BB.latMax - MAP_BB.latMin
+  const lngDelta = MAP_BB.lngMax - MAP_BB.lngMin
+  const zByLng = Math.log2(contentW * 360 / (512 * lngDelta))
+  const zByLat = Math.log2(contentH * Math.cos(refLat * Math.PI / 180) * 360 / (512 * latDelta))
+  const zoom = Math.min(zByLng, zByLat)
+  const bbCenterLng = (MAP_BB.lngMin + MAP_BB.lngMax) / 2
+  // When horizontally constrained, shift east so BB sits left in content area
+  // (content area = viewport minus padLeft/padRight). When vertically
+  // constrained there's enough slack that BB-center ≈ viewport-center.
+  const lng = zByLng < zByLat
+    ? bbCenterLng + (padRight - padLeft) / 2 * (360 / (512 * Math.pow(2, zoom)))
+    : bbCenterLng
+  return { lat: refLat, lng, zoom }
+}
 
 // Mode colors from semantic scheme
 const MODE_COLORS = DEFAULT_SCHEME.mode
@@ -321,7 +362,7 @@ function GeoSankeyInner({ data }: Props) {
 
   // Map view: lat_lng_zoom packed into one param, `_` delimited
   const llzParam = useMemo(() => {
-    const def = { lat: MAP_CENTER[1], lng: MAP_CENTER[0], zoom: 12.81 }
+    const def = defaultView()
     return {
       encode: (v: { lat: number; lng: number; zoom: number }) => {
         if (Math.abs(v.lat - def.lat) < 0.0001 && Math.abs(v.lng - def.lng) < 0.0001 && Math.abs(v.zoom - def.zoom) < 0.01) return null
@@ -951,7 +992,12 @@ function GeoSankeyInner({ data }: Props) {
             }
             // Px offset between LI and arrow tip on the horizontal axis.
             const LI_X_OFFSET = 10
-            const LI_HEIGHT = 36
+            // LI height mirrors the clamp in .geo-sankey-inline-label's font-size.
+            // 16-px font → 36-px rendered LI; scale linearly with font-size.
+            const fontPx = typeof window !== 'undefined'
+              ? Math.min(16, Math.max(12, 10 + 0.005 * window.innerWidth))
+              : 16
+            const LI_HEIGHT = Math.round(fontPx * 2.25)
             const LI_GAP = 0
             // Actual screen px per degree of latitude at current zoom (MapLibre
             // Mercator). `pxToDeg(…, geoScale=1)` returns zoom-12 units and
