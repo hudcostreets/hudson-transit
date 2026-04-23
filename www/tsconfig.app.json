@@ -16,6 +16,13 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      // Shim `geo-sankey/react` so tsc doesn't follow into the upstream
+      // `.tsx` sources (which violate our strict unused-vars checks).
+      // Remove once geo-sankey dist ships `react/` as compiled js+d.ts.
+      "geo-sankey/react": ["./src/types/geo-sankey-react.d.ts"]
+    },
 
     /* Linting */
     "strict": true,

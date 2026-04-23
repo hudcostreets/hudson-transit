@@ -237,18 +237,18 @@ const REF_LAT = 40.74
 
 // Year param
 const yearParam = {
-  encode: (v: number) => String(v),
-  decode: (s: string | null) => s ? parseInt(s) : null,
+  encode: (v: number | undefined) => v !== undefined ? String(v) : undefined,
+  decode: (s: string | undefined) => s ? parseInt(s) : undefined,
 }
 
 const TIMES: TimePeriod[] = ['peak_1hr', 'peak_period', '24hr']
 const dirParam = {
   encode: (v: Direction) => v === 'entering' ? 'njny' : 'nynj',
-  decode: (s: string | null): Direction => s === 'nynj' ? 'leaving' : 'entering',
+  decode: (s: string | undefined): Direction => s === 'nynj' ? 'leaving' : 'entering',
 }
 const timeParam = {
   encode: (v: TimePeriod) => ({ peak_1hr: '1h', peak_period: '3h', '24hr': '1d' })[v],
-  decode: (s: string | null): TimePeriod =>
+  decode: (s: string | undefined): TimePeriod =>
     s === '3h' ? 'peak_period' : s === '1d' ? '24hr' : 'peak_1hr',
 }
 
@@ -280,15 +280,6 @@ const MANHATTAN_TERMINI: { name: string; pos: LatLon }[] = [
   { name: 'WTC PATH', pos: [40.7116, -74.0123] },        // Downtown PATH
   { name: 'MT39', pos: [40.7555, -74.0060] },             // Ferry → waterfront between tunnels
   { name: 'BPT', pos: [40.7142, -74.0169] },              // Ferry → Brookfield Place
-]
-
-// Uptown PATH Manhattan station positions (for hover dots)
-const UPTOWN_PATH_STATIONS: { name: string; pos: LatLon }[] = [
-  { name: 'Christopher', pos: [40.7337, -74.0068] },
-  { name: '9th', pos: [40.7338, -74.0020] },
-  { name: '14th', pos: [40.7361, -73.9969] },
-  { name: '23rd', pos: [40.7427, -73.9932] },
-  // 33rd St PATH omitted — already rendered via TERMINAL_NAMES
 ]
 
 // Uptown PATH fade start index (Christopher St = index 2 in CROSSING_PATHS)
@@ -341,22 +332,22 @@ function GeoSankeyInner({ data }: Props) {
 
   // Geo-scale: 0 = fixed px width, 1 = fully geo-scaled (width grows with zoom)
   const geoScaleParam = useMemo(() => ({
-    encode: (v: number) => v === 1 ? null : String(v),
-    decode: (s: string | null): number => s != null ? parseFloat(s) : 1,
+    encode: (v: number) => v === 1 ? undefined : String(v),
+    decode: (s: string | undefined): number => s !== undefined ? parseFloat(s) : 1,
   }), [])
   const [geoScale, setGeoScale] = useUrlState('gs', geoScaleParam)
 
   // Width scale: multiplier for arrow widths (default 1)
   const widthScaleParam = useMemo(() => ({
-    encode: (v: number) => v === 1 ? null : v.toFixed(1),
-    decode: (s: string | null): number => s != null ? parseFloat(s) : 1,
+    encode: (v: number) => v === 1 ? undefined : v.toFixed(1),
+    decode: (s: string | undefined): number => s !== undefined ? parseFloat(s) : 1,
   }), [])
   const [widthScale, setWidthScale] = useUrlState('ws', widthScaleParam)
 
   // Hit padding: px radius around cursor for hover detection
   const hitPadParam = useMemo(() => ({
-    encode: (v: number) => v === 4 ? null : String(v),
-    decode: (s: string | null): number => s != null ? parseInt(s) : 4,
+    encode: (v: number) => v === 4 ? undefined : String(v),
+    decode: (s: string | undefined): number => s !== undefined ? parseInt(s) : 4,
   }), [])
   const [hitPad, setHitPad] = useUrlState('hp', hitPadParam)
 
@@ -365,10 +356,10 @@ function GeoSankeyInner({ data }: Props) {
     const def = defaultView()
     return {
       encode: (v: { lat: number; lng: number; zoom: number }) => {
-        if (Math.abs(v.lat - def.lat) < 0.0001 && Math.abs(v.lng - def.lng) < 0.0001 && Math.abs(v.zoom - def.zoom) < 0.01) return null
+        if (Math.abs(v.lat - def.lat) < 0.0001 && Math.abs(v.lng - def.lng) < 0.0001 && Math.abs(v.zoom - def.zoom) < 0.01) return undefined
         return `${v.lat.toFixed(4)}_${v.lng.toFixed(4)}_${v.zoom.toFixed(2)}`
       },
-      decode: (s: string | null) => {
+      decode: (s: string | undefined) => {
         if (!s) return def
         const parts = s.split('_').map(Number)
         if (parts.length < 3 || parts.some(isNaN)) return def
@@ -389,7 +380,7 @@ function GeoSankeyInner({ data }: Props) {
   const [sortDesc, setSortDesc] = useState(false)
   const [inlineLegend, setInlineLegend] = useUrlState('il', {
     encode: (v: boolean) => v ? undefined : '0',
-    decode: (s: string | null) => s !== '0',
+    decode: (s: string | undefined) => s !== '0',
   })
 
   const mapRef = useRef<MapRef>(null)
@@ -1141,16 +1132,16 @@ function GeoSankeyInner({ data }: Props) {
             <NodeOverlay
               key={node.id}
               nodeId={node.id}
-              label={node.label ?? ''}
               bearing={Math.round(node.bearing ?? 90)}
               pos={node.pos}
               velocity={node.velocity}
               refLat={REF_LAT}
               mapRef={mapRef}
-              onBeginRotate={() => ferryGS.pushHistory(ferryGS.graph)}
-              onRotateTransient={b => ferryGS.setGraph(g => ({ ...g, nodes: g.nodes.map(n => n.id === node.id ? { ...n, bearing: b } : n) }))}
-              onBeginVelocity={() => ferryGS.pushHistory(ferryGS.graph)}
-              onVelocityTransient={v => ferryGS.setGraph(g => ({ ...g, nodes: g.nodes.map(n => n.id === node.id ? { ...n, velocity: v } : n) }))}
+              onBeginDrag={() => ferryGS.pushHistory(ferryGS.graph)}
+              onDragTransient={(b, v) => ferryGS.setGraph(g => ({
+                ...g,
+                nodes: g.nodes.map(n => n.id === node.id ? { ...n, bearing: b, velocity: v } : n),
+              }))}
               onResetVelocity={() => ferryMut.updateNode(node.id, { velocity: undefined } as any)}
             />
           )
