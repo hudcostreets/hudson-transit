@@ -103,7 +103,7 @@ function reverseGraph(g: FlowGraph): FlowGraph {
 const FERRY_LABEL_POS: LatLon = [40.7505, -74.0241]  // Hoboken 14th St
 
 // Map center + zoom to fit all crossings (Amtrak NJ portal W to Manhattan E, PATH downtown S)
-const MAP_CENTER: [number, number] = [-74.012, 40.740]
+const MAP_CENTER: [number, number] = [-74.0111, 40.7430]
 
 // Mode colors from semantic scheme
 const MODE_COLORS = DEFAULT_SCHEME.mode
@@ -277,12 +277,20 @@ interface Props {
 }
 
 const MAP_HEIGHT_KEY = 'geo-sankey-map-height'
-const DEFAULT_MAP_HEIGHT = 750
+// Responsive default: narrower viewports (≤ 768 px) get 80 vh — the legend
+// content takes less space relative to arrows, so the map doesn't need to
+// be oversized. Wider viewports get 90 vh capped at 900 px.
+function defaultMapHeight(): number {
+  if (typeof window === 'undefined') return 750
+  const h = window.innerHeight
+  if (window.innerWidth <= 768) return Math.round(h * 0.8)
+  return Math.min(Math.round(h * 0.9), 900)
+}
 
 function GeoSankeyInner({ data }: Props) {
   const [mapHeight, setMapHeight] = useState(() => {
     const stored = sessionStorage.getItem(MAP_HEIGHT_KEY)
-    return stored ? parseInt(stored) : DEFAULT_MAP_HEIGHT
+    return stored ? parseInt(stored) : defaultMapHeight()
   })
   const years = useMemo(() => [...new Set(data.map(r => r.year))].sort(), [data])
   const [direction, setDirection] = useUrlState('d', dirParam)
@@ -313,7 +321,7 @@ function GeoSankeyInner({ data }: Props) {
 
   // Map view: lat_lng_zoom packed into one param, `_` delimited
   const llzParam = useMemo(() => {
-    const def = { lat: MAP_CENTER[1], lng: MAP_CENTER[0], zoom: 11.8 }
+    const def = { lat: MAP_CENTER[1], lng: MAP_CENTER[0], zoom: 12.81 }
     return {
       encode: (v: { lat: number; lng: number; zoom: number }) => {
         if (Math.abs(v.lat - def.lat) < 0.0001 && Math.abs(v.lng - def.lng) < 0.0001 && Math.abs(v.zoom - def.zoom) < 0.01) return null
@@ -339,8 +347,8 @@ function GeoSankeyInner({ data }: Props) {
   // Panel sort: geographic (N→S) or desc by passenger count
   const [sortDesc, setSortDesc] = useState(false)
   const [inlineLegend, setInlineLegend] = useUrlState('il', {
-    encode: (v: boolean) => v ? '1' : undefined,
-    decode: (s: string | null) => s === '1',
+    encode: (v: boolean) => v ? undefined : '0',
+    decode: (s: string | null) => s !== '0',
   })
 
   const mapRef = useRef<MapRef>(null)
