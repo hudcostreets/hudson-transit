@@ -1128,7 +1128,13 @@ function GeoSankeyInner({ data }: Props) {
                 const y1 = totalYShift >= 0 ? 0 : h
                 const y2 = totalYShift >= 0 ? h : 0
                 markers.push(
-                  <Marker key={`leader-${key}`} longitude={pos[1]} latitude={pos[0]} anchor="top-left"
+                  // Include direction in the React key. `react-maplibre`'s
+                  // `Marker` constructs the underlying `maplibre-gl.Marker`
+                  // once via `useMemo([], …)`, so `anchor` (and `LI_X_OFFSET`
+                  // sign) is locked at construction time. Switching direction
+                  // would otherwise leave LIs stuck at their old anchor —
+                  // changing the key forces React to unmount + remount.
+                  <Marker key={`leader-${key}-${direction}`} longitude={pos[1]} latitude={pos[0]} anchor="top-left"
                     style={{ pointerEvents: 'none' }}
                   >
                     <svg width={w} height={h} style={{ overflow: 'visible', display: 'block' }}>
@@ -1139,7 +1145,7 @@ function GeoSankeyInner({ data }: Props) {
                 )
               }
               markers.push(
-                <Marker key={key} longitude={pos[1]} latitude={pos[0]} anchor={anchor}
+                <Marker key={`${key}-${direction}`} longitude={pos[1]} latitude={pos[0]} anchor={anchor}
                   offset={[LI_X_OFFSET, yOff]}
                   style={{ pointerEvents: 'auto' }}
                 >
