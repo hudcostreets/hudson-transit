@@ -1,13 +1,15 @@
 // All-sector bubble chart for /nyc — one bubble per (year, sector | mode),
 // sized + positioned by share of total CBD-bound persons that year.
-// Mirrors `UnifiedChart`'s scatter view but keyed by sector or mode (not
-// crossing). MVP: bubble view only; bar/pct/recovery deferred (see
+// Shares the same primitives as `/`'s UnifiedChart bubble view: useTheme,
+// themedLayout, useCustomHover (custom React tooltip), useTraceHighlight,
+// JitteredPlot. MVP: bubble view only; bar/pct/recovery deferred (see
 // `specs/nyc-bubble.md`).
 
-import { useMemo } from 'react'
-import { Plot } from 'pltly/react'
-import { useUrlState, codeParam, type Param } from 'use-prms'
-import { useContainerWidth, useBreakpoints } from 'pltly/react'
+import { useCallback, useMemo, useRef } from 'react'
+import { useUrlState, codeParam } from 'use-prms'
+import { useContainerWidth, useBreakpoints, useTheme, useCustomHover, useTraceHighlight } from 'pltly/react'
+import type { UseCustomHoverReturn } from 'pltly/react'
+import { themedLayout } from 'pltly/plotly'
 import type { Layout, PlotData } from 'plotly.js'
 import type { CrossingRecord, Direction, TimePeriod } from '../lib/types'
 import {
@@ -17,6 +19,7 @@ import {
 import { buildNycRecords } from '../lib/nyc-data'
 import { DEFAULT_SCHEME } from '../lib/colors'
 import Toggle, { type ToggleOption } from './Toggle'
+import JitteredPlot, { type JitterOffsets } from './JitteredPlot'
 
 type Granularity = 'sector' | 'mode'
 
@@ -28,11 +31,6 @@ const timeParam = codeParam<TimePeriod>('peak_1hr', [
 ])
 const granParam = codeParam<Granularity>('mode', [
   ['mode', 'm'], ['sector', 's'],
-])
-
-type Theme = 'dark' | 'light' | 'system'
-const themeParam: Param<Theme> = codeParam<Theme>('dark', [
-  ['dark', 'd'], ['light', 'l'], ['system', 's'],
 ])
 
 const DIR_OPTIONS: ToggleOption<Direction>[] = [
@@ -49,8 +47,6 @@ const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
   { value: 'sector', label: 'sector' },
 ]
 
-// Bubble color tables — reuse Semantic mode colors where the labels line up,
-// and assign distinct hues to sectors so they read as a categorical group.
 const MODE_COLORS: Record<NycMode, string> = {
   Auto: DEFAULT_SCHEME.mode.Autos,
   Bus: DEFAULT_SCHEME.mode.Bus,
@@ -67,23 +63,18 @@ const SECTOR_COLORS: Record<Sector, string> = {
   roosevelt_island: '#FECB52',
 }
 
-// `mode` ordering reuses the upstream `NYC_MODE_ORDER`. Sectors are ordered
-// by approximate share-of-trips (60th St biggest in absolute terms because
-// it sums all Manhattan north→south flow, then Queens, etc.).
 const SECTOR_ORDER: Sector[] = ['60th_street', 'queens', 'brooklyn', 'nj', 'staten_island', 'roosevelt_island']
 
-// Horizontal jitter — spread same-year bubbles slightly within the year so
-// modes with similar Y values (Auto/Bus/Rail all near 10-15%) don't overlap.
-// Magnitudes kept small (≤ ±0.18) so Plotly's `x unified` hover still
+// Horizontal jitter — small (≤ ±0.18) so Plotly's `x unified` hover still
 // snaps every trace into the same year tooltip.
-const MODE_JITTER: Record<NycMode, number> = {
+const MODE_JITTER_VALS: Record<NycMode, number> = {
   Subway: 0,
   Bus: -0.09,
   Auto: 0.09,
   Rail: -0.18,
   Ferry: 0.18,
 }
-const SECTOR_JITTER: Record<Sector, number> = {
+const SECTOR_JITTER_VALS: Record<Sector, number> = {
   '60th_street': 0,
   brooklyn: -0.09,
   queens: 0.09,
@@ -101,116 +92,153 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
   const [granularity, setGranularity] = useUrlState('g', granParam)
-  const [theme] = useUrlState('T', themeParam)
-
-  const isDark = useMemo(() => {
-    if (theme === 'dark') return true
-    if (theme === 'light') return false
-    return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-  }, [theme])
-  const fc = isDark ? '#ccc' : '#444'
-  const gc = isDark ? '#333' : '#e5e5e5'
-
-  const records = useMemo(() => buildNycRecords(appendixIii, vehicles), [appendixIii, vehicles])
+  const { theme } = useTheme()
 
   const { ref, width } = useContainerWidth()
   const { narrow } = useBreakpoints(width)
 
-  const { years, traces } = useMemo(() => {
-    // Filter records for the active direction × time_period.
+  const records = useMemo(() => buildNycRecords(appendixIii, vehicles), [appendixIii, vehicles])
+
+  // Aggregate to per-(group, year) series. `series[label][i]` = persons
+  // in `years[i]` for that label. `pct` is share of yearly total.
+  const { years, series, pct, labels, colorMap, jitter, maxPersons } = useMemo(() => {
     const active = records.filter(r => r.direction === direction && r.time_period === timePeriod)
     const yearSet = new Set(active.map(r => r.year))
     const years = [...yearSet].sort()
 
-    // Pivot to one trace per group (sector or mode).
     const groups = granularity === 'sector' ? SECTOR_ORDER : NYC_MODE_ORDER
     const groupKey = (r: typeof active[number]) => granularity === 'sector' ? r.sector : r.mode
     const groupLabel = (g: string) => granularity === 'sector' ? SECTOR_LABELS[g as Sector] : g
     const groupColor = (g: string) => granularity === 'sector' ? SECTOR_COLORS[g as Sector] : MODE_COLORS[g as NycMode]
-    const groupJitter = (g: string) => granularity === 'sector' ? SECTOR_JITTER[g as Sector] : MODE_JITTER[g as NycMode]
+    const groupJitter = (g: string) => granularity === 'sector' ? SECTOR_JITTER_VALS[g as Sector] : MODE_JITTER_VALS[g as NycMode]
 
-    // Per-year totals (across all groups) for share-of-total Y axis.
     const yearTotals = new Map(years.map(y => [y, 0]))
     for (const r of active) yearTotals.set(r.year, (yearTotals.get(r.year) ?? 0) + r.persons)
 
-    // For each group, build [years × {persons, share}].
-    // First pass: compute every cell + the global max (so bubble sizes
-    // scale relative to the largest cell across all groups, not the first
-    // one we happen to process).
+    // First pass: compute the global max so bubble sizes scale uniformly.
     const seriesByGroup = new Map<string, number[]>()
     for (const g of groups) {
-      const series = years.map(y =>
+      seriesByGroup.set(g, years.map(y =>
         active.filter(r => r.year === y && groupKey(r) === g).reduce((s, r) => s + r.persons, 0),
-      )
-      seriesByGroup.set(g, series)
+      ))
     }
-    const maxPersons = Math.max(...[...seriesByGroup.values()].flat())
 
-    const traces: Partial<PlotData>[] = []
+    const series: Record<string, number[]> = {}
+    const pct: Record<string, number[]> = {}
+    const colorMap: Record<string, string> = {}
+    const jitter: JitterOffsets = {}
+    const labels: string[] = []
+    let maxPersons = 0
     for (const g of groups) {
-      const series = seriesByGroup.get(g)!
-      if (series.every(p => p === 0)) continue
-      const shares = series.map((p, i) => {
-        const total = yearTotals.get(years[i]) ?? 0
-        return total > 0 ? p / total : 0
-      })
+      const s = seriesByGroup.get(g)!
+      if (s.every(v => v === 0)) continue
       const label = groupLabel(g)
-      const color = groupColor(g)
-      const jx = groupJitter(g)
-      const xs = years.map(y => y + jx)
-      const sizes = series.map(p => maxPersons > 0 ? Math.sqrt(p / maxPersons) * (narrow ? 60 : 90) : 0)
-      const labels = series.map(p => p < 1000 ? '' : `${Math.round(p / 1000)}k`)
-      // Pack (persons, share%) for the tooltip; share is recomputed from totals.
-      const customData = series.map((p, i) => [p, shares[i] * 100] as [number, number])
-      traces.push({
-        type: 'scatter',
-        name: label,
-        x: xs,
-        y: shares,
-        mode: 'text+markers',
-        marker: { size: sizes as unknown as number, color, line: { width: 0 } },
-        text: labels,
-        textposition: 'middle center',
-        textfont: { size: (narrow ? 9 : 11) as unknown as number, color: '#fff' },
-        hovertemplate: `<b>${label}</b> · %{customdata[0]:,.0f} persons (%{customdata[1]:.1f}%)<extra></extra>`,
-        customdata: customData as unknown as PlotData['customdata'],
+      labels.push(label)
+      series[label] = s
+      pct[label] = s.map((v, i) => {
+        const total = yearTotals.get(years[i]) ?? 0
+        return total > 0 ? v / total : 0
       })
+      colorMap[label] = groupColor(g)
+      const jx = groupJitter(g)
+      for (const y of years) {
+        if (!jitter[y]) jitter[y] = {}
+        jitter[y][label] = jx
+      }
+      for (const v of s) maxPersons = Math.max(maxPersons, v)
     }
-    return { years, traces }
-  }, [records, direction, timePeriod, granularity, narrow])
 
+    return { years, series, pct, labels, colorMap, jitter, maxPersons }
+  }, [records, direction, timePeriod, granularity])
+
+  const maxSize = narrow ? 60 : 90
+
+  // Custom hover wired through pltly's `useCustomHover` — same setup as
+  // `/`'s UnifiedChart so the tooltip is a React-rendered, dark-themed
+  // breakdown table instead of Plotly's white default tooltip.
+  const chartRef = useRef<HTMLDivElement>(null)
+  const emptyData = useMemo(() => [] as import('plotly.js').Data[], [])
+  const stableGroupKey = useCallback(() => '', [])
+  const stableNormalizeX = useCallback((x: string | number) => Math.round(Number(x)), [])
+  const hover = useCustomHover({ data: emptyData, groupKey: stableGroupKey, normalizeX: stableNormalizeX })
+  const plotHover = useMemo((): UseCustomHoverReturn => ({
+    handleHover: hover.handleHover,
+    handleUnhover: hover.handleUnhover,
+    handleClick: hover.handleClick,
+    dismiss: hover.dismiss,
+    handleMouseLeave: hover.handleMouseLeave,
+    groups: [], x: null, position: null, isActive: false,
+  }), [hover.handleHover, hover.handleUnhover, hover.handleClick, hover.dismiss, hover.handleMouseLeave])
+
+  const hoverYear = hover.isActive && hover.x != null ? Math.round(Number(hover.x)) : null
+  const yearIdx = hoverYear !== null ? years.indexOf(hoverYear) : -1
+  const chartMarginRef = useRef({ l: narrow ? 50 : 65, r: narrow ? 20 : 60 })
+  const xRangeRef = useRef<[number, number]>([years[0] - 0.9, years[years.length - 1] + 1.2])
+  chartMarginRef.current = { l: narrow ? 50 : 65, r: narrow ? 20 : 60 }
+  xRangeRef.current = [years[0] - 0.9, years[years.length - 1] + 1.2]
+
+  const hoverPos = useMemo(() => {
+    if (hoverYear == null || !chartRef.current) return { x: 0, y: 0 }
+    const rect = chartRef.current.getBoundingClientRect()
+    const { l, r } = chartMarginRef.current
+    const [x0, x1] = xRangeRef.current
+    const plotW = rect.width - l - r
+    const xFrac = (hoverYear - x0) / (x1 - x0)
+    return { x: rect.left + l + xFrac * plotW, y: rect.top + rect.height * 0.35 }
+  }, [hoverYear])
+
+  // Trace highlight: hovering a legend (or chart) trace fades others.
+  const highlight = useTraceHighlight(labels, { debounceMs: 150 })
+
+  // Build Plotly traces from aggregated data.
+  const traces: Partial<PlotData>[] = useMemo(() => labels.map(label => {
+    const s = series[label]
+    const sizes = s.map(p => maxPersons > 0 ? Math.sqrt(p / maxPersons) * maxSize : 0)
+    const insideText = s.map(p => p < 1000 ? '' : `${Math.round(p / 1000)}k`)
+    return {
+      type: 'scatter',
+      name: label,
+      x: years,
+      y: pct[label],
+      mode: 'text+markers',
+      marker: { size: sizes as unknown as number, color: colorMap[label], line: { width: 0 } },
+      text: insideText,
+      textposition: 'middle center',
+      textfont: { size: (narrow ? 9 : 11) as unknown as number, color: '#fff' },
+      hoverinfo: 'none',  // we render the React tooltip ourselves
+    } satisfies Partial<PlotData>
+  }), [labels, series, pct, years, colorMap, maxSize, narrow, maxPersons])
+
+  const baseLayout = themedLayout(theme)
   const layout: Partial<Layout> = {
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { color: fc },
+    ...baseLayout,
     xaxis: {
+      ...baseLayout.xaxis,
       tickvals: years,
       ticktext: years.map(y => `'${String(y).slice(2)}`),
       tickmode: 'array',
-      color: fc,
-      gridcolor: gc,
+      hoverformat: 'd',
       range: [years[0] - 0.9, years[years.length - 1] + 1.2],
+      fixedrange: true,
     },
     yaxis: {
-      title: { text: 'Share of CBD-bound persons', font: { size: 12 } },
-      color: fc,
-      gridcolor: gc,
+      ...baseLayout.yaxis,
+      title: { text: narrow ? '' : 'Share of CBD-bound persons', font: { size: 12 } },
       tickformat: '.0%',
       range: [0, 0.72],
+      fixedrange: true,
     },
     legend: {
       orientation: 'h',
       x: 0.5, y: -0.12,
       xanchor: 'center',
-      font: { color: fc, size: 11 },
+      font: { color: theme.font, size: 11 },
     },
-    margin: { t: 8, r: narrow ? 20 : 60, b: 50, l: narrow ? 50 : 65 },
+    margin: { t: 8, r: chartMarginRef.current.r, b: 50, l: chartMarginRef.current.l },
     autosize: true,
     showlegend: true,
-    // `x unified` groups all traces at the hovered year into one tooltip,
-    // matching the bubble plot on `/`. The horizontal jitter on bubbles
-    // doesn't prevent unification since Plotly snaps to the nearest x.
-    hovermode: 'x unified',
+    hovermode: 'x',
+    clickmode: 'event',
   }
 
   const dirLabel = direction === 'entering' ? 'NJ→NY (entering)' : 'NY→NJ (leaving)'
@@ -221,17 +249,110 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
     <div ref={ref}>
       <h2>CBD-bound persons by {granularity}</h2>
       <p className="chart-subtitle">{dirLabel}, {timeLabel}, all sectors</p>
-      <Plot
-        data={traces}
-        layout={layout}
-        style={{ height: narrow ? 480 : 620 }}
-        disableTheme
-      />
+      <div ref={chartRef} onMouseLeave={hover.handleMouseLeave} style={{ position: 'relative' }}>
+        <JitteredPlot
+          data={traces}
+          highlight={highlight}
+          jitter={jitter}
+          layout={layout}
+          customHover={plotHover}
+          style={{ height: narrow ? 480 : 620 }}
+        />
+        {hoverYear != null && chartRef.current && (() => {
+          const { l, r } = chartMarginRef.current
+          const [x0, x1] = xRangeRef.current
+          const chartW = chartRef.current!.getBoundingClientRect().width
+          const plotW = chartW - l - r
+          const xFrac = (hoverYear - x0) / (x1 - x0)
+          const leftPx = l + xFrac * plotW
+          return <div style={{ position: 'absolute', left: leftPx, top: 0, bottom: 0, width: 1, background: theme.font, pointerEvents: 'none', opacity: 0.6 }} />
+        })()}
+      </div>
+      {hoverYear !== null && yearIdx >= 0 && (
+        <BubbleHoverTooltip
+          year={hoverYear}
+          yearIdx={yearIdx}
+          pos={hoverPos}
+          labels={labels}
+          series={series}
+          pct={pct}
+          colorMap={colorMap}
+          activeTrace={highlight.activeTrace}
+        />
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
         <Toggle options={GRAN_OPTIONS} value={granularity} onChange={setGranularity} />
         <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
         <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
       </div>
+    </div>
+  )
+}
+
+// Same shape as UnifiedChart's HoverTooltip (NJ uses an extra "vs '19"
+// recovery column; NYC's MVP doesn't include recovery yet).
+function BubbleHoverTooltip({ year, yearIdx, pos, labels, series, pct, colorMap, activeTrace }: {
+  year: number
+  yearIdx: number
+  pos: { x: number; y: number }
+  labels: string[]
+  series: Record<string, number[]>
+  pct: Record<string, number[]>
+  colorMap: Record<string, string>
+  activeTrace?: string | null
+}) {
+  const rows = labels
+    .map(label => ({
+      label, color: colorMap[label],
+      persons: series[label][yearIdx],
+      pctVal: pct[label][yearIdx],
+    }))
+    .sort((a, b) => b.persons - a.persons)
+  const total = rows.reduce((s, r) => s + r.persons, 0)
+
+  const vw = window.innerWidth
+  const isNarrow = vw < 600
+  const tooltipH = rows.length * 24 + 70
+  let left: number, top: number
+  if (isNarrow) {
+    const tooltipW = Math.min(vw - 20, 340)
+    left = (vw - tooltipW) / 2
+    top = Math.max(10, pos.y - tooltipH - 20)
+  } else {
+    const tooltipW = 340
+    left = pos.x + 20 + tooltipW > vw ? pos.x - tooltipW - 10 : pos.x + 20
+    top = Math.max(10, Math.min(pos.y - tooltipH / 2, window.innerHeight - tooltipH - 10))
+  }
+
+  return (
+    <div className="hover-tooltip" style={{ position: 'fixed', left, top, pointerEvents: 'none', maxWidth: isNarrow ? 'calc(100vw - 20px)' : undefined }}>
+      <table>
+        <thead>
+          <tr>
+            <th className="hover-year" colSpan={2}>{year}</th>
+            <th className="hover-num">#</th>
+            <th className="hover-pct">share</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.label} style={activeTrace === r.label ? { fontWeight: 700 } : undefined}>
+              <td><span className="color-dot" style={{ background: r.color }} /></td>
+              <td className="hover-name">{r.label}</td>
+              <td className="hover-num">{r.persons.toLocaleString()}</td>
+              <td className="hover-pct">{(r.pctVal * 100).toFixed(1)}%</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td className="hover-name">Total</td>
+            <td className="hover-num">{total.toLocaleString()}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   )
 }
