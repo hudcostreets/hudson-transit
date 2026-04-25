@@ -463,6 +463,15 @@ function GeoSankeyInner({ data }: Props) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
   const [pinnedKey, setPinnedKey] = useState<string | null>(null)
   const activeKey = pinnedKey ?? hoveredKey
+  // Persistent z-bump: every hover (or pin) appends the flow's key to
+  // `bumpOrder`; later bumps move it to the end. Render order sorts by
+  // `bumpOrder` index after the default widest-first sort, so the most
+  // recently engaged flow always sits on top.
+  const [bumpOrder, setBumpOrder] = useState<string[]>([])
+  useEffect(() => {
+    if (!activeKey) return
+    setBumpOrder(prev => prev[prev.length - 1] === activeKey ? prev : [...prev.filter(k => k !== activeKey), activeKey])
+  }, [activeKey])
   // Edit mode is implicit: the ferry editor engages whenever the ferry flow
   // is pinned (click ferry ribbon on the map, or the "Ferries" legend row).
   // Click anywhere outside to exit.
@@ -589,10 +598,23 @@ function GeoSankeyInner({ data }: Props) {
       })
     }
 
-    // Sort widest first so narrower flows draw on top
-    features.sort((a, b) => (b.properties?.width ?? 0) - (a.properties?.width ?? 0))
+    // Sort: bumped flows last (in `bumpOrder` recency order) so the most
+    // recently hovered/pinned flow draws on top; remaining flows fall back to
+    // widest-first so smaller flows draw on top of larger neighbors.
+    features.sort((a, b) => {
+      const ka = a.properties?.key as string | undefined
+      const kb = b.properties?.key as string | undefined
+      const ai = ka ? bumpOrder.indexOf(ka) : -1
+      const bi = kb ? bumpOrder.indexOf(kb) : -1
+      if (ai !== bi) {
+        if (ai === -1) return -1
+        if (bi === -1) return 1
+        return ai - bi
+      }
+      return (b.properties?.width ?? 0) - (a.properties?.width ?? 0)
+    })
     return { type: 'FeatureCollection' as const, features }
-  }, [flows, direction, maxPassengers, mapView.zoom, geoScale, widthScale, ferryGS.graph])
+  }, [flows, direction, maxPassengers, mapView.zoom, geoScale, widthScale, ferryGS.graph, bumpOrder])
 
 
 

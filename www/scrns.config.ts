@@ -42,6 +42,28 @@ for (const dir of dirs) {
   }
 }
 
+// Flow map — geographic Sankey of crossings + ferries. The map needs more
+// settling time than Plotly: maplibre-gl loads vector tiles asynchronously,
+// then we render the ribbon polygons on top. The flow map sits below the
+// bubble chart, so scroll to it before capturing. Inline-legend is on by
+// default so the labels appear at the arrow tips. `headless: false` is
+// required because maplibre-gl uses WebGL, which needs a real GPU context —
+// in headless Chromium the canvas renders blank.
+function mapShot(params: string): ScreenshotConfig {
+  return {
+    query: params ? `?${params}` : '',
+    width: W,
+    height: 900,
+    selector: '.geo-sankey',
+    scrollTo: '.geo-sankey',
+    preScreenshotSleep: 3000,
+    headless: false,
+  }
+}
+for (const dir of dirs) {
+  screenshots[`map-${dir.key}`] = mapShot(dir.params)
+}
+
 // og:image — canonical bubble chart, clean mode (no toggles/SpeedDial, larger text)
 // Standard og:image is 1200x630
 screenshots['og'] = {
