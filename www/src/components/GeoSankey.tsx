@@ -14,7 +14,11 @@ import {
   ribbonArrow,
   renderFlowGraphSinglePoly, renderNodes,
   flowFillPaint,
+  resolveEdgeWeights,
 } from 'geo-sankey'
+// `resolveEdgeWeights` is used inside `reverseGraph` to pre-resolve `auto`
+// edge weights before reversing — the post-reversal topology has different
+// in/out structure that breaks `auto` resolution.
 import {
   useGraphState, useGraphSelection, useGraphMutations,
   useNodeDrag, useSceneIO,
@@ -93,9 +97,26 @@ const FERRY_GRAPH: FlowGraph = {
 }
 
 function reverseGraph(g: FlowGraph): FlowGraph {
+  // Resolve auto weights on the original graph BEFORE reversing. After
+  // reversal, what were sinks (whose `auto` inputs were derived from
+  // upstream) become sources with `auto` outputs and no inputs;
+  // `resolveEdgeWeights` would then return 0 for those edges since auto =
+  // leftover-from-inputs. Pre-resolving converts every edge to a concrete
+  // numeric weight so the topology renders identically in either direction.
+  const weights = resolveEdgeWeights(g)
   return {
-    nodes: g.nodes,
-    edges: g.edges.map(e => ({ ...e, from: e.to, to: e.from })),
+    // Bearings encode the direction of flow tangent through a node; reversing
+    // edges reverses flow, so each bearing flips by 180° (clamped to [0, 360)).
+    nodes: g.nodes.map(n => ({
+      ...n,
+      bearing: n.bearing != null ? (n.bearing + 180) % 360 : undefined,
+    })),
+    edges: g.edges.map(e => ({
+      ...e,
+      from: e.to,
+      to: e.from,
+      weight: weights.get(`${e.from}→${e.to}`) ?? 0,
+    })),
   }
 }
 
@@ -270,6 +291,10 @@ const FLOW_TERMINUS: Record<string, LatLon> = {
   'Downtown PATH Tunnel': [40.7116, -74.0123],
   'All Ferry Points': [40.7450, -74.0170],     // approx bezier lng of hob-split → ut-merge at lat 40.7450; marker + 10px offset keeps LI a fixed px distance east of the trace at any zoom
 }
+
+// For ferry flows in `leaving` direction: the LI sits on the NY side instead
+// of mid-Hudson, since arrows now fan out from NY to NJ.
+const FERRY_TERMINUS_LEAVING: LatLon = [40.7450, -73.9990]
 
 // Manhattan-side terminus labels (always shown on map)
 const MANHATTAN_TERMINI: { name: string; pos: LatLon }[] = [
@@ -530,11 +555,24 @@ function GeoSankeyInner({ data }: Props) {
         const width = nonFerryWidths[i]
         const hw = pxToHalfDeg(width, zoom, geoScale, REF_LAT)
 
-        // Uptown PATH: smooth curve, arrow ends at Christopher St
+        // Uptown PATH: smooth curve. The path extends into the Manhattan
+        // grid (9th–33rd) past Christopher St; the ribbon shows only the
+        // Hoboken↔Christopher segment, which depends on direction.
+        // - entering (Hob→NY): keep first `fadeIdx+1` smoothed points →
+        //   solid ribbon Hoboken→Christopher, fading into Manhattan stops.
+        // - leaving  (NY→Hob): path was reversed, so the Manhattan-grid end
+        //   is now at the start; take from the corresponding fade-in index
+        //   to the end → solid ribbon Christopher→Hoboken.
         if (f.crossing === 'Uptown PATH Tunnel' && path.length > 2) {
           const { path: smooth, knots } = smoothPath(path)
-          const fadeIdx = knots[UPTOWN_FADE_START]
-          const shortPath = smooth.slice(0, fadeIdx + 1)
+          let shortPath: LatLon[]
+          if (direction === 'entering') {
+            const fadeIdx = knots[UPTOWN_FADE_START]
+            shortPath = smooth.slice(0, fadeIdx + 1)
+          } else {
+            const fadeIdx = knots[path.length - 1 - UPTOWN_FADE_START]
+            shortPath = smooth.slice(fadeIdx)
+          }
           const ring = ribbonArrow(shortPath, hw, REF_LAT, { arrowWingFactor: ARROW_WING, arrowLenFactor: ARROW_LEN, widthPx: width })
           if (ring.length) {
             features.push(poly({ color, width, key, opacity: 1 }, ring))
@@ -982,7 +1020,12 @@ function GeoSankeyInner({ data }: Props) {
               byCrossing.set(f.crossing, arr)
             }
             // Px offset between LI and arrow tip on the horizontal axis.
-            const LI_X_OFFSET = 10
+            // For `leaving`, arrow tips are on the NJ (west) side, so LIs
+            // sit to the *west* of the tip — flip the sign + the marker
+            // anchor so the leader line points eastward at the trace.
+            const isLeaving = direction === 'leaving'
+            const LI_X_OFFSET = isLeaving ? -10 : 10
+            const liAnchor: 'left' | 'right' = isLeaving ? 'right' : 'left'
             // LI height mirrors the clamp in .geo-sankey-inline-label's font-size.
             // 16-px font → 36-px rendered LI; scale linearly with font-size.
             const fontPx = typeof window !== 'undefined'
@@ -999,7 +1042,7 @@ function GeoSankeyInner({ data }: Props) {
               flow: FlowDatum
               key: string
               pos: LatLon
-              anchor: 'left'
+              anchor: 'left' | 'right'
               centerY: number  // natural effective screen-y of the LI's center, relative to map center lat (positive = south)
             }
             const lis: LIData[] = []
@@ -1021,14 +1064,18 @@ function GeoSankeyInner({ data }: Props) {
                 const key = flowKey(f)
                 let pos: LatLon | undefined
                 if (f.isFerry) {
-                  pos = FLOW_TERMINUS[f.crossing]
+                  pos = isLeaving ? FERRY_TERMINUS_LEAVING : FLOW_TERMINUS[f.crossing]
                 } else {
                   // End of this flow's offset path = arrow tip. Match the
                   // geojson path transforms: offset + (for leaving) reverse.
                   const lateralOffsetUnits = pxToDeg(lateralPx[i], mapView.zoom, geoScale, REF_LAT) / 0.0004
                   let p = offsetPath(f.path, lateralOffsetUnits)
-                  if (direction === 'leaving') p = [...p].reverse()
-                  if (f.crossing === 'Uptown PATH Tunnel' && p.length > 2) {
+                  if (isLeaving) p = [...p].reverse()
+                  // Uptown PATH: for entering, the visible ribbon ends at
+                  // Christopher St (knot index `UPTOWN_FADE_START`). For
+                  // leaving, the ribbon's NJ-side tip is just the last
+                  // point of the reversed path (Hoboken).
+                  if (!isLeaving && f.crossing === 'Uptown PATH Tunnel' && p.length > 2) {
                     const { path: smooth, knots } = smoothPath(p)
                     pos = smooth[knots[UPTOWN_FADE_START]]
                   } else {
@@ -1038,9 +1085,8 @@ function GeoSankeyInner({ data }: Props) {
                 if (!pos) return
                 // Always anchor vertically at the tip's center; de-bunch
                 // handles spacing when multiple LIs would overlap.
-                const anchor: 'left' = 'left'
                 const posY = (mapView.lat - pos[0]) / degPerPx
-                lis.push({ flow: f, key, pos, anchor, centerY: posY })
+                lis.push({ flow: f, key, pos, anchor: liAnchor, centerY: posY })
               })
             }
             // De-bunch: greedy top-down spread so no two LIs overlap
@@ -1071,9 +1117,13 @@ function GeoSankeyInner({ data }: Props) {
               const color = flowColor(f)
               const modeIcon = MODE_ICON[f.mode]
               const agencies = CROSSING_AGENCY[f.crossing] ?? []
-              // Leader line: only draw when LI is visibly displaced
+              // Leader line: only draw when LI is visibly displaced. Anchored
+              // at the geographic point; line runs from (0,0) to the LI's
+              // actual rendered (x, y). Sign of `LI_X_OFFSET` flips with
+              // direction so the leader points east on entering, west on
+              // leaving.
               if (Math.abs(totalYShift) >= 4) {
-                const w = LI_X_OFFSET + 4
+                const w = Math.abs(LI_X_OFFSET) + 4
                 const h = Math.abs(totalYShift) + 4
                 const y1 = totalYShift >= 0 ? 0 : h
                 const y2 = totalYShift >= 0 ? h : 0
