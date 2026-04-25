@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Layout, PlotData } from 'plotly.js'
-import { Plot, useContainerWidth, useBreakpoints } from 'pltly/react'
-import { useUrlState, codeParam } from 'use-prms'
+import { Plot, useContainerWidth, useBreakpoints, useTheme } from 'pltly/react'
+import { themedLayout } from 'pltly/plotly'
 import type { HourlyRecord } from '../lib/hourly-types'
 import type { Direction } from '../lib/types'
 import Toggle, { type ToggleOption } from './Toggle'
@@ -50,11 +50,6 @@ const BREAKDOWN_OPTIONS: ToggleOption<Breakdown>[] = [
   { value: 'sector', label: 'By sector' },
 ]
 
-type Theme = 'dark' | 'light' | 'system'
-const themeParam = codeParam<Theme>('dark', [
-  ['dark', 'd'], ['light', 'l'], ['system', 's'],
-])
-
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const HOUR_LABELS = HOURS.map(h => {
   if (h === 0) return '12am'
@@ -70,14 +65,7 @@ export default function HourlyChart({ data }: { data: HourlyRecord[] }) {
   const { ref, width } = useContainerWidth()
   const { narrow } = useBreakpoints(width)
 
-  const [theme] = useUrlState('T', themeParam)
-  const isDark = useMemo(() => {
-    if (theme === 'dark') return true
-    if (theme === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  }, [theme])
-  const fc = isDark ? '#ccc' : '#444'
-  const gc = isDark ? '#333' : '#e5e5e5'
+  const { theme } = useTheme()
 
   const years = useMemo(() => {
     const ys = new Set(data.filter(r => r.category === 'mode').map(r => r.year))
@@ -105,46 +93,47 @@ export default function HourlyChart({ data }: { data: HourlyRecord[] }) {
       const hourMap = new Map(keyData.map(r => [r.hour, r.persons]))
 
       return {
-        type: 'scatter' as const,
+        type: 'bar' as const,
         name: labels[key] ?? key,
         x: HOURS,
         y: HOURS.map(h => hourMap.get(h) ?? 0),
-        mode: 'lines' as const,
-        stackgroup: 'one',
-        line: { width: 0.5, color: colors[key] },
-        fillcolor: colors[key] + 'cc',
+        marker: { color: colors[key] },
         hovertemplate: `%{x}: %{y:,.0f}<extra>${labels[key] ?? key}</extra>`,
       } satisfies Partial<PlotData>
     })
   }, [data, direction, breakdown, selectedYear])
 
+  const baseLayout = themedLayout(theme)
   const layout: Partial<Layout> = {
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { color: fc },
+    ...baseLayout,
     title: { text: '' },
+    barmode: 'stack',
+    bargap: 0.15,
     xaxis: {
+      ...baseLayout.xaxis,
       tickvals: HOURS.filter(h => h % 3 === 0),
       ticktext: HOURS.filter(h => h % 3 === 0).map(h => HOUR_LABELS[h]),
-      color: fc,
-      gridcolor: gc,
     },
     yaxis: {
+      ...baseLayout.yaxis,
       title: { text: 'Persons', font: { size: 12 } },
-      color: fc,
-      gridcolor: gc,
       tickformat: ',',
     },
     legend: {
       orientation: 'h' as const,
       x: 0.5, y: -0.08,
       xanchor: 'center' as const,
-      font: { color: fc, size: 11 },
+      font: { color: theme.font, size: 11 },
     },
     margin: { t: 10, r: 10, b: 45, l: narrow ? 50 : 65 },
     autosize: true,
     showlegend: true,
     hovermode: 'x unified' as const,
+    hoverlabel: {
+      bgcolor: theme.annBg,
+      bordercolor: theme.grid,
+      font: { color: theme.font, size: 12 },
+    },
   }
 
   return (
@@ -155,7 +144,6 @@ export default function HourlyChart({ data }: { data: HourlyRecord[] }) {
         data={traces}
         layout={layout}
         style={{ height: narrow ? 400 : 500 }}
-        disableTheme
       />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
         <Toggle options={BREAKDOWN_OPTIONS} value={breakdown} onChange={setBreakdown} />

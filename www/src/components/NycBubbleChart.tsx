@@ -152,14 +152,19 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
   }, [records, direction, timePeriod, granularity])
 
   const maxSize = narrow ? 60 : 90
+  const chartHeight = narrow ? 480 : 620
 
-  // Dynamic Y-axis range — matches UnifiedChart's scatter view: pad 3 % above
-  // the largest share, round up to the nearest 2 %. Mode view tops at ~65 %
-  // (Subway), sector view at ~40 % (60th St).
+  // Dynamic Y-axis range. Pad above the largest share by enough to fit the
+  // largest bubble's radius — a 90-px bubble at 63 % share extends ~5 % in
+  // y-axis units, so a flat 3 % pad clipped the top of the bubble.
+  // Solve `yMax = maxShare + (maxSize/2 / chartHeight) * yMax` for yMax,
+  // then round up to the next 2 %.
   const yRange: [number, number] = useMemo(() => {
     const maxPct = labels.length ? Math.max(...labels.flatMap(l => pct[l])) : 0.5
-    return [0, Math.ceil((maxPct + 0.03) * 50) / 50]
-  }, [labels, pct])
+    const radiusFrac = (maxSize / 2) / chartHeight  // bubble radius as fraction of chart height
+    const ymax = maxPct / (1 - radiusFrac) + 0.01    // +1 % visual breathing room
+    return [0, Math.ceil(ymax * 50) / 50]
+  }, [labels, pct, maxSize, chartHeight])
 
   // Custom hover wired through pltly's `useCustomHover` — same setup as
   // `/`'s UnifiedChart so the tooltip is a React-rendered, dark-themed
