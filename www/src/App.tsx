@@ -5,14 +5,17 @@ import crossingsData from './data/crossings.json'
 import vehiclesData from './data/vehicles.json'
 import hourlyData from './data/hourly.json'
 import peakData from './data/peak_accumulation.json'
+import appendixIiiData from './data/appendix_iii.json'
 import type { CrossingRecord } from './lib/types'
 import type { HourlyRecord, PeakRecord } from './lib/hourly-types'
+import type { AppendixIIIRecord } from './lib/nyc-types'
 import UnifiedChart from './components/UnifiedChart'
 import SectorChart from './components/SectorChart'
 import HourlyChart from './components/HourlyChart'
 import PeakChart from './components/PeakChart'
 import ModeShareChart from './components/ModeShareChart'
 import GeoSankey from './components/GeoSankey'
+import NycBubbleChart from './components/NycBubbleChart'
 import { SDTooltipRenderer } from './components/Tooltip'
 import './App.scss'
 
@@ -20,6 +23,7 @@ const crossings = crossingsData as CrossingRecord[]
 const vehicles = vehiclesData as CrossingRecord[]
 const hourly = hourlyData as HourlyRecord[]
 const peak = peakData as PeakRecord[]
+const appendixIii = appendixIiiData as AppendixIIIRecord[]
 
 function GitHubIcon() {
   return (
@@ -77,6 +81,9 @@ function App() {
             </section>
           </>}
           {showNyc && <>
+            <section id="nyc-bubble">
+              <NycBubbleChart appendixIii={appendixIii} vehicles={vehicles} />
+            </section>
             <section id="hourly">
               <HourlyChart data={hourly} />
             </section>
