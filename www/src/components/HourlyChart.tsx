@@ -98,7 +98,7 @@ export default function HourlyChart({ data }: { data: HourlyRecord[] }) {
         x: HOURS,
         y: HOURS.map(h => hourMap.get(h) ?? 0),
         marker: { color: colors[key] },
-        hovertemplate: `%{x}: %{y:,.0f}<extra>${labels[key] ?? key}</extra>`,
+        hovertemplate: `%{y:,.0f}<extra>${labels[key] ?? key}</extra>`,
       } satisfies Partial<PlotData>
     })
   }, [data, direction, breakdown, selectedYear])
