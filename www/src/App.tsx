@@ -16,6 +16,7 @@ import PeakChart from './components/PeakChart'
 import ModeShareChart from './components/ModeShareChart'
 import GeoSankey from './components/GeoSankey'
 import NycBubbleChart from './components/NycBubbleChart'
+import NycFlowMap from './components/NycFlowMap'
 import { SDTooltipRenderer } from './components/Tooltip'
 import './App.scss'
 
@@ -81,6 +82,9 @@ function App() {
             </section>
           </>}
           {showNyc && <>
+            <section id="nyc-flow-map">
+              <NycFlowMap appendixIii={appendixIii} vehicles={vehicles} />
+            </section>
             <section id="nyc-bubble">
               <NycBubbleChart appendixIii={appendixIii} vehicles={vehicles} />
             </section>
