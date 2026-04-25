@@ -72,6 +72,26 @@ const SECTOR_COLORS: Record<Sector, string> = {
 // it sums all Manhattan north→south flow, then Queens, etc.).
 const SECTOR_ORDER: Sector[] = ['60th_street', 'queens', 'brooklyn', 'nj', 'staten_island', 'roosevelt_island']
 
+// Horizontal jitter — spread same-year bubbles slightly within the year so
+// modes with similar Y values (Auto/Bus/Rail all near 10-15%) don't overlap.
+// Magnitudes kept small (≤ ±0.18) so Plotly's `x unified` hover still
+// snaps every trace into the same year tooltip.
+const MODE_JITTER: Record<NycMode, number> = {
+  Subway: 0,
+  Bus: -0.09,
+  Auto: 0.09,
+  Rail: -0.18,
+  Ferry: 0.18,
+}
+const SECTOR_JITTER: Record<Sector, number> = {
+  '60th_street': 0,
+  brooklyn: -0.09,
+  queens: 0.09,
+  nj: -0.18,
+  staten_island: 0.18,
+  roosevelt_island: 0,
+}
+
 interface Props {
   appendixIii: AppendixIIIRecord[]
   vehicles: CrossingRecord[]
@@ -107,21 +127,28 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
     const groupKey = (r: typeof active[number]) => granularity === 'sector' ? r.sector : r.mode
     const groupLabel = (g: string) => granularity === 'sector' ? SECTOR_LABELS[g as Sector] : g
     const groupColor = (g: string) => granularity === 'sector' ? SECTOR_COLORS[g as Sector] : MODE_COLORS[g as NycMode]
+    const groupJitter = (g: string) => granularity === 'sector' ? SECTOR_JITTER[g as Sector] : MODE_JITTER[g as NycMode]
 
     // Per-year totals (across all groups) for share-of-total Y axis.
     const yearTotals = new Map(years.map(y => [y, 0]))
     for (const r of active) yearTotals.set(r.year, (yearTotals.get(r.year) ?? 0) + r.persons)
 
     // For each group, build [years × {persons, share}].
-    const traces: Partial<PlotData>[] = []
-    let maxPersons = 0
+    // First pass: compute every cell + the global max (so bubble sizes
+    // scale relative to the largest cell across all groups, not the first
+    // one we happen to process).
+    const seriesByGroup = new Map<string, number[]>()
     for (const g of groups) {
-      const series = years.map(y => {
-        const matching = active.filter(r => r.year === y && groupKey(r) === g)
-        const persons = matching.reduce((s, r) => s + r.persons, 0)
-        if (persons > maxPersons) maxPersons = persons
-        return persons
-      })
+      const series = years.map(y =>
+        active.filter(r => r.year === y && groupKey(r) === g).reduce((s, r) => s + r.persons, 0),
+      )
+      seriesByGroup.set(g, series)
+    }
+    const maxPersons = Math.max(...[...seriesByGroup.values()].flat())
+
+    const traces: Partial<PlotData>[] = []
+    for (const g of groups) {
+      const series = seriesByGroup.get(g)!
       if (series.every(p => p === 0)) continue
       const shares = series.map((p, i) => {
         const total = yearTotals.get(years[i]) ?? 0
@@ -129,20 +156,24 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
       })
       const label = groupLabel(g)
       const color = groupColor(g)
-      const sizes = series.map(p => maxPersons > 0 ? Math.sqrt(p / maxPersons) * (narrow ? 50 : 70) : 0)
+      const jx = groupJitter(g)
+      const xs = years.map(y => y + jx)
+      const sizes = series.map(p => maxPersons > 0 ? Math.sqrt(p / maxPersons) * (narrow ? 60 : 90) : 0)
       const labels = series.map(p => p < 1000 ? '' : `${Math.round(p / 1000)}k`)
+      // Pack (persons, share%) for the tooltip; share is recomputed from totals.
+      const customData = series.map((p, i) => [p, shares[i] * 100] as [number, number])
       traces.push({
         type: 'scatter',
         name: label,
-        x: years,
+        x: xs,
         y: shares,
         mode: 'text+markers',
         marker: { size: sizes as unknown as number, color, line: { width: 0 } },
         text: labels,
         textposition: 'middle center',
         textfont: { size: (narrow ? 9 : 11) as unknown as number, color: '#fff' },
-        hovertemplate: `<b>${label}</b><br>%{x}: %{customdata:,.0f} persons<extra></extra>`,
-        customdata: series as unknown as PlotData['customdata'],
+        hovertemplate: `<b>${label}</b> · %{customdata[0]:,.0f} persons (%{customdata[1]:.1f}%)<extra></extra>`,
+        customdata: customData as unknown as PlotData['customdata'],
       })
     }
     return { years, traces }
@@ -176,7 +207,10 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
     margin: { t: 8, r: narrow ? 20 : 60, b: 50, l: narrow ? 50 : 65 },
     autosize: true,
     showlegend: true,
-    hovermode: 'closest',
+    // `x unified` groups all traces at the hovered year into one tooltip,
+    // matching the bubble plot on `/`. The horizontal jitter on bubbles
+    // doesn't prevent unification since Plotly snaps to the nearest x.
+    hovermode: 'x unified',
   }
 
   const dirLabel = direction === 'entering' ? 'NJ→NY (entering)' : 'NY→NJ (leaving)'
