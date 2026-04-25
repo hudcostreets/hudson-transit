@@ -153,6 +153,14 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
 
   const maxSize = narrow ? 60 : 90
 
+  // Dynamic Y-axis range — matches UnifiedChart's scatter view: pad 3 % above
+  // the largest share, round up to the nearest 2 %. Mode view tops at ~65 %
+  // (Subway), sector view at ~40 % (60th St).
+  const yRange: [number, number] = useMemo(() => {
+    const maxPct = labels.length ? Math.max(...labels.flatMap(l => pct[l])) : 0.5
+    return [0, Math.ceil((maxPct + 0.03) * 50) / 50]
+  }, [labels, pct])
+
   // Custom hover wired through pltly's `useCustomHover` — same setup as
   // `/`'s UnifiedChart so the tooltip is a React-rendered, dark-themed
   // breakdown table instead of Plotly's white default tooltip.
@@ -225,7 +233,7 @@ export default function NycBubbleChart({ appendixIii, vehicles }: Props) {
       ...baseLayout.yaxis,
       title: { text: narrow ? '' : 'Share of CBD-bound persons', font: { size: 12 } },
       tickformat: '.0%',
-      range: [0, 0.72],
+      range: yRange,
       fixedrange: true,
     },
     legend: {
