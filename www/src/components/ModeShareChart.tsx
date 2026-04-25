@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Layout, PlotData } from 'plotly.js'
-import { Plot, useContainerWidth, useBreakpoints } from 'pltly/react'
-import { useUrlState, codeParam } from 'use-prms'
+import { Plot, useContainerWidth, useBreakpoints, useTheme } from 'pltly/react'
+import { themedLayout } from 'pltly/plotly'
 import type { HourlyRecord } from '../lib/hourly-types'
 import type { Direction } from '../lib/types'
 import Toggle, { type ToggleOption } from './Toggle'
@@ -31,25 +31,12 @@ const VIEW_OPTIONS: ToggleOption<ShareView>[] = [
   { value: 'pct', label: '%' },
 ]
 
-type Theme = 'dark' | 'light' | 'system'
-const themeParam = codeParam<Theme>('dark', [
-  ['dark', 'd'], ['light', 'l'], ['system', 's'],
-])
-
 export default function ModeShareChart({ data }: { data: HourlyRecord[] }) {
   const [direction, setDirection] = useState<Direction>('entering')
   const [viewMode, setViewMode] = useState<ShareView>('absolute')
   const { ref, width } = useContainerWidth()
   const { narrow } = useBreakpoints(width)
-
-  const [theme] = useUrlState('T', themeParam)
-  const isDark = useMemo(() => {
-    if (theme === 'dark') return true
-    if (theme === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  }, [theme])
-  const fc = isDark ? '#ccc' : '#444'
-  const gc = isDark ? '#333' : '#e5e5e5'
+  const { theme } = useTheme()
 
   const { years, traces } = useMemo(() => {
     // Sum all hours per mode/year/direction to get daily totals
@@ -82,28 +69,26 @@ export default function ModeShareChart({ data }: { data: HourlyRecord[] }) {
         : modeTotals[mode],
       marker: { color: MODE_COLORS[mode] },
       hovertemplate: isPct
-        ? `%{x}: %{y:.1f}%<extra>${mode}</extra>`
-        : `%{x}: %{y:,.0f}<extra>${mode}</extra>`,
+        ? `%{y:.1f}%<extra>${mode}</extra>`
+        : `%{y:,.0f}<extra>${mode}</extra>`,
     }))
 
     return { years, traces }
   }, [data, direction, viewMode])
 
+  const baseLayout = themedLayout(theme)
   const layout: Partial<Layout> = {
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { color: fc },
+    ...baseLayout,
     barmode: 'stack' as const,
     title: { text: '' },
     xaxis: {
+      ...baseLayout.xaxis,
       tickvals: years,
       ticktext: years.map(y => `'${String(y).slice(2)}`),
-      color: fc,
     },
     yaxis: {
+      ...baseLayout.yaxis,
       title: { text: viewMode === 'pct' ? 'Share (%)' : 'Persons', font: { size: 12 } },
-      color: fc,
-      gridcolor: gc,
       tickformat: viewMode === 'pct' ? '.0f' : ',',
       ...(viewMode === 'pct' ? { range: [0, 100] } : {}),
     },
@@ -111,11 +96,17 @@ export default function ModeShareChart({ data }: { data: HourlyRecord[] }) {
       orientation: 'h' as const,
       x: 0.5, y: -0.08,
       xanchor: 'center' as const,
-      font: { color: fc, size: 11 },
+      font: { color: theme.font, size: 11 },
     },
     margin: { t: 10, r: 10, b: 45, l: narrow ? 50 : 65 },
     autosize: true,
     showlegend: true,
+    hovermode: 'x unified' as const,
+    hoverlabel: {
+      bgcolor: theme.annBg,
+      bordercolor: theme.grid,
+      font: { color: theme.font, size: 12 },
+    },
   }
 
   return (
@@ -126,7 +117,6 @@ export default function ModeShareChart({ data }: { data: HourlyRecord[] }) {
         data={traces}
         layout={layout}
         style={{ height: narrow ? 400 : 500 }}
-        disableTheme
       />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
         <Toggle options={VIEW_OPTIONS} value={viewMode} onChange={setViewMode} />

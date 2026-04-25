@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Layout, PlotData } from 'plotly.js'
-import { Plot, useContainerWidth, useBreakpoints } from 'pltly/react'
-import { useUrlState, codeParam } from 'use-prms'
+import { Plot, useContainerWidth, useBreakpoints, useTheme } from 'pltly/react'
+import { themedLayout } from 'pltly/plotly'
 import type { CrossingRecord, Direction, TimePeriod } from '../lib/types'
 import Toggle, { type ToggleOption } from './Toggle'
 import { Abbr } from './Tooltip'
@@ -39,26 +39,13 @@ const VIEW_OPTIONS: ToggleOption<SectorView>[] = [
   { value: 'grouped', label: 'Grouped' },
 ]
 
-type Theme = 'dark' | 'light' | 'system'
-const themeParam = codeParam<Theme>('dark', [
-  ['dark', 'd'], ['light', 'l'], ['system', 's'],
-])
-
 export default function SectorChart({ data }: { data: CrossingRecord[] }) {
   const [direction, setDirection] = useState<Direction>('entering')
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('peak_1hr')
   const [viewMode, setViewMode] = useState<SectorView>('stacked')
   const { ref, width } = useContainerWidth()
   const { narrow } = useBreakpoints(width)
-
-  const [theme] = useUrlState('T', themeParam)
-  const isDark = useMemo(() => {
-    if (theme === 'dark') return true
-    if (theme === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  }, [theme])
-  const fc = isDark ? '#ccc' : '#444'
-  const gc = isDark ? '#333' : '#e5e5e5'
+  const { theme } = useTheme()
 
   const { years, sectorTotals } = useMemo(() => {
     const filtered = data.filter(r => r.direction === direction && r.time_period === timePeriod)
@@ -82,7 +69,7 @@ export default function SectorChart({ data }: { data: CrossingRecord[] }) {
     x: years,
     y: sectorTotals[sector],
     marker: { color: SECTOR_COLORS[sector] },
-    hovertemplate: `%{x}: %{y:,.0f} vehicles<extra>${SECTOR_LABELS[sector]}</extra>`,
+    hovertemplate: `%{y:,.0f} vehicles<extra>${SECTOR_LABELS[sector]}</extra>`,
   }))
 
   const timeLabel = timePeriod === 'peak_1hr'
@@ -91,32 +78,36 @@ export default function SectorChart({ data }: { data: CrossingRecord[] }) {
       ? (direction === 'entering' ? '7-10am' : '4-7pm')
       : '24hr'
 
+  const baseLayout = themedLayout(theme)
   const layout: Partial<Layout> = {
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { color: fc },
+    ...baseLayout,
     barmode: viewMode === 'stacked' ? 'stack' : 'group',
     title: { text: '' },
     xaxis: {
+      ...baseLayout.xaxis,
       tickvals: years,
       ticktext: years.map(y => `'${String(y).slice(2)}`),
-      color: fc,
     },
     yaxis: {
+      ...baseLayout.yaxis,
       title: { text: 'Vehicles', font: { size: 12 } },
-      color: fc,
-      gridcolor: gc,
       tickformat: ',',
     },
     legend: {
       orientation: 'h' as const,
       x: 0.5, y: -0.15,
       xanchor: 'center' as const,
-      font: { color: fc },
+      font: { color: theme.font },
     },
     margin: { t: 10, r: 10, b: 60, l: narrow ? 50 : 65 },
     autosize: true,
     showlegend: true,
+    hovermode: 'x unified' as const,
+    hoverlabel: {
+      bgcolor: theme.annBg,
+      bordercolor: theme.grid,
+      font: { color: theme.font, size: 12 },
+    },
   }
 
   return (
@@ -127,7 +118,6 @@ export default function SectorChart({ data }: { data: CrossingRecord[] }) {
         data={traces}
         layout={layout}
         style={{ height: narrow ? 400 : 500 }}
-        disableTheme
       />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
         <Toggle options={VIEW_OPTIONS} value={viewMode} onChange={setViewMode} />

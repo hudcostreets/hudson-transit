@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Layout, PlotData } from 'plotly.js'
-import { Plot, useContainerWidth, useBreakpoints } from 'pltly/react'
-import { useUrlState, codeParam } from 'use-prms'
+import { Plot, useContainerWidth, useBreakpoints, useTheme } from 'pltly/react'
+import { themedLayout } from 'pltly/plotly'
 import type { PeakRecord } from '../lib/hourly-types'
 import { Abbr } from './Tooltip'
 
@@ -13,23 +13,10 @@ const CATEGORY_CONFIG: Record<string, { label: string, color: string }> = {
 
 const CATEGORIES = ['total_persons', 'transit_passengers', 'motor_vehicles'] as const
 
-type Theme = 'dark' | 'light' | 'system'
-const themeParam = codeParam<Theme>('dark', [
-  ['dark', 'd'], ['light', 'l'], ['system', 's'],
-])
-
 export default function PeakChart({ data }: { data: PeakRecord[] }) {
   const { ref, width } = useContainerWidth()
   const { narrow } = useBreakpoints(width)
-
-  const [theme] = useUrlState('T', themeParam)
-  const isDark = useMemo(() => {
-    if (theme === 'dark') return true
-    if (theme === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  }, [theme])
-  const fc = isDark ? '#ccc' : '#444'
-  const gc = isDark ? '#333' : '#e5e5e5'
+  const { theme } = useTheme()
 
   const traces = useMemo(() => {
     return CATEGORIES.map(cat => {
@@ -46,7 +33,7 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
         mode: 'lines+markers' as const,
         line: { color: cfg.color, width: 2 },
         marker: { size: 4, color: cfg.color },
-        hovertemplate: `%{x}: %{y:,.0f}<extra>${cfg.label}</extra>`,
+        hovertemplate: `%{y:,.0f}<extra>${cfg.label}</extra>`,
       } satisfies Partial<PlotData>
     })
   }, [data])
@@ -64,7 +51,7 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
         x: peak.year, y: peak.peak_accumulation,
         text: `Peak: ${(peak.peak_accumulation / 1e6).toFixed(2)}M`,
         showarrow: true, arrowhead: 0, ax: 30, ay: -25,
-        font: { size: 11, color: fc },
+        font: { size: 11, color: theme.font },
       })
     }
     if (covid) {
@@ -72,7 +59,7 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
         x: 2020, y: covid.peak_accumulation,
         text: `COVID: ${(covid.peak_accumulation / 1e6).toFixed(2)}M`,
         showarrow: true, arrowhead: 0, ax: -30, ay: -25,
-        font: { size: 11, color: fc },
+        font: { size: 11, color: theme.font },
       })
     }
     if (latest) {
@@ -81,26 +68,23 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
         x: 2024, y: latest.peak_accumulation,
         text: `${(latest.peak_accumulation / 1e6).toFixed(2)}M (${pct}%)`,
         showarrow: true, arrowhead: 0, ax: -40, ay: -25,
-        font: { size: 11, color: fc },
+        font: { size: 11, color: theme.font },
       })
     }
     return anns
-  }, [data, fc])
+  }, [data, theme.font])
 
+  const baseLayout = themedLayout(theme)
   const layout: Partial<Layout> = {
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { color: fc },
+    ...baseLayout,
     title: { text: '' },
     xaxis: {
-      color: fc,
-      gridcolor: gc,
+      ...baseLayout.xaxis,
       dtick: 5,
     },
     yaxis: {
+      ...baseLayout.yaxis,
       title: { text: 'Persons', font: { size: 12 } },
-      color: fc,
-      gridcolor: gc,
       tickformat: ',',
       rangemode: 'tozero' as const,
     },
@@ -108,13 +92,18 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
       orientation: 'h' as const,
       x: 0.5, y: -0.15,
       xanchor: 'center' as const,
-      font: { color: fc },
+      font: { color: theme.font },
     },
     annotations,
     margin: { t: 10, r: 10, b: 60, l: narrow ? 55 : 70 },
     autosize: true,
     showlegend: true,
     hovermode: 'x unified' as const,
+    hoverlabel: {
+      bgcolor: theme.annBg,
+      bordercolor: theme.grid,
+      font: { color: theme.font, size: 12 },
+    },
   }
 
   return (
@@ -125,7 +114,6 @@ export default function PeakChart({ data }: { data: PeakRecord[] }) {
         data={traces}
         layout={layout}
         style={{ height: narrow ? 400 : 500 }}
-        disableTheme
       />
     </div>
   )
