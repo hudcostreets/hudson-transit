@@ -64,12 +64,18 @@ function App() {
     <HotkeysProvider config={{ storageKey: 'hub-bound-travel' }}>
       <div className="app">
         <main>
-          <section id="chart">
-            <UnifiedChart data={crossings} clean={clean} />
-          </section>
-          <section id="map">
-            <GeoSankey data={crossings} />
-          </section>
+          {/* `/` shows the NJ-only headline charts; `/nyc` shows the
+              all-sector views. The bubble + flow map are NJ-only by data
+              construction (`crossings.json` is NJ sector); the NYC views
+              draw from `hourly`/`vehicles`/`peak` which span all sectors. */}
+          {!showNyc && <>
+            <section id="chart">
+              <UnifiedChart data={crossings} clean={clean} />
+            </section>
+            <section id="map">
+              <GeoSankey data={crossings} />
+            </section>
+          </>}
           {showNyc && <>
             <section id="hourly">
               <HourlyChart data={hourly} />
