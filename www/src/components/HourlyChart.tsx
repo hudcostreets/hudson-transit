@@ -95,7 +95,9 @@ export default function HourlyChart({ data }: { data: HourlyRecord[] }) {
       return {
         type: 'bar' as const,
         name: labels[key] ?? key,
-        x: HOURS,
+        // Categorical x using formatted hour labels — so the `x unified`
+        // tooltip header shows "8am" instead of the raw `8`.
+        x: HOURS.map(h => HOUR_LABELS[h]),
         y: HOURS.map(h => hourMap.get(h) ?? 0),
         marker: { color: colors[key] },
         hovertemplate: `%{y:,.0f}<extra>${labels[key] ?? key}</extra>`,
@@ -111,8 +113,11 @@ export default function HourlyChart({ data }: { data: HourlyRecord[] }) {
     bargap: 0.15,
     xaxis: {
       ...baseLayout.xaxis,
-      tickvals: HOURS.filter(h => h % 3 === 0),
-      ticktext: HOURS.filter(h => h % 3 === 0).map(h => HOUR_LABELS[h]),
+      type: 'category' as const,
+      // Tick every hour. On narrow viewports labels are rotated to fit.
+      tickmode: 'array' as const,
+      tickvals: HOURS.map(h => HOUR_LABELS[h]),
+      tickangle: narrow ? -45 : 0,
     },
     yaxis: {
       ...baseLayout.yaxis,
