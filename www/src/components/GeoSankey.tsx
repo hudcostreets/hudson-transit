@@ -256,19 +256,15 @@ function aggregateFlows(records: CrossingRecord[], year: number): FlowDatum[] {
 
 const REF_LAT = 40.74
 
-// Year param
-const yearParam = {
-  encode: (v: number | undefined) => v !== undefined ? String(v) : undefined,
-  decode: (s: string | undefined) => s ? parseInt(s) : undefined,
-}
-
 const TIMES: TimePeriod[] = ['peak_1hr', 'peak_period', '24hr']
+// Default direction is `entering` (NJ→NY); leave the URL param absent for it.
 const dirParam = {
-  encode: (v: Direction) => v === 'entering' ? 'njny' : 'nynj',
+  encode: (v: Direction) => v === 'entering' ? undefined : 'nynj',
   decode: (s: string | undefined): Direction => s === 'nynj' ? 'leaving' : 'entering',
 }
+// Default time period is `peak_1hr`; leave the URL param absent for it.
 const timeParam = {
-  encode: (v: TimePeriod) => ({ peak_1hr: '1h', peak_period: '3h', '24hr': '1d' })[v],
+  encode: (v: TimePeriod) => v === 'peak_1hr' ? undefined : ({ peak_period: '3h', '24hr': '1d' } as const)[v],
   decode: (s: string | undefined): TimePeriod =>
     s === '3h' ? 'peak_period' : s === '1d' ? '24hr' : 'peak_1hr',
 }
@@ -350,10 +346,16 @@ function GeoSankeyInner({ data }: Props) {
     return stored ? parseInt(stored) : defaultMapHeight()
   })
   const years = useMemo(() => [...new Set(data.map(r => r.year))].sort(), [data])
+  const latestYear = years[years.length - 1]
+  // Default year is the latest available; elide from URL when matching.
+  const yearParam = useMemo(() => ({
+    encode: (v: number | undefined) => v !== undefined && v !== latestYear ? String(v) : undefined,
+    decode: (s: string | undefined) => s ? parseInt(s) : undefined,
+  }), [latestYear])
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
   const [year, setYear] = useUrlState('yr', yearParam)
-  const selectedYear = year ?? years[years.length - 1]
+  const selectedYear = year ?? latestYear
 
   // Geo-scale: 0 = fixed px width, 1 = fully geo-scaled (width grows with zoom)
   const geoScaleParam = useMemo(() => ({
