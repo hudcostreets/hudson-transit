@@ -7,6 +7,7 @@ import { DEFAULT_SCHEME } from '../lib/colors'
 import { filterCrossings } from '../lib/transform'
 import { useUrlState } from 'use-prms'
 import Toggle from './Toggle'
+import MapControls, { useMapWidthScale, useMapGeoScale, useMapHitPad } from './MapControls'
 import type { LatLon, FlowGraph } from 'geo-sankey'
 import {
   pxToHalfDeg, pxToDeg, offsetPath,
@@ -357,26 +358,9 @@ function GeoSankeyInner({ data }: Props) {
   const [year, setYear] = useUrlState('yr', yearParam)
   const selectedYear = year ?? latestYear
 
-  // Geo-scale: 0 = fixed px width, 1 = fully geo-scaled (width grows with zoom)
-  const geoScaleParam = useMemo(() => ({
-    encode: (v: number) => v === 1 ? undefined : String(v),
-    decode: (s: string | undefined): number => s !== undefined ? parseFloat(s) : 1,
-  }), [])
-  const [geoScale, setGeoScale] = useUrlState('gs', geoScaleParam)
-
-  // Width scale: multiplier for arrow widths (default 1)
-  const widthScaleParam = useMemo(() => ({
-    encode: (v: number) => v === 1 ? undefined : v.toFixed(1),
-    decode: (s: string | undefined): number => s !== undefined ? parseFloat(s) : 1,
-  }), [])
-  const [widthScale, setWidthScale] = useUrlState('ws', widthScaleParam)
-
-  // Hit padding: px radius around cursor for hover detection
-  const hitPadParam = useMemo(() => ({
-    encode: (v: number) => v === 4 ? undefined : String(v),
-    decode: (s: string | undefined): number => s !== undefined ? parseInt(s) : 4,
-  }), [])
-  const [hitPad, setHitPad] = useUrlState('hp', hitPadParam)
+  const [geoScale, setGeoScale] = useMapGeoScale()
+  const [widthScale, setWidthScale] = useMapWidthScale()
+  const [hitPad, setHitPad] = useMapHitPad()
 
   // Map view: lat_lng_zoom packed into one param, `_` delimited
   const llzParam = useMemo(() => {
@@ -1373,36 +1357,11 @@ function GeoSankeyInner({ data }: Props) {
             <option key={y} value={String(y)}>'{String(y).slice(2)}</option>
           ))}
         </select>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <span>px</span>
-          <input
-            type="range" min="0" max="1" step="0.05"
-            value={geoScale}
-            onChange={e => setGeoScale(parseFloat(e.target.value))}
-            style={{ width: '60px' }}
-          />
-          <span>geo</span>
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <span>width</span>
-          <input
-            type="range" min="0.3" max="2" step="0.1"
-            value={widthScale}
-            onChange={e => setWidthScale(parseFloat(e.target.value))}
-            style={{ width: '60px' }}
-          />
-          <span>{widthScale.toFixed(1)}×</span>
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <span>hover</span>
-          <input
-            type="range" min="0" max="20" step="1"
-            value={hitPad}
-            onChange={e => setHitPad(parseInt(e.target.value))}
-            style={{ width: '50px' }}
-          />
-          <span>{hitPad}px</span>
-        </label>
+        <MapControls
+          widthScale={widthScale} setWidthScale={setWidthScale}
+          geoScale={geoScale} setGeoScale={setGeoScale}
+          hitPad={hitPad} setHitPad={setHitPad}
+        />
       </div>
     </div>
   )

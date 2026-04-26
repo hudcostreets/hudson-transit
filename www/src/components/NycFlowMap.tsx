@@ -23,6 +23,7 @@ import { type AppendixIIIDetailRecord, type CrossingFlow, buildCrossingFlows } f
 import { type CrossingId, CROSSINGS } from '../lib/nyc-crossings'
 import { DEFAULT_SCHEME } from '../lib/colors'
 import Toggle, { type ToggleOption } from './Toggle'
+import MapControls, { useMapWidthScale, useMapGeoScale } from './MapControls'
 
 const REF_LAT = 40.74
 const ARROW_WING = 1.6
@@ -76,14 +77,27 @@ type Props = {
   appendixIii: AppendixIIIRecord[]
 }
 
+const NYC_FLOW_MAP_HEIGHT_KEY = 'nyc-flow-map-height'
+function defaultMapHeight(): number {
+  if (typeof window === 'undefined') return 820
+  return Math.min(Math.round(window.innerHeight * 0.85), 1000)
+}
+
 export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Props) {
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
+  const [widthScale, setWidthScale] = useMapWidthScale()
+  const [geoScale, setGeoScale] = useMapGeoScale()
 
   const mapRef = useRef<MapRef>(null)
   const initialView = useMemo(defaultView, [])
   const [mapView, setMapView] = useState(initialView)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
+  const [mapHeight, setMapHeight] = useState(() => {
+    if (typeof sessionStorage === 'undefined') return defaultMapHeight()
+    const stored = sessionStorage.getItem(NYC_FLOW_MAP_HEIGHT_KEY)
+    return stored ? parseInt(stored) : defaultMapHeight()
+  })
 
   // Focus pattern (mirrors `/`'s GeoSankey): wheel zooms only when focused;
   // otherwise the wheel scrolls the page. Click inside to focus, click out
@@ -228,7 +242,7 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
       if (!cdef) continue
       // Order modes consistently within each crossing.
       group.sort((a, b) => NYC_MODE_ORDER.indexOf(a.mode) - NYC_MODE_ORDER.indexOf(b.mode))
-      const widths = group.map(f => Math.max(2, (f.persons / maxPersons) * 60))
+      const widths = group.map(f => Math.max(2, (f.persons / maxPersons) * 60 * widthScale))
       const totalStack = widths.reduce((a, b) => a + b, 0) + STACK_GAP * Math.max(0, widths.length - 1)
       // Each ribbon's offset = its centerline relative to the path's centerline.
       let running = -totalStack / 2
@@ -246,10 +260,10 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
         // Lateral stack: convert px → degree-units, then scale by `offsetPath`'s
         // 0.0004 internal factor (mirrors the home-page GeoSankey usage).
         if (offsetPx !== 0) {
-          const lateralUnits = pxToDeg(offsetPx, zoom, 1, REF_LAT) / 0.0004
+          const lateralUnits = pxToDeg(offsetPx, zoom, geoScale, REF_LAT) / 0.0004
           path = offsetPath(path, lateralUnits)
         }
-        const halfW = pxToHalfDeg(widthPx, zoom, 1, REF_LAT)
+        const halfW = pxToHalfDeg(widthPx, zoom, geoScale, REF_LAT)
         const ring = ribbonArrow(path, halfW, REF_LAT, {
           arrowWingFactor: ARROW_WING,
           arrowLenFactor: ARROW_LEN,
@@ -274,7 +288,7 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
     }
     features.sort((a, b) => (b.properties?.width ?? 0) - (a.properties?.width ?? 0))
     return { type: 'FeatureCollection' as const, features }
-  }, [activeFlows, maxPersons, mapView.zoom, direction])
+  }, [activeFlows, maxPersons, mapView.zoom, direction, widthScale, geoScale])
 
   // Per-crossing labels at arrow tips (top N + 1 per sector).
   type CrossingLabel = {
@@ -321,9 +335,18 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
       <div
         ref={containerRef}
         style={{
-          width: '100%', height: 820, position: 'relative',
+          width: '100%', height: `${mapHeight}px`, position: 'relative',
           borderRadius: 8, overflow: 'hidden',
+          resize: 'vertical', minHeight: 300, maxHeight: 1400,
           outline: mapFocused ? '2px solid rgba(100, 160, 255, 0.5)' : 'none',
+        }}
+        onMouseUp={e => {
+          const el = e.currentTarget
+          const h = el.offsetHeight
+          if (h !== mapHeight) {
+            setMapHeight(h)
+            sessionStorage.setItem(NYC_FLOW_MAP_HEIGHT_KEY, String(h))
+          }
         }}
       >
         <MapGL
@@ -395,9 +418,13 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
           )
         })()}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
         <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
         <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
+        <MapControls
+          widthScale={widthScale} setWidthScale={setWidthScale}
+          geoScale={geoScale} setGeoScale={setGeoScale}
+        />
         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           {NYC_MODE_ORDER.map(m => (
             <span key={m} style={{ marginRight: 12 }}>
