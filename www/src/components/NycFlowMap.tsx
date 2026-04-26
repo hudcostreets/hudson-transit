@@ -1,27 +1,33 @@
-// Geographic Sankey of CBD-bound flows from all NYMTC sectors (NJ, Queens,
-// Brooklyn, Staten Island, 60th-Street boundary). MVP: one ribbon per
-// (sector, mode) routed through representative entry paths defined in
-// `lib/nyc-paths.ts`. See `specs/nyc-flow-map.md` for the bigger picture
-// (subway-line detail, ferry network, drilldowns) — deferred for v2.
+// Geographic Sankey of CBD-bound flows from all NYMTC sectors. Each ribbon
+// is a (crossing, mode) cell — autos and buses share their bridge/tunnel,
+// while subway tubes carry their actual line groups (4/5 in the Joralemon
+// tube, A/C in Cranberry, etc.). Stack of co-located modes at the same
+// crossing renders parallel (lateral offsets, like the home-page GeoSankey).
+//
+// Data sources:
+//   vehicles.json            → autos by (sector, crossing)
+//   bus_passengers.json      → buses by (sector, crossing)
+//   appendix_iii_detail.json → subway/rail per line, hourly (rolled into time_period)
+//   appendix_iii.json        → ferries by sector, hourly (rolled into time_period)
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MapGL, { Source, Layer, Marker } from 'react-map-gl/maplibre'
 import type { MapRef } from 'react-map-gl/maplibre'
-import { SECTOR_LABELS } from '../lib/nyc-types'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useUrlState, codeParam } from 'use-prms'
-import { pxToHalfDeg, ribbonArrow, flowFillPaint } from 'geo-sankey'
+import { pxToHalfDeg, pxToDeg, offsetPath, ribbonArrow, flowFillPaint } from 'geo-sankey'
 import type { LatLon } from 'geo-sankey'
 import type { CrossingRecord, Direction, TimePeriod } from '../lib/types'
-import { type AppendixIIIRecord, type NycMode, type Sector, NYC_MODE_ORDER } from '../lib/nyc-types'
-import { buildNycRecords } from '../lib/nyc-data'
-import { ENTRY_PATHS, SECTOR_MODE_PATHS } from '../lib/nyc-paths'
+import { type AppendixIIIRecord, NYC_MODE_ORDER, type NycMode, type Sector } from '../lib/nyc-types'
+import { type AppendixIIIDetailRecord, type CrossingFlow, buildCrossingFlows } from '../lib/nyc-data'
+import { type CrossingId, CROSSINGS } from '../lib/nyc-crossings'
 import { DEFAULT_SCHEME } from '../lib/colors'
 import Toggle, { type ToggleOption } from './Toggle'
 
 const REF_LAT = 40.74
 const ARROW_WING = 1.6
 const ARROW_LEN = 0.6
+const STACK_GAP = 1.5  // px gap between parallel ribbons at same crossing
 
 const MODE_COLORS: Record<NycMode, string> = {
   Auto: DEFAULT_SCHEME.mode.Autos,
@@ -31,25 +37,18 @@ const MODE_COLORS: Record<NycMode, string> = {
   Ferry: DEFAULT_SCHEME.mode.Ferries,
 }
 
-// Per-sector label placement: anchors fan labels outward from Manhattan so
-// they don't pile up at the cluster of Lower-Manhattan arrow tips.
+// Per-sector label placement: anchors fan labels outward from Manhattan.
 const SECTOR_ANCHORS: Record<Sector, { anchor: 'left' | 'right' | 'top' | 'bottom'; offset: [number, number] }> = {
-  nj:               { anchor: 'right',  offset: [-10, 0] }, // label sits W of NJ Manhattan portals (over Hudson)
-  queens:           { anchor: 'left',   offset: [10, 0] },  // E (toward Queens)
-  brooklyn:         { anchor: 'left',   offset: [10, 8] },  // E + small S, away from MB/BB tips
-  '60th_street':    { anchor: 'bottom', offset: [0, -8] },  // pushed N into uptown
-  staten_island:    { anchor: 'top',    offset: [0, 8] },   // pushed S toward the harbor
+  nj:               { anchor: 'right',  offset: [-10, 0] },
+  queens:           { anchor: 'left',   offset: [10, 0] },
+  brooklyn:         { anchor: 'left',   offset: [10, 8] },
+  '60th_street':    { anchor: 'bottom', offset: [0, -8] },
+  staten_island:    { anchor: 'top',    offset: [0, 8] },
   roosevelt_island: { anchor: 'top',    offset: [0, 8] },
 }
 
-// Map view encompasses all entry points: NJ shore on the W, LIC / Queens on
-// the NE, the four Brooklyn-side bridges/tunnels on the S, SI ferry to the
-// SW, and 60th St inflows along the top of the Manhattan grid.
 function defaultView(): { lat: number; lng: number; zoom: number } {
   const W = typeof window !== 'undefined' ? window.innerWidth : 1400
-  // Centered over Manhattan to fit NJ ↔ Queens horizontally and 60th St ↔
-  // Lower Manhattan vertically. SI Ferry is visible but its St-George end
-  // intentionally extends out the bottom — the trace direction reads.
   if (W <= 768) return { lat: 40.730, lng: -73.985, zoom: 11.0 }
   return { lat: 40.730, lng: -73.985, zoom: 11.85 }
 }
@@ -62,7 +61,7 @@ const timeParam = codeParam<TimePeriod>('peak_1hr', [
 ])
 const DIR_OPTIONS: ToggleOption<Direction>[] = [
   { value: 'entering', label: 'Entering', tooltip: 'Entering CBD' },
-  { value: 'leaving', label: 'Leaving', tooltip: 'Leaving CBD' },
+  { value: 'leaving',  label: 'Leaving',  tooltip: 'Leaving CBD' },
 ]
 const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
   { value: 'peak_1hr', label: '1hr' },
@@ -71,29 +70,46 @@ const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
 ]
 
 type Props = {
-  appendixIii: AppendixIIIRecord[]
   vehicles: CrossingRecord[]
+  buses: CrossingRecord[]
+  detail: AppendixIIIDetailRecord[]
+  appendixIii: AppendixIIIRecord[]
 }
 
-export default function NycFlowMap({ appendixIii, vehicles }: Props) {
+export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Props) {
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
 
   const mapRef = useRef<MapRef>(null)
-  // `useState(defaultView)` evaluated the initializer twice under strict
-  // mode and was producing two different objects (different `window` reads),
-  // which left MapGL in a never-loaded state. Compute once at mount.
   const initialView = useMemo(defaultView, [])
   const [mapView, setMapView] = useState(initialView)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
 
-  const records = useMemo(() => buildNycRecords(appendixIii, vehicles), [appendixIii, vehicles])
+  // Focus pattern (mirrors `/`'s GeoSankey): wheel zooms only when focused;
+  // otherwise the wheel scrolls the page. Click inside to focus, click out
+  // to release.
+  const mapFocusedRef = useRef(false)
+  const [mapFocused, setMapFocused] = useState(false)
+  const focusMap = useCallback(() => {
+    if (mapFocusedRef.current) return
+    mapFocusedRef.current = true
+    setMapFocused(true)
+    mapRef.current?.getMap()?.scrollZoom.enable()
+  }, [])
+  const unfocusMap = useCallback(() => {
+    if (!mapFocusedRef.current) return
+    mapFocusedRef.current = false
+    setMapFocused(false)
+    mapRef.current?.getMap()?.scrollZoom.disable()
+  }, [])
 
-  // Maplibre sometimes captures the container's size before layout settles
-  // (strict-mode double mount + the tall page above) and ends up stuck on
-  // a black canvas because basemap tiles never start loading. Drive
-  // `resize` + `triggerRepaint` from a ResizeObserver AND poll a few times
-  // until the carto basemap source reports loaded.
+  const flows = useMemo<CrossingFlow[]>(
+    () => buildCrossingFlows(vehicles, buses, detail, appendixIii as any),
+    [vehicles, buses, detail, appendixIii],
+  )
+
+  // Maplibre kicker: occasionally lands on a black canvas under strict mode
+  // until we drive resize + repaint. ResizeObserver + poll until carto loads.
   const containerRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     let cancelled = false
@@ -109,7 +125,6 @@ export default function NycFlowMap({ appendixIii, vehicles }: Props) {
       ro = new ResizeObserver(kick)
       ro.observe(el)
     }
-    // Belt-and-suspenders: poll every 200 ms until carto source is loaded.
     const poll = () => {
       if (cancelled) return
       kick()
@@ -121,108 +136,196 @@ export default function NycFlowMap({ appendixIii, vehicles }: Props) {
     return () => { cancelled = true; ro?.disconnect() }
   }, [])
 
-  // Active = latest year × current direction × current time period.
-  const flows = useMemo(() => {
-    const yearSet = new Set(records.map(r => r.year))
-    const latestYear = Math.max(...yearSet)
-    return records
-      .filter(r => r.year === latestYear && r.direction === direction && r.time_period === timePeriod)
-      .filter(r => r.persons > 0)
-  }, [records, direction, timePeriod])
+  // Click outside the map → unfocus
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!mapFocusedRef.current) return
+      if (containerRef.current?.contains(e.target as Node)) return
+      unfocusMap()
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [unfocusMap])
+  // When map is focused, swallow wheel events so the page doesn't also scroll
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (mapFocusedRef.current) e.preventDefault()
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
 
-  // For width-scaling: maxPersons = the largest (sector, mode) cell.
+  // Latest year × current direction × time period.
+  const activeFlows = useMemo(() => {
+    const yearSet = new Set(flows.map(r => r.year))
+    const latestYear = Math.max(...yearSet)
+    return flows
+      .filter(f => f.year === latestYear && f.direction === direction && f.time_period === timePeriod)
+      .filter(f => f.persons > 0)
+  }, [flows, direction, timePeriod])
+
   const maxPersons = useMemo(() => {
     let m = 0
-    for (const f of flows) m = Math.max(m, f.persons)
+    for (const f of activeFlows) m = Math.max(m, f.persons)
     return m
-  }, [flows])
+  }, [activeFlows])
 
+  // Per-crossing sums for label placement and tooltip.
+  const crossingTotals = useMemo(() => {
+    const out = new Map<CrossingId, { persons: number; topMode: NycMode; topModePersons: number }>()
+    for (const f of activeFlows) {
+      const cur = out.get(f.crossingId)
+      if (!cur) {
+        out.set(f.crossingId, { persons: f.persons, topMode: f.mode, topModePersons: f.persons })
+      } else {
+        cur.persons += f.persons
+        if (f.persons > cur.topModePersons) {
+          cur.topMode = f.mode
+          cur.topModePersons = f.persons
+        }
+      }
+    }
+    return out
+  }, [activeFlows])
+
+  // Crossings to label inline: top N globally + 1 per sector (so tiny
+  // sectors like Staten Island still get represented).
+  const TOP_N_GLOBAL = 14
+  const labeledCrossings = useMemo(() => {
+    const sorted = [...crossingTotals.entries()].sort((a, b) => b[1].persons - a[1].persons)
+    const picked = new Set<CrossingId>()
+    for (let i = 0; i < Math.min(TOP_N_GLOBAL, sorted.length); i++) picked.add(sorted[i][0])
+    // Ensure 1 per sector.
+    const seenSectors = new Set<Sector>()
+    for (const cid of picked) seenSectors.add(CROSSINGS[cid].sector)
+    for (const [cid] of sorted) {
+      const sec = CROSSINGS[cid].sector
+      if (!seenSectors.has(sec)) {
+        picked.add(cid)
+        seenSectors.add(sec)
+      }
+    }
+    return picked
+  }, [crossingTotals])
+
+  // Build polygon GeoJSON. Group by crossing → stack co-located modes side-by-side.
   const geojson = useMemo(() => {
     const features: GeoJSON.Feature[] = []
     const zoom = mapView.zoom
 
-    for (const f of flows) {
-      const key = `${f.sector}|${f.mode}` as const
-      const paths = SECTOR_MODE_PATHS[key]
-      if (!paths || paths.length === 0) continue
-      const color = MODE_COLORS[f.mode]
-      // Width sized in pixels so all sectors share the same scale at any zoom.
-      // Split the flow's persons evenly across all paths assigned to this
-      // (sector, mode); the rough share isn't accurate but reads cleanly.
-      const totalWidthPx = (f.persons / maxPersons) * 60
-      const perPathPx = Math.max(2, totalWidthPx / paths.length)
+    // Group flows by crossing.
+    const byCrossing = new Map<CrossingId, CrossingFlow[]>()
+    for (const f of activeFlows) {
+      const arr = byCrossing.get(f.crossingId) ?? []
+      arr.push(f)
+      byCrossing.set(f.crossingId, arr)
+    }
 
-      for (const entryId of paths) {
-        let path: LatLon[] = ENTRY_PATHS[entryId]
+    for (const [cid, group] of byCrossing) {
+      const cdef = CROSSINGS[cid]
+      if (!cdef) continue
+      // Order modes consistently within each crossing.
+      group.sort((a, b) => NYC_MODE_ORDER.indexOf(a.mode) - NYC_MODE_ORDER.indexOf(b.mode))
+      const widths = group.map(f => Math.max(2, (f.persons / maxPersons) * 60))
+      const totalStack = widths.reduce((a, b) => a + b, 0) + STACK_GAP * Math.max(0, widths.length - 1)
+      // Each ribbon's offset = its centerline relative to the path's centerline.
+      let running = -totalStack / 2
+      const offsets: number[] = []
+      for (const w of widths) {
+        offsets.push(running + w / 2)
+        running += w + STACK_GAP
+      }
+
+      group.forEach((f, i) => {
+        const widthPx = widths[i]
+        const offsetPx = offsets[i]
+        let path: LatLon[] = cdef.path
         if (direction === 'leaving') path = [...path].reverse()
-        const halfW = pxToHalfDeg(perPathPx, zoom, 1, REF_LAT)
+        // Lateral stack: convert px → degree-units, then scale by `offsetPath`'s
+        // 0.0004 internal factor (mirrors the home-page GeoSankey usage).
+        if (offsetPx !== 0) {
+          const lateralUnits = pxToDeg(offsetPx, zoom, 1, REF_LAT) / 0.0004
+          path = offsetPath(path, lateralUnits)
+        }
+        const halfW = pxToHalfDeg(widthPx, zoom, 1, REF_LAT)
         const ring = ribbonArrow(path, halfW, REF_LAT, {
           arrowWingFactor: ARROW_WING,
           arrowLenFactor: ARROW_LEN,
-          widthPx: perPathPx,
+          widthPx,
         })
-        if (!ring.length) continue
+        if (!ring.length) return
+        const key = `${cid}|${f.mode}`
         features.push({
           type: 'Feature',
           properties: {
-            color,
-            width: perPathPx,
-            key: `${key}|${entryId}`,
-            sectorMode: key,
-            entryId,
+            color: MODE_COLORS[f.mode],
+            width: widthPx,
+            key,
+            crossingId: cid,
+            mode: f.mode,
+            sector: cdef.sector,
             persons: f.persons,
           },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [ring.map(([lon, lat]) => [lon, lat])],
-          },
+          geometry: { type: 'Polygon', coordinates: [ring.map(([lon, lat]) => [lon, lat])] },
         })
-      }
+      })
     }
-    // Sort widest-first so smaller flows draw on top
     features.sort((a, b) => (b.properties?.width ?? 0) - (a.properties?.width ?? 0))
     return { type: 'FeatureCollection' as const, features }
-  }, [flows, maxPersons, mapView.zoom, direction])
+  }, [activeFlows, maxPersons, mapView.zoom, direction])
 
-  // One label per sector at the arrow tip of that sector's largest mode.
-  // Avoids cluttering the map with up to 5 labels per sector.
-  const sectorLabels = useMemo(() => {
-    type Item = { sector: Sector; pos: LatLon; persons: number; topMode: NycMode; topModePersons: number }
-    const bySector = new Map<Sector, Item>()
-    for (const f of flows) {
-      const key = `${f.sector}|${f.mode}` as const
-      const paths = SECTOR_MODE_PATHS[key]
-      if (!paths || paths.length === 0) continue
-      const path = ENTRY_PATHS[paths[0]]
-      const tip = direction === 'leaving' ? path[0] : path[path.length - 1]
-      const existing = bySector.get(f.sector)
-      if (!existing) {
-        bySector.set(f.sector, {
-          sector: f.sector, pos: tip, persons: f.persons,
-          topMode: f.mode, topModePersons: f.persons,
-        })
-      } else {
-        existing.persons += f.persons
-        if (f.persons > existing.topModePersons) {
-          existing.pos = tip
-          existing.topMode = f.mode
-          existing.topModePersons = f.persons
-        }
-      }
+  // Per-crossing labels at arrow tips (top N + 1 per sector).
+  type CrossingLabel = {
+    crossingId: CrossingId
+    pos: LatLon
+    persons: number
+    topMode: NycMode
+    sector: Sector
+    name: string
+  }
+  const crossingLabels = useMemo<CrossingLabel[]>(() => {
+    const out: CrossingLabel[] = []
+    for (const cid of labeledCrossings) {
+      const info = crossingTotals.get(cid)
+      const cdef = CROSSINGS[cid]
+      if (!info || !cdef) continue
+      const path = cdef.path
+      // 60th St labels always sit at the north (source) end so they pop
+      // into uptown, not into the dense CBD cluster of arrow tips.
+      // Staten Island sits at the south source end likewise.
+      const pos: LatLon =
+        cdef.sector === '60th_street'   ? path[0]
+        : cdef.sector === 'staten_island' ? path[0]
+        : direction === 'leaving'       ? path[0]
+        :                                  path[path.length - 1]
+      out.push({
+        crossingId: cid, pos,
+        persons: info.persons, topMode: info.topMode,
+        sector: cdef.sector, name: cdef.name,
+      })
     }
-    return [...bySector.values()]
-  }, [flows, direction])
+    return out
+  }, [labeledCrossings, crossingTotals, direction])
 
   const dirLabel = direction === 'entering' ? 'Entering CBD' : 'Leaving CBD'
   const timeLabel = timePeriod === 'peak_1hr' ? (direction === 'entering' ? '8-9am' : '5-6pm') :
                     timePeriod === 'peak_period' ? (direction === 'entering' ? '7-10am' : '4-7pm') : '24hr'
-  const totalPersons = flows.reduce((s, f) => s + f.persons, 0)
+  const totalPersons = activeFlows.reduce((s, f) => s + f.persons, 0)
 
   return (
     <div className="geo-sankey">
       <h2>NYC-wide CBD flows</h2>
       <p className="chart-subtitle">{dirLabel}, {timeLabel}, {Math.round(totalPersons / 1000)}k total · 2024</p>
-      <div ref={containerRef} style={{ width: '100%', height: 820, position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%', height: 820, position: 'relative',
+          borderRadius: 8, overflow: 'hidden',
+          outline: mapFocused ? '2px solid rgba(100, 160, 255, 0.5)' : 'none',
+        }}
+      >
         <MapGL
           ref={mapRef}
           mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
@@ -232,10 +335,11 @@ export default function NycFlowMap({ appendixIii, vehicles }: Props) {
           zoom={mapView.zoom}
           onMove={e => setMapView({ lat: e.viewState.latitude, lng: e.viewState.longitude, zoom: e.viewState.zoom })}
           onLoad={() => mapRef.current?.getMap()?.scrollZoom.disable()}
+          onClick={focusMap}
           interactiveLayerIds={['flow-fills']}
           onMouseMove={e => {
             const f = e.features?.[0]
-            setHoveredKey((f?.properties?.sectorMode as string) ?? null)
+            setHoveredKey((f?.properties?.key as string) ?? null)
           }}
           onMouseLeave={() => setHoveredKey(null)}
         >
@@ -245,19 +349,16 @@ export default function NycFlowMap({ appendixIii, vehicles }: Props) {
               type="fill"
               paint={flowFillPaint({
                 'fill-opacity': hoveredKey
-                  ? ['case', ['==', ['get', 'sectorMode'], hoveredKey], 0.95, 0.18]
+                  ? ['case', ['==', ['get', 'key'], hoveredKey], 0.95, 0.18]
                   : 0.82,
               }) as any}
             />
           </Source>
-          {/* One inline label per sector at the largest-mode arrow tip.
-              Anchor placement is hand-tuned per sector so labels don't pile
-              up at the Manhattan core. */}
-          {sectorLabels.map(s => {
+          {crossingLabels.map(s => {
             const a = SECTOR_ANCHORS[s.sector]
             return (
               <Marker
-                key={s.sector}
+                key={s.crossingId}
                 longitude={s.pos[1]}
                 latitude={s.pos[0]}
                 anchor={a.anchor}
@@ -267,32 +368,29 @@ export default function NycFlowMap({ appendixIii, vehicles }: Props) {
                 <div
                   style={{
                     background: 'rgba(0,0,0,0.82)', color: '#eee',
-                    padding: '3px 8px', borderRadius: 4, fontSize: 12,
+                    padding: '2px 6px', borderRadius: 3, fontSize: 11,
                     whiteSpace: 'nowrap', borderLeft: `3px solid ${MODE_COLORS[s.topMode]}`,
                   }}
                 >
-                  <strong>{SECTOR_LABELS[s.sector]}</strong>{' '}
-                  <span style={{ opacity: 0.85 }}>{(s.persons / 1000).toFixed(0)}k</span>
+                  <strong>{s.name}</strong>{' '}
+                  <span style={{ opacity: 0.85 }}>{s.persons >= 1000 ? `${(s.persons / 1000).toFixed(0)}k` : Math.round(s.persons).toLocaleString()}</span>
                 </div>
               </Marker>
             )
           })}
         </MapGL>
-        {/* Floating tooltip when a flow is hovered */}
         {hoveredKey && (() => {
-          const f = flows.find(x => `${x.sector}|${x.mode}` === hoveredKey)
+          const [cid, mode] = hoveredKey.split('|') as [CrossingId, NycMode]
+          const f = activeFlows.find(x => x.crossingId === cid && x.mode === mode)
           if (!f) return null
-          const sectorPretty = ({
-            nj: 'NJ', queens: 'Queens', brooklyn: 'Brooklyn',
-            '60th_street': '60th St', staten_island: 'Staten Island', roosevelt_island: 'Roosevelt Is.',
-          } as Record<string, string>)[f.sector] ?? f.sector
+          const cdef = CROSSINGS[cid]
           return (
             <div style={{
               position: 'absolute', top: 10, left: 10, padding: '6px 10px',
               background: 'rgba(0,0,0,0.78)', color: '#eee', borderRadius: 4, fontSize: 13,
               pointerEvents: 'none',
             }}>
-              <strong>{sectorPretty} · {f.mode}</strong>: {f.persons.toLocaleString()} persons
+              <strong>{cdef?.name ?? cid} · {f.mode}</strong>: {Math.round(f.persons).toLocaleString()} persons
             </div>
           )
         })()}

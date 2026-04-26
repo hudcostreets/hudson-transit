@@ -3,12 +3,15 @@ import { PlotlyProvider } from 'pltly/react'
 import 'use-kbd/styles.css'
 import crossingsData from './data/crossings.json'
 import vehiclesData from './data/vehicles.json'
+import busPassengersData from './data/bus_passengers.json'
 import hourlyData from './data/hourly.json'
 import peakData from './data/peak_accumulation.json'
 import appendixIiiData from './data/appendix_iii.json'
+import appendixIiiDetailData from './data/appendix_iii_detail.json'
 import type { CrossingRecord } from './lib/types'
 import type { HourlyRecord, PeakRecord } from './lib/hourly-types'
 import type { AppendixIIIRecord } from './lib/nyc-types'
+import type { AppendixIIIDetailRecord } from './lib/nyc-data'
 import UnifiedChart from './components/UnifiedChart'
 import SectorChart from './components/SectorChart'
 import HourlyChart from './components/HourlyChart'
@@ -22,9 +25,11 @@ import './App.scss'
 
 const crossings = crossingsData as CrossingRecord[]
 const vehicles = vehiclesData as CrossingRecord[]
+const buses = busPassengersData as CrossingRecord[]
 const hourly = hourlyData as HourlyRecord[]
 const peak = peakData as PeakRecord[]
 const appendixIii = appendixIiiData as AppendixIIIRecord[]
+const appendixIiiDetail = appendixIiiDetailData as AppendixIIIDetailRecord[]
 
 function GitHubIcon() {
   return (
@@ -82,11 +87,16 @@ function App() {
             </section>
           </>}
           {showNyc && <>
-            <section id="nyc-flow-map">
-              <NycFlowMap appendixIii={appendixIii} vehicles={vehicles} />
-            </section>
             <section id="nyc-bubble">
               <NycBubbleChart appendixIii={appendixIii} vehicles={vehicles} />
+            </section>
+            <section id="nyc-flow-map">
+              <NycFlowMap
+                vehicles={vehicles}
+                buses={buses}
+                detail={appendixIiiDetail}
+                appendixIii={appendixIii}
+              />
             </section>
             <section id="hourly">
               <HourlyChart data={hourly} />
