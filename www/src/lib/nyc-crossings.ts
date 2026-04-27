@@ -68,26 +68,39 @@ export interface CrossingDef {
   path: LatLon[]
 }
 
-// ── Latitude landmarks (used in 60th-St paths) ─────────────────────────
-// 60th St ≈ 40.7660 at the avenues. Manhattan's avenue grid is rotated
-// ~29° west of due north, so a southbound avenue path runs at roughly
-// bearing 207° (SSW), not bearing 180° (due south). Skewing the paths
-// matches what the map visually expects: ribbons that line up with the
-// streets they represent.
-const N_60ST_TOP = 40.7720
-const N_60ST_MID = 40.7660
-const N_60ST_TIP = 40.7615
-const AVE_SHEAR = 0.65  // Δlon / Δlat for Manhattan avenue grid
+// ── 60th-St line + avenue grid ─────────────────────────────────────────
+// Manhattan's grid is rotated ~29° west of due north. Two consequences:
+//
+//   1. A southbound avenue path runs at bearing ~207° (SSW), not 180°.
+//   2. 60th Street itself runs ~119° (ESE), so it tilts: its lat
+//      decreases as you move east. Anchoring all 60th-St avenues at one
+//      flat lat (e.g. 40.7660) lines them up in a horizontal row — wrong
+//      visually, since 60th & 1st Ave is genuinely south of 60th & WSH.
+//
+// We model 60th St as a line and place each avenue's mid-point ON that
+// line. The slope below is calibrated from real coords (60th & WSH ≈
+// 40.7706 / -74.001; 60th & 1st Ave ≈ 40.7617 / -73.950).
+const SIXTIETH_REF_LAT = 40.7660  // 60th St near 5th Ave
+const SIXTIETH_REF_LNG = -73.9737 // 5th Ave at 60th St
+const SIXTIETH_SLOPE = -0.177     // Δlat / Δlng along 60th St
+function midLatFor(lon: number): number {
+  return SIXTIETH_REF_LAT + SIXTIETH_SLOPE * (lon - SIXTIETH_REF_LNG)
+}
 
-const ave = (lon: number, opts?: { topLat?: number; tipLat?: number }): LatLon[] => {
-  const top = opts?.topLat ?? N_60ST_TOP
-  const tip = opts?.tipLat ?? N_60ST_TIP
-  // `lon` is the avenue's longitude at 60th St (the mid-point); shift the
-  // top/tip so the ribbon parallels the actual avenue line.
+// Avenue path is centered on the 60th-St crossing: extends ~0.006° lat
+// north and ~0.0045° lat south, sheared SSW per the grid rotation.
+const AVE_NORTH_DLAT = 0.0060
+const AVE_SOUTH_DLAT = 0.0045
+const AVE_SHEAR = 0.65            // Δlon / Δlat for southbound avenues
+
+const ave = (lon: number, opts?: { topDLat?: number; tipDLat?: number }): LatLon[] => {
+  const dn = opts?.topDLat ?? AVE_NORTH_DLAT
+  const ds = opts?.tipDLat ?? AVE_SOUTH_DLAT
+  const midLat = midLatFor(lon)
   return [
-    [top, lon + AVE_SHEAR * (top - N_60ST_MID)],
-    [N_60ST_MID, lon],
-    [tip, lon - AVE_SHEAR * (N_60ST_MID - tip)],
+    [midLat + dn, lon + AVE_SHEAR * dn],   // north end (east of mid)
+    [midLat,      lon],                    // crosses 60th St on the line
+    [midLat - ds, lon - AVE_SHEAR * ds],   // south end (west of mid)
   ]
 }
 
@@ -217,7 +230,7 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
   '60-amst':      { id: '60-amst',      name: 'Amsterdam Ave',   sector: '60th_street', modes: ['Auto'],         path: ave(-73.9837) },
   '60-cols':      { id: '60-cols',      name: 'Columbus Ave',    sector: '60th_street', modes: ['Auto', 'Bus'],  path: ave(-73.9810) },
   '60-cpw':       { id: '60-cpw',       name: 'CPW',             sector: '60th_street', modes: ['Auto'],         path: ave(-73.9787) },
-  '60-bway':      { id: '60-bway',      name: 'Broadway',        sector: '60th_street', modes: ['Auto', 'Bus'],  path: ave(-73.9830, { topLat: 40.7710, tipLat: 40.7610 }) },
+  '60-bway':      { id: '60-bway',      name: 'Broadway',        sector: '60th_street', modes: ['Auto', 'Bus'],  path: ave(-73.9830) },
   '60-5av':       { id: '60-5av',       name: 'Fifth Ave',       sector: '60th_street', modes: ['Auto', 'Bus'],  path: ave(-73.9728) },
   '60-mad':       { id: '60-mad',       name: 'Madison Ave',     sector: '60th_street', modes: ['Auto'],         path: ave(-73.9696) },
   '60-park':      { id: '60-park',      name: 'Park Ave',        sector: '60th_street', modes: ['Auto'],         path: ave(-73.9667) },
@@ -229,19 +242,19 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
   '60-fdr':       { id: '60-fdr',       name: 'FDR Drive',       sector: '60th_street', modes: ['Auto'],         path: ave(-73.9460) },
 
   // 60th St subway corridors (each ribbon = one express/local pair)
-  '60-sub-8av-loc': { id: '60-sub-8av-loc', name: 'CPW · A/B/C', sector: '60th_street', modes: ['Subway'], path: ave(-73.9800, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-sub-8av-exp': { id: '60-sub-8av-exp', name: 'CPW · A/D',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9795, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-sub-7av-loc': { id: '60-sub-7av-loc', name: 'Bway · 1/2',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9818, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-sub-7av-exp': { id: '60-sub-7av-exp', name: '7 Av · 2/3',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9805, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-sub-lex-loc': { id: '60-sub-lex-loc', name: 'Lex · 4/6',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9645, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-sub-lex-exp': { id: '60-sub-lex-exp', name: 'Lex · 4/5',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9633, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-sub-bway-loc':{ id: '60-sub-bway-loc',name: 'Bway · Q/W',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9788, { topLat: 40.7720, tipLat: 40.7610 }) },
+  '60-sub-8av-loc': { id: '60-sub-8av-loc', name: 'CPW · A/B/C', sector: '60th_street', modes: ['Subway'], path: ave(-73.9800) },
+  '60-sub-8av-exp': { id: '60-sub-8av-exp', name: 'CPW · A/D',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9795) },
+  '60-sub-7av-loc': { id: '60-sub-7av-loc', name: 'Bway · 1/2',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9818) },
+  '60-sub-7av-exp': { id: '60-sub-7av-exp', name: '7 Av · 2/3',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9805) },
+  '60-sub-lex-loc': { id: '60-sub-lex-loc', name: 'Lex · 4/6',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9645) },
+  '60-sub-lex-exp': { id: '60-sub-lex-exp', name: 'Lex · 4/5',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9633) },
+  '60-sub-bway-loc':{ id: '60-sub-bway-loc',name: 'Bway · Q/W',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9788) },
 
   // Metro-North down Park Ave (all 3 main lines + Empire Service)
-  '60-mnr-hudson':   { id: '60-mnr-hudson',   name: 'MNR · Hudson Line',     sector: '60th_street', modes: ['Rail'], path: ave(-73.9670, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-mnr-harlem':   { id: '60-mnr-harlem',   name: 'MNR · Harlem Line',     sector: '60th_street', modes: ['Rail'], path: ave(-73.9665, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-mnr-newhaven': { id: '60-mnr-newhaven', name: 'MNR · New Haven Line',  sector: '60th_street', modes: ['Rail'], path: ave(-73.9660, { topLat: 40.7720, tipLat: 40.7610 }) },
-  '60-mnr-empire':   { id: '60-mnr-empire',   name: 'Empire Service',         sector: '60th_street', modes: ['Rail'], path: ave(-73.9675, { topLat: 40.7720, tipLat: 40.7610 }) },
+  '60-mnr-hudson':   { id: '60-mnr-hudson',   name: 'MNR · Hudson Line',     sector: '60th_street', modes: ['Rail'], path: ave(-73.9670) },
+  '60-mnr-harlem':   { id: '60-mnr-harlem',   name: 'MNR · Harlem Line',     sector: '60th_street', modes: ['Rail'], path: ave(-73.9665) },
+  '60-mnr-newhaven': { id: '60-mnr-newhaven', name: 'MNR · New Haven Line',  sector: '60th_street', modes: ['Rail'], path: ave(-73.9660) },
+  '60-mnr-empire':   { id: '60-mnr-empire',   name: 'Empire Service',         sector: '60th_street', modes: ['Rail'], path: ave(-73.9675) },
 }
 
 // ── Mappings: source data → CrossingId ───────────────────────────────────

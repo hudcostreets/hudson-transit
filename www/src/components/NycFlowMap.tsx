@@ -23,11 +23,12 @@ import { type AppendixIIIDetailRecord, type CrossingFlow, buildCrossingFlows } f
 import { type CrossingId, CROSSINGS } from '../lib/nyc-crossings'
 import { DEFAULT_SCHEME } from '../lib/colors'
 import Toggle, { type ToggleOption } from './Toggle'
-import MapControls, { useMapWidthScale, useMapGeoScale } from './MapControls'
+import MapControls, {
+  ARROW_WING, ARROW_LEN,
+  useMapWidthScale, useMapGeoScale, useMapView,
+} from './MapControls'
 
 const REF_LAT = 40.74
-const ARROW_WING = 1.6
-const ARROW_LEN = 0.6
 const STACK_GAP = 1.5  // px gap between parallel ribbons at same crossing
 
 const MODE_COLORS: Record<NycMode, string> = {
@@ -90,8 +91,7 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
   const [geoScale, setGeoScale] = useMapGeoScale()
 
   const mapRef = useRef<MapRef>(null)
-  const initialView = useMemo(defaultView, [])
-  const [mapView, setMapView] = useState(initialView)
+  const [mapView, setMapView] = useMapView(defaultView)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
   const [mapHeight, setMapHeight] = useState(() => {
     if (typeof sessionStorage === 'undefined') return defaultMapHeight()
@@ -242,7 +242,9 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
       if (!cdef) continue
       // Order modes consistently within each crossing.
       group.sort((a, b) => NYC_MODE_ORDER.indexOf(a.mode) - NYC_MODE_ORDER.indexOf(b.mode))
-      const widths = group.map(f => Math.max(2, (f.persons / maxPersons) * 60 * widthScale))
+      // No hard floor — small flows render thin (down to ~0.4 px) so the
+      // bus/auto width ratio reflects actual person counts within a crossing.
+      const widths = group.map(f => Math.max(0.4, (f.persons / maxPersons) * 60 * widthScale))
       const totalStack = widths.reduce((a, b) => a + b, 0) + STACK_GAP * Math.max(0, widths.length - 1)
       // Each ribbon's offset = its centerline relative to the path's centerline.
       let running = -totalStack / 2
@@ -379,6 +381,8 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
           </Source>
           {crossingLabels.map(s => {
             const a = SECTOR_ANCHORS[s.sector]
+            const hoveredCid = hoveredKey?.split('|')[0]
+            const dimmed = hoveredKey != null && hoveredCid !== s.crossingId
             return (
               <Marker
                 key={s.crossingId}
@@ -386,7 +390,11 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
                 latitude={s.pos[0]}
                 anchor={a.anchor}
                 offset={a.offset}
-                style={{ pointerEvents: 'none' }}
+                style={{
+                  pointerEvents: 'none',
+                  opacity: dimmed ? 0.2 : 1,
+                  transition: 'opacity 120ms ease',
+                }}
               >
                 <div
                   style={{

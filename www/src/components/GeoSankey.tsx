@@ -7,7 +7,10 @@ import { DEFAULT_SCHEME } from '../lib/colors'
 import { filterCrossings } from '../lib/transform'
 import { useUrlState } from 'use-prms'
 import Toggle from './Toggle'
-import MapControls, { useMapWidthScale, useMapGeoScale, useMapHitPad } from './MapControls'
+import MapControls, {
+  ARROW_WING, ARROW_LEN,
+  useMapWidthScale, useMapGeoScale, useMapHitPad, useMapView,
+} from './MapControls'
 import type { LatLon, FlowGraph } from 'geo-sankey'
 import {
   pxToHalfDeg, pxToDeg, offsetPath,
@@ -362,23 +365,7 @@ function GeoSankeyInner({ data }: Props) {
   const [widthScale, setWidthScale] = useMapWidthScale()
   const [hitPad, setHitPad] = useMapHitPad()
 
-  // Map view: lat_lng_zoom packed into one param, `_` delimited
-  const llzParam = useMemo(() => {
-    const def = defaultView()
-    return {
-      encode: (v: { lat: number; lng: number; zoom: number }) => {
-        if (Math.abs(v.lat - def.lat) < 0.0001 && Math.abs(v.lng - def.lng) < 0.0001 && Math.abs(v.zoom - def.zoom) < 0.01) return undefined
-        return `${v.lat.toFixed(4)}_${v.lng.toFixed(4)}_${v.zoom.toFixed(2)}`
-      },
-      decode: (s: string | undefined) => {
-        if (!s) return def
-        const parts = s.split('_').map(Number)
-        if (parts.length < 3 || parts.some(isNaN)) return def
-        return { lat: parts[0], lng: parts[1], zoom: parts[2] }
-      },
-    }
-  }, [])
-  const [mapView, setMapView] = useUrlState('ll', llzParam)
+  const [mapView, setMapView] = useMapView(defaultView)
 
   const filtered = useMemo(
     () => filterCrossings(data, direction, timePeriod),
@@ -477,8 +464,7 @@ function GeoSankeyInner({ data }: Props) {
   }, [])
 
   // Build GeoJSON ribbon polygons (rect + arrowhead as single shapes)
-  const ARROW_WING = 1.8   // wing width as multiple of ribbon half-width
-  const ARROW_LEN = 1.2    // arrow length as multiple of full ribbon width
+  // Arrow factors: imported from `MapControls.ts` so `/` and `/nyc` agree.
 
   const geojson = useMemo(() => {
     const byCrossing = new Map<string, FlowDatum[]>()
