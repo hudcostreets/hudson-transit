@@ -8,16 +8,14 @@
 
 import { useMemo } from 'react'
 import { useUrlState } from 'use-prms'
+import { resolveArrowDefaults } from 'geo-sankey'
 
-// Arrow-head defaults matching the geo-sankey demo (https://geo-sankey.rbw.sh/).
-// Until upstream (`specs/arrow-defaults.md`) ships these as library defaults
-// we hand-compute them here so both maps look consistent.
-//   wing  = 0.65  (relative wing width)
-//   angle = 60°   (internal arrowhead angle)
-//   arrowWingFactor = 1 + 2*wing             = 2.3
-//   arrowLenFactor  = arrowWing * tan(60°)/2 ≈ 1.99
-export const ARROW_WING = 2.3
-export const ARROW_LEN  = 2.3 * Math.tan(60 * Math.PI / 180) / 2
+// Arrow-head factors for bare `ribbonArrow*` calls, kept in lock-step with
+// the lib's resolved defaults (wing = 0.65, angle = 60°). The same numbers
+// flow through the `FlowGraph*` codepath internally.
+const _arrow = resolveArrowDefaults()
+export const ARROW_WING = _arrow.arrowWingFactor
+export const ARROW_LEN  = _arrow.arrowLenFactor
 
 export interface MapView {
   lat: number

@@ -12,8 +12,8 @@ importers:
         specifier: ^0.27.19
         version: 0.27.19(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       geo-sankey:
-        specifier: https://github.com/runsascoded/geo-sankey#2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f
-        version: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: https://github.com/runsascoded/geo-sankey#3af38f772fd03a5455a24f222d90a66e52f93f52
+        version: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/3af38f772fd03a5455a24f222d90a66e52f93f52(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       maplibre-gl:
         specifier: ^5.20.0
         version: 5.20.0
@@ -96,13 +96,25 @@ importers:
 
   ../../../js/geo-sankey:
     dependencies:
+      react:
+        specifier: '>=18'
+        version: 19.2.4
       use-kbd:
-        specifier: ^0.12.0
-        version: 0.12.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: https://github.com/runsascoded/use-kbd#e8de7954c2d39b639dc1b99203659b91fd8fd269
+        version: https://codeload.github.com/runsascoded/use-kbd/tar.gz/e8de7954c2d39b639dc1b99203659b91fd8fd269(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
     devDependencies:
       '@types/geojson':
         specifier: ^7946.0.16
         version: 7946.0.16
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      puppeteer-core:
+        specifier: ^24.40.0
+        version: 24.42.0
+      scrns:
+        specifier: ^0.3.0
+        version: 0.3.0(typescript@5.9.3)
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -798,6 +810,11 @@ packages:
   '@plotly/regl@2.1.2':
     resolution: {integrity: sha512-Mdk+vUACbQvjd0m/1JJjOOafmkp/EpmHjISsopEz5Av44CBq7rPC05HHNbYGKVyNUF2zmEoBS/TT0pd0SPFFyw==}
 
+  '@puppeteer/browsers@2.13.0':
+    resolution: {integrity: sha512-46BZJYJjc/WwmKjsvDFykHtXrtomsCIrwYQPOP7VfMJoZY2bsDF9oROBABR3paDjDcmkUye1Pb1BqdcdiipaWA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@puppeteer/browsers@2.6.1':
     resolution: {integrity: sha512-aBSREisdsGH890S2rQqK82qmQYU3uFpSH8wcZWHgHzl3LfzsxAKbLNiAG9mO8v1Y0UICBeClICxPJvyr0rcuxg==}
     engines: {node: '>=18'}
@@ -1431,6 +1448,11 @@ packages:
     peerDependencies:
       devtools-protocol: '*'
 
+  chromium-bidi@14.0.0:
+    resolution: {integrity: sha512-9gYlLtS6tStdRWzrtXaTMnqcM4dudNegMXJxkR0I/CXObHalYeYcAMPrL19eroNZHtJ8DQmu1E+ZNOYu/IXMXw==}
+    peerDependencies:
+      devtools-protocol: '*'
+
   clamp@1.0.1:
     resolution: {integrity: sha512-kgMuFyE78OC6Dyu3Dy7vcx4uy97EIbVxJB/B0eJ3bUNAkwdNcxYzgKltnyADiYwsR7SEqkkUPsEUT//OVS6XMA==}
 
@@ -1705,6 +1727,9 @@ packages:
 
   devtools-protocol@0.0.1367902:
     resolution: {integrity: sha512-XxtPuC3PGakY6PD7dG66/o8KwJ/LkH2/EKe19Dcw58w53dv4/vSQEkn/SzuyhHE2q4zPgCkxQBxus3VV4ql+Pg==}
+
+  devtools-protocol@0.0.1595872:
+    resolution: {integrity: sha512-kRfgp8vWVjBu/fbYCiVFiOqsCk3CrMKEo3WbgGT2NXK2dG7vawWPBljixajVgGK9II8rDO9G0oD0zLt3I1daRg==}
 
   diff@8.0.3:
     resolution: {integrity: sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==}
@@ -1982,9 +2007,9 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
-  geo-sankey@https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f:
-    resolution: {tarball: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f}
-    version: 0.1.0-dist.c623407
+  geo-sankey@https://codeload.github.com/runsascoded/geo-sankey/tar.gz/3af38f772fd03a5455a24f222d90a66e52f93f52:
+    resolution: {tarball: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/3af38f772fd03a5455a24f222d90a66e52f93f52}
+    version: 0.1.0-dist.a532f75
     peerDependencies:
       react: '>=18'
     peerDependenciesMeta:
@@ -2653,6 +2678,10 @@ packages:
     resolution: {integrity: sha512-3HZ2/7hdDKZvZQ7dhhITOUg4/wOrDRjyK2ZBllRB0ZCOi9u0cwq1ACHDjBB+nX+7+kltHjQvBRdeY7+W0T+7Gg==}
     engines: {node: '>=18'}
 
+  puppeteer-core@24.42.0:
+    resolution: {integrity: sha512-T4zXokk/izH01fYPhyyev1A4piWiOKrYq7CUFpdoYQxmOnXoV6YjUabmfIjCYkNspSoAXIxRid3Tw+Vg0fthYg==}
+    engines: {node: '>=18'}
+
   puppeteer@23.11.1:
     resolution: {integrity: sha512-53uIX3KR5en8l7Vd8n5DUv90Ae9QDQsyIthaUFVzwV6yU750RjqRznEtNMBT20VthqAdemnJN+hxVdmMHKt7Zw==}
     engines: {node: '>=18'}
@@ -2786,6 +2815,10 @@ packages:
 
   scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
+
+  scrns@0.3.0:
+    resolution: {integrity: sha512-Mie3IiCVO4NbK0eAV6Vf3aORR2AlcZgcSDXeKK5gTOho6HlBxXzOMl98awZxI2cU3NlnkAtA7Sky67jp2pNMEw==}
+    hasBin: true
 
   scrns@https://codeload.github.com/runsascoded/scrns/tar.gz/68cef44643cd1aab1701dc98dd285b630a271b32:
     resolution: {tarball: https://codeload.github.com/runsascoded/scrns/tar.gz/68cef44643cd1aab1701dc98dd285b630a271b32}
@@ -3251,6 +3284,9 @@ packages:
   weak-map@1.0.8:
     resolution: {integrity: sha512-lNR9aAefbGPpHO7AEnY0hCFjz1eTkWCXYvkTRrTHs9qv8zJp+SkVYpzfLIFXQQiG3tVvbNFQgVg2bQS8YGgxyw==}
 
+  webdriver-bidi-protocol@0.4.1:
+    resolution: {integrity: sha512-ARrjNjtWRRs2w4Tk7nqrf2gBI0QXWuOmMCx2hU+1jUt6d00MjMxURrhxhGbrsoiZKJrhTSTzbIrc554iKI10qw==}
+
   webgl-context@2.2.0:
     resolution: {integrity: sha512-q/fGIivtqTT7PEoF07axFIlHNk/XCPaYpq64btnepopSWvKNFkoORlQYgqDigBIuGA1ExnFd/GnSUnBNEPQY7Q==}
 
@@ -3336,6 +3372,9 @@ packages:
 
   zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
@@ -3963,6 +4002,21 @@ snapshots:
 
   '@plotly/regl@2.1.2': {}
 
+  '@puppeteer/browsers@2.13.0':
+    dependencies:
+      debug: 4.4.3
+      extract-zip: 2.0.1
+      progress: 2.0.3
+      proxy-agent: 6.5.0
+      semver: 7.7.4
+      tar-fs: 3.1.2
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - react-native-b4a
+      - supports-color
+
   '@puppeteer/browsers@2.6.1':
     dependencies:
       debug: 4.4.3
@@ -3978,7 +4032,6 @@ snapshots:
       - bare-buffer
       - react-native-b4a
       - supports-color
-    optional: true
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 
@@ -4106,8 +4159,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tootallnate/quickjs-emscripten@0.23.0':
-    optional: true
+  '@tootallnate/quickjs-emscripten@0.23.0': {}
 
   '@turf/area@7.3.4':
     dependencies:
@@ -4431,8 +4483,7 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  agent-base@7.1.4:
-    optional: true
+  agent-base@7.1.4: {}
 
   ajv-draft-04@1.0.0(ajv@8.18.0):
     optionalDependencies:
@@ -4458,8 +4509,7 @@ snapshots:
 
   alien-signals@0.4.14: {}
 
-  ansi-regex@5.0.1:
-    optional: true
+  ansi-regex@5.0.1: {}
 
   ansi-styles@4.3.0:
     dependencies:
@@ -4492,17 +4542,14 @@ snapshots:
   ast-types@0.13.4:
     dependencies:
       tslib: 2.8.1
-    optional: true
 
-  b4a@1.8.0:
-    optional: true
+  b4a@1.8.0: {}
 
   balanced-match@1.0.2: {}
 
   balanced-match@4.0.4: {}
 
-  bare-events@2.8.2:
-    optional: true
+  bare-events@2.8.2: {}
 
   bare-fs@4.5.5:
     dependencies:
@@ -4514,15 +4561,12 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
-  bare-os@3.7.1:
-    optional: true
+  bare-os@3.7.1: {}
 
   bare-path@3.0.0:
     dependencies:
       bare-os: 3.7.1
-    optional: true
 
   bare-stream@2.8.0(bare-events@2.8.2):
     dependencies:
@@ -4533,22 +4577,18 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
   bare-url@2.3.2:
     dependencies:
       bare-path: 3.0.0
-    optional: true
 
   base64-arraybuffer@1.0.2: {}
 
-  base64-js@1.5.1:
-    optional: true
+  base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.10.0: {}
 
-  basic-ftp@5.2.0:
-    optional: true
+  basic-ftp@5.2.0: {}
 
   binary-search-bounds@2.0.5: {}
 
@@ -4582,8 +4622,7 @@ snapshots:
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
-  buffer-crc32@0.2.13:
-    optional: true
+  buffer-crc32@0.2.13: {}
 
   buffer-from@1.1.2: {}
 
@@ -4591,7 +4630,6 @@ snapshots:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    optional: true
 
   bytewise-core@1.2.3:
     dependencies:
@@ -4626,7 +4664,12 @@ snapshots:
       devtools-protocol: 0.0.1367902
       mitt: 3.0.1
       zod: 3.23.8
-    optional: true
+
+  chromium-bidi@14.0.0(devtools-protocol@0.0.1595872):
+    dependencies:
+      devtools-protocol: 0.0.1595872
+      mitt: 3.0.1
+      zod: 3.25.76
 
   clamp@1.0.1: {}
 
@@ -4635,7 +4678,6 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
-    optional: true
 
   color-alpha@1.0.4:
     dependencies:
@@ -4712,7 +4754,6 @@ snapshots:
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.9.3
-    optional: true
 
   country-regex@1.1.0: {}
 
@@ -4851,8 +4892,7 @@ snapshots:
       es5-ext: 0.10.64
       type: 2.7.3
 
-  data-uri-to-buffer@6.0.2:
-    optional: true
+  data-uri-to-buffer@6.0.2: {}
 
   de-indent@1.0.2: {}
 
@@ -4877,15 +4917,15 @@ snapshots:
       ast-types: 0.13.4
       escodegen: 2.1.0
       esprima: 4.0.1
-    optional: true
 
   detect-kerning@2.1.2: {}
 
   detect-libc@2.1.2:
     optional: true
 
-  devtools-protocol@0.0.1367902:
-    optional: true
+  devtools-protocol@0.0.1367902: {}
+
+  devtools-protocol@0.0.1595872: {}
 
   diff@8.0.3: {}
 
@@ -4917,8 +4957,7 @@ snapshots:
     dependencies:
       strongly-connected-components: 1.0.1
 
-  emoji-regex@8.0.0:
-    optional: true
+  emoji-regex@8.0.0: {}
 
   end-of-stream@1.4.5:
     dependencies:
@@ -4926,13 +4965,11 @@ snapshots:
 
   entities@7.0.1: {}
 
-  env-paths@2.2.1:
-    optional: true
+  env-paths@2.2.1: {}
 
   error-ex@1.3.4:
     dependencies:
       is-arrayish: 0.2.1
-    optional: true
 
   es-module-lexer@2.0.0: {}
 
@@ -5139,7 +5176,6 @@ snapshots:
       bare-events: 2.8.2
     transitivePeerDependencies:
       - bare-abort-controller
-    optional: true
 
   events@3.3.0: {}
 
@@ -5169,7 +5205,6 @@ snapshots:
       '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   falafel@2.2.5:
     dependencies:
@@ -5178,8 +5213,7 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
-  fast-fifo@1.3.2:
-    optional: true
+  fast-fifo@1.3.2: {}
 
   fast-isnumeric@1.1.4:
     dependencies:
@@ -5194,7 +5228,6 @@ snapshots:
   fd-slicer@1.1.0:
     dependencies:
       pend: 1.2.0
-    optional: true
 
   fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
@@ -5249,7 +5282,7 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
-  geo-sankey@https://codeload.github.com/runsascoded/geo-sankey/tar.gz/2ddd8a679c4d3a8d0be5485cb0ca6785aa4abd2f(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  geo-sankey@https://codeload.github.com/runsascoded/geo-sankey/tar.gz/3af38f772fd03a5455a24f222d90a66e52f93f52(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       use-kbd: https://codeload.github.com/runsascoded/use-kbd/tar.gz/e8de7954c2d39b639dc1b99203659b91fd8fd269(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
     optionalDependencies:
@@ -5262,15 +5295,13 @@ snapshots:
 
   geojson-vt@4.0.2: {}
 
-  get-caller-file@2.0.5:
-    optional: true
+  get-caller-file@2.0.5: {}
 
   get-canvas-context@1.0.2: {}
 
   get-stream@5.2.0:
     dependencies:
       pump: 3.0.4
-    optional: true
 
   get-stream@6.0.1: {}
 
@@ -5281,7 +5312,6 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   get-value@2.0.6: {}
 
@@ -5449,7 +5479,6 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   https-proxy-agent@7.0.6:
     dependencies:
@@ -5457,7 +5486,6 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   iconv-lite@0.4.24:
     dependencies:
@@ -5486,11 +5514,9 @@ snapshots:
 
   internmap@2.0.3: {}
 
-  ip-address@10.1.0:
-    optional: true
+  ip-address@10.1.0: {}
 
-  is-arrayish@0.2.1:
-    optional: true
+  is-arrayish@0.2.1: {}
 
   is-browser@2.1.0: {}
 
@@ -5510,8 +5536,7 @@ snapshots:
 
   is-firefox@1.0.3: {}
 
-  is-fullwidth-code-point@3.0.0:
-    optional: true
+  is-fullwidth-code-point@3.0.0: {}
 
   is-glob@4.0.3:
     dependencies:
@@ -5557,8 +5582,7 @@ snapshots:
 
   json-buffer@3.0.1: {}
 
-  json-parse-even-better-errors@2.3.1:
-    optional: true
+  json-parse-even-better-errors@2.3.1: {}
 
   json-schema-traverse@0.4.1: {}
 
@@ -5595,8 +5619,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lines-and-columns@1.2.4:
-    optional: true
+  lines-and-columns@1.2.4: {}
 
   local-pkg@1.1.2:
     dependencies:
@@ -5624,8 +5647,7 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  lru-cache@7.18.3:
-    optional: true
+  lru-cache@7.18.3: {}
 
   magic-string@0.30.21:
     dependencies:
@@ -5712,8 +5734,7 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  mitt@3.0.1:
-    optional: true
+  mitt@3.0.1: {}
 
   mlly@1.8.1:
     dependencies:
@@ -5758,8 +5779,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  netmask@2.0.2:
-    optional: true
+  netmask@2.0.2: {}
 
   next-tick@1.1.0: {}
 
@@ -5819,13 +5839,11 @@ snapshots:
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   pac-resolver@7.0.1:
     dependencies:
       degenerator: 5.0.1
       netmask: 2.0.2
-    optional: true
 
   parent-module@1.0.1:
     dependencies:
@@ -5839,7 +5857,6 @@ snapshots:
       error-ex: 1.3.4
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
-    optional: true
 
   parse-rect@1.2.0:
     dependencies:
@@ -5868,8 +5885,7 @@ snapshots:
     dependencies:
       resolve-protobuf-schema: 2.1.0
 
-  pend@1.2.0:
-    optional: true
+  pend@1.2.0: {}
 
   performance-now@2.1.0: {}
 
@@ -6005,8 +6021,7 @@ snapshots:
 
   process-nextick-args@2.0.1: {}
 
-  progress@2.0.3:
-    optional: true
+  progress@2.0.3: {}
 
   prop-types@15.8.1:
     dependencies:
@@ -6028,16 +6043,13 @@ snapshots:
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
-  proxy-from-env@1.1.0:
-    optional: true
+  proxy-from-env@1.1.0: {}
 
   pump@3.0.4:
     dependencies:
       end-of-stream: 1.4.5
       once: 1.4.0
-    optional: true
 
   punycode@2.3.1: {}
 
@@ -6056,7 +6068,23 @@ snapshots:
       - react-native-b4a
       - supports-color
       - utf-8-validate
-    optional: true
+
+  puppeteer-core@24.42.0:
+    dependencies:
+      '@puppeteer/browsers': 2.13.0
+      chromium-bidi: 14.0.0(devtools-protocol@0.0.1595872)
+      debug: 4.4.3
+      devtools-protocol: 0.0.1595872
+      typed-query-selector: 2.12.1
+      webdriver-bidi-protocol: 0.4.1
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - bufferutil
+      - react-native-b4a
+      - supports-color
+      - utf-8-validate
 
   puppeteer@23.11.1(typescript@5.9.3):
     dependencies:
@@ -6074,7 +6102,6 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
-    optional: true
 
   quansync@0.2.11: {}
 
@@ -6186,8 +6213,7 @@ snapshots:
 
   regl@2.1.1: {}
 
-  require-directory@2.1.1:
-    optional: true
+  require-directory@2.1.1: {}
 
   require-from-string@2.0.2: {}
 
@@ -6258,6 +6284,21 @@ snapshots:
 
   scheduler@0.27.0: {}
 
+  scrns@0.3.0(typescript@5.9.3):
+    dependencies:
+      commander: 12.1.0
+      gifenc: 1.0.3
+      pngjs: 7.0.0
+      puppeteer: 23.11.1(typescript@5.9.3)
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - bufferutil
+      - react-native-b4a
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   scrns@https://codeload.github.com/runsascoded/scrns/tar.gz/68cef44643cd1aab1701dc98dd285b630a271b32(puppeteer@23.11.1(typescript@5.9.3)):
     dependencies:
       commander: 12.1.0
@@ -6294,8 +6335,7 @@ snapshots:
 
   signum@1.0.0: {}
 
-  smart-buffer@4.2.0:
-    optional: true
+  smart-buffer@4.2.0: {}
 
   socks-proxy-agent@8.0.5:
     dependencies:
@@ -6304,13 +6344,11 @@ snapshots:
       socks: 2.8.7
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   socks@2.8.7:
     dependencies:
       ip-address: 10.1.0
       smart-buffer: 4.2.0
-    optional: true
 
   sort-asc@0.2.0: {}
 
@@ -6367,7 +6405,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
   string-argv@0.3.2: {}
 
@@ -6380,7 +6417,6 @@ snapshots:
       emoji-regex: 8.0.0
       is-fullwidth-code-point: 3.0.0
       strip-ansi: 6.0.1
-    optional: true
 
   string_decoder@0.10.31: {}
 
@@ -6391,7 +6427,6 @@ snapshots:
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
-    optional: true
 
   strip-json-comments@3.1.1: {}
 
@@ -6447,7 +6482,6 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
-    optional: true
 
   tar-stream@3.1.8:
     dependencies:
@@ -6459,7 +6493,6 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
-    optional: true
 
   teex@1.0.1:
     dependencies:
@@ -6467,7 +6500,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
   terser@5.46.0:
     dependencies:
@@ -6482,7 +6514,6 @@ snapshots:
       b4a: 1.8.0
     transitivePeerDependencies:
       - react-native-b4a
-    optional: true
 
   through2@0.6.5:
     dependencies:
@@ -6494,8 +6525,7 @@ snapshots:
       readable-stream: 2.3.8
       xtend: 4.0.2
 
-  through@2.3.8:
-    optional: true
+  through@2.3.8: {}
 
   tinybench@2.9.0: {}
 
@@ -6536,8 +6566,7 @@ snapshots:
 
   type@2.7.3: {}
 
-  typed-query-selector@2.12.1:
-    optional: true
+  typed-query-selector@2.12.1: {}
 
   typedarray-pool@1.2.0:
     dependencies:
@@ -6573,7 +6602,6 @@ snapshots:
     dependencies:
       buffer: 5.7.1
       through: 2.3.8
-    optional: true
 
   undici-types@7.16.0: {}
 
@@ -6706,6 +6734,8 @@ snapshots:
 
   weak-map@1.0.8: {}
 
+  webdriver-bidi-protocol@0.4.1: {}
+
   webgl-context@2.2.0:
     dependencies:
       get-canvas-context: 1.0.2
@@ -6734,26 +6764,22 @@ snapshots:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-    optional: true
 
   wrappy@1.0.2: {}
 
-  ws@8.19.0:
-    optional: true
+  ws@8.19.0: {}
 
   xtend@2.2.0: {}
 
   xtend@4.0.2: {}
 
-  y18n@5.0.8:
-    optional: true
+  y18n@5.0.8: {}
 
   yallist@3.1.1: {}
 
   yallist@4.0.0: {}
 
-  yargs-parser@21.1.1:
-    optional: true
+  yargs-parser@21.1.1: {}
 
   yargs@17.7.2:
     dependencies:
@@ -6764,13 +6790,11 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-    optional: true
 
   yauzl@2.10.0:
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
-    optional: true
 
   yocto-queue@0.1.0: {}
 
@@ -6778,7 +6802,8 @@ snapshots:
     dependencies:
       zod: 4.3.6
 
-  zod@3.23.8:
-    optional: true
+  zod@3.23.8: {}
+
+  zod@3.25.76: {}
 
   zod@4.3.6: {}
