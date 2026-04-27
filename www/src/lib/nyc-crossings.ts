@@ -69,16 +69,26 @@ export interface CrossingDef {
 }
 
 // ── Latitude landmarks (used in 60th-St paths) ─────────────────────────
-// 60th St ≈ 40.7660 at the avenues; we run all vertical paths from ~70th
-// to ~58th so the arrow tips clear the boundary visually.
+// 60th St ≈ 40.7660 at the avenues. Manhattan's avenue grid is rotated
+// ~29° west of due north, so a southbound avenue path runs at roughly
+// bearing 207° (SSW), not bearing 180° (due south). Skewing the paths
+// matches what the map visually expects: ribbons that line up with the
+// streets they represent.
 const N_60ST_TOP = 40.7720
-const N_60ST_MID = 40.7680
-const N_60ST_TIP = 40.7610
+const N_60ST_MID = 40.7660
+const N_60ST_TIP = 40.7615
+const AVE_SHEAR = 0.65  // Δlon / Δlat for Manhattan avenue grid
 
 const ave = (lon: number, opts?: { topLat?: number; tipLat?: number }): LatLon[] => {
   const top = opts?.topLat ?? N_60ST_TOP
   const tip = opts?.tipLat ?? N_60ST_TIP
-  return [[top, lon], [N_60ST_MID, lon], [tip, lon]]
+  // `lon` is the avenue's longitude at 60th St (the mid-point); shift the
+  // top/tip so the ribbon parallels the actual avenue line.
+  return [
+    [top, lon + AVE_SHEAR * (top - N_60ST_MID)],
+    [N_60ST_MID, lon],
+    [tip, lon - AVE_SHEAR * (N_60ST_MID - tip)],
+  ]
 }
 
 export const CROSSINGS: Record<CrossingId, CrossingDef> = {
@@ -126,41 +136,43 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
     id: 'bk-battery', name: 'Battery Tunnel', sector: 'brooklyn', modes: ['Auto', 'Bus'],
     path: [[40.6915, -74.0173], [40.6960, -74.0150], [40.7008, -74.0144]],
   },
-  // Subway tubes (one ribbon per shared right-of-way). Arrow tips are
-  // extended along each line's Manhattan trunk so the lower-Manhattan
-  // entry cluster fans out instead of piling up at the river edge.
+  // Subway tubes (one ribbon per shared right-of-way). Each tube ends at
+  // its first Manhattan station — keeping the arrow tip on the shore
+  // rather than penetrating mid-Manhattan where the cluster gets noisy.
   'bk-cranberry': {
     id: 'bk-cranberry', name: 'Cranberry · A/C', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6997, -73.9907], [40.7050, -73.9970], [40.7148, -74.0050], [40.7270, -74.0024]],
+    path: [[40.6997, -73.9907], [40.7050, -73.9970], [40.7138, -74.0049]],
   },
   'bk-clark': {
     id: 'bk-clark', name: 'Clark St · 2/3', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6976, -73.9930], [40.7045, -74.0000], [40.7138, -74.0084], [40.7330, -74.0027]],
+    path: [[40.6976, -73.9930], [40.7045, -74.0000], [40.7128, -74.0084]],
   },
   'bk-joralemon': {
     id: 'bk-joralemon', name: 'Joralemon · 4/5', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6918, -73.9922], [40.6990, -74.0030], [40.7065, -74.0102], [40.7268, -73.9883]],
+    path: [[40.6918, -73.9922], [40.6990, -74.0030], [40.7045, -74.0114]],
   },
   'bk-rutgers': {
     id: 'bk-rutgers', name: 'Rutgers · F', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6997, -73.9863], [40.7080, -73.9890], [40.7150, -73.9910], [40.7298, -73.9940]],
+    path: [[40.6997, -73.9863], [40.7080, -73.9890], [40.7137, -73.9905]],
   },
+  // L's first Manhattan stop is 1st Ave/14th, which is genuinely a few
+  // blocks inland from the East River — we leave the path at that stop.
   'bk-canarsie': {
     id: 'bk-canarsie', name: 'Canarsie · L', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.7170, -73.9560], [40.7235, -73.9720], [40.7305, -73.9818], [40.7395, -74.0023]],
+    path: [[40.7170, -73.9560], [40.7235, -73.9720], [40.7305, -73.9818]],
   },
   'bk-montague': {
     id: 'bk-montague', name: 'Montague · N/R', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6930, -73.9920], [40.6975, -74.0050], [40.7038, -74.0130], [40.7126, -74.0080]],
+    path: [[40.6930, -73.9920], [40.6975, -74.0050], [40.7038, -74.0130]],
   },
   // Mh Bridge subway: north tracks (B/D → 6th Ave) vs south tracks (N/Q → Bway).
   'bk-mb-bd': {
     id: 'bk-mb-bd', name: 'Mh Br · B/D', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6985, -73.9892], [40.7080, -73.9928], [40.7180, -73.9970], [40.7290, -73.9985]],
+    path: [[40.6985, -73.9892], [40.7080, -73.9928], [40.7180, -73.9970]],
   },
   'bk-mb-nq': {
     id: 'bk-mb-nq', name: 'Mh Br · N/Q', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6990, -73.9882], [40.7085, -73.9914], [40.7170, -73.9970], [40.7195, -73.9995]],
+    path: [[40.6990, -73.9882], [40.7085, -73.9914], [40.7170, -73.9970]],
   },
 
   // ── Queens ──────────────────────────────────────────────────────────────

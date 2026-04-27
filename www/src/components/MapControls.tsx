@@ -58,8 +58,8 @@ export default function MapControls(p: MapControlsProps) {
         />
         <span style={{ minWidth: 28 }}>{p.widthScale.toFixed(1)}×</span>
       </label>
-      <label style={sliderLabel} title="0 = fixed-px ribbon widths; 1 = ribbons grow with zoom">
-        <span>Geo</span>
+      <label style={sliderLabel} title="Effect only visible while zooming the map. 0 = ribbons stay the same px width at all zoom levels; 1 = ribbons grow with zoom (fixed geographic width)">
+        <span>Zoom</span>
         <input
           type="range" min={0} max={1} step={0.05}
           value={p.geoScale}
