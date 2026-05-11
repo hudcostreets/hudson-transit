@@ -148,23 +148,18 @@ const NYC_CROSSING_ICONS: Partial<Record<CrossingId, IconSpec>> = {
   '60-mnr-newhaven': { kind: 'badge', text: 'MNR', color: RAIL_COLOR },
   '60-mnr-empire':   { kind: 'badge', text: 'Amtrak', color: RAIL_COLOR },
 
-  // ── 60th Street avenue roads ────────────────────────────────────────
-  '60-fdr':     { kind: 'badge', text: 'FDR',  color: ROAD_COLOR },
-  '60-york':    { kind: 'badge', text: 'York', color: ROAD_COLOR },
-  '60-1av':     { kind: 'badge', text: '1',    color: ROAD_COLOR },
-  '60-2av':     { kind: 'badge', text: '2',    color: ROAD_COLOR },
-  '60-3av':     { kind: 'badge', text: '3',    color: ROAD_COLOR },
-  '60-lex':     { kind: 'badge', text: 'Lex',  color: ROAD_COLOR },
-  '60-park':    { kind: 'badge', text: 'Park', color: ROAD_COLOR },
-  '60-mad':     { kind: 'badge', text: 'Mad',  color: ROAD_COLOR },
-  '60-5av':     { kind: 'badge', text: '5',    color: ROAD_COLOR },
-  '60-bway':    { kind: 'badge', text: 'Bway', color: ROAD_COLOR },
-  '60-cols':    { kind: 'badge', text: 'Col',  color: ROAD_COLOR },
-  '60-amst':    { kind: 'badge', text: 'Amst', color: ROAD_COLOR },
-  '60-westend': { kind: 'badge', text: 'WE',   color: ROAD_COLOR },
-  '60-wsh':     { kind: 'badge', text: 'WSH',  color: ROAD_COLOR },
-  '60-cpw':     { kind: 'badge', text: 'CPW',  color: ROAD_COLOR },
+  // 60th-Street avenue auto/bus crossings intentionally omitted — they're
+  // unambiguous from position (each ribbon sits on its avenue), so no
+  // icon/label is rendered. See `labeledCrossings` filter in NycFlowMap.
 }
+
+// Crossings that should NEVER get an inline label/icon (auto/bus avenues
+// across 60th — the ribbons sit on their actual avenue, so no caption needed).
+export const SKIP_LABEL_CROSSINGS: ReadonlySet<CrossingId> = new Set<CrossingId>([
+  '60-fdr', '60-york', '60-1av', '60-2av', '60-3av', '60-lex',
+  '60-park', '60-mad', '60-5av', '60-bway', '60-cols', '60-amst',
+  '60-westend', '60-wsh', '60-cpw',
+])
 
 /** Render the crossing's icon, or null if no spec is defined. */
 export function CrossingIcon({ crossingId, size = 14 }: { crossingId: CrossingId; size?: number }) {

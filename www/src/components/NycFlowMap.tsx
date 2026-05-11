@@ -20,14 +20,14 @@ import type { LatLon } from 'geo-sankey'
 import type { CrossingRecord, Direction, TimePeriod } from '../lib/types'
 import { type AppendixIIIRecord, NYC_MODE_ORDER, type NycMode, type Sector } from '../lib/nyc-types'
 import { type AppendixIIIDetailRecord, type CrossingFlow, buildCrossingFlows } from '../lib/nyc-data'
-import { type CrossingId, CROSSINGS } from '../lib/nyc-crossings'
+import { type CrossingId, CROSSINGS, SIXTIETH_WEST, SIXTIETH_EAST } from '../lib/nyc-crossings'
 import { DEFAULT_SCHEME } from '../lib/colors'
 import Toggle, { type ToggleOption } from './Toggle'
 import MapControls, {
   ARROW_WING, ARROW_LEN,
   useMapWidthScale, useMapGeoScale, useMapView,
 } from './MapControls'
-import { CrossingIcon } from './nyc-crossing-icons'
+import { CrossingIcon, SKIP_LABEL_CROSSINGS } from './nyc-crossing-icons'
 
 const REF_LAT = 40.74
 const STACK_GAP = 3    // px gap between parallel ribbons at same crossing
@@ -35,16 +35,21 @@ const MAX_RIBBON_PX = 35 // max ribbon width at widthScale=1 (largest flow ↔ t
 
 // CBD perimeter (Manhattan south of 60th St). Drawn as a single line under
 // the ribbons to anchor the eye — 60th St (top) is the most informative
-// edge since all 60th-Street-sector flows cross it.
-// Corner order: 60th-and-Hudson → 60th-and-FDR → Battery → back.
+// edge since all 60th-Street-sector flows cross it. The 60th-St endpoints
+// (SIXTIETH_WEST/EAST) are shared with the avenue-path geometry so the
+// line truly aligns with each avenue's midpoint.
 const CBD_OUTLINE: LatLon[] = [
-  [40.7706, -74.0011],  // 60th & WSH (Hudson)
-  [40.7607, -73.9445],  // 60th & FDR (East River)
-  [40.7402, -73.9710],  // E River turn at ~14th St
-  [40.7104, -73.9740],  // E River at ~Houston/Williamsburg Br
-  [40.7008, -74.0144],  // Battery
-  [40.7068, -74.0193],  // Battery → Hudson side
-  [40.7706, -74.0011],  // back to start
+  SIXTIETH_WEST,                                       // 60th & WSH (Hudson)
+  SIXTIETH_EAST,                                       // 60th near FDR/East River
+  [40.7570, -73.9576] as LatLon,                       // E River around UN/40th
+  [40.7355, -73.9711] as LatLon,                       // FDR near 23rd
+  [40.7166, -73.9756] as LatLon,                       // FDR near Wmsbg Br
+  [40.7104, -73.9907] as LatLon,                       // South Street Seaport
+  [40.7008, -74.0144] as LatLon,                       // Battery
+  [40.7068, -74.0193] as LatLon,                       // Battery → Hudson side
+  [40.7393, -74.0102] as LatLon,                       // Hudson at 23rd
+  [40.7560, -74.0050] as LatLon,                       // Hudson at 42nd
+  SIXTIETH_WEST,                                       // back to start
 ]
 
 const MODE_COLORS: Record<NycMode, string> = {
@@ -224,10 +229,14 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
   // sectors like Staten Island still get represented).
   const TOP_N_GLOBAL = 14
   const labeledCrossings = useMemo(() => {
-    const sorted = [...crossingTotals.entries()].sort((a, b) => b[1].persons - a[1].persons)
+    // Skip avenue auto/bus crossings — they sit on their actual avenues,
+    // making labels redundant clutter.
+    const sorted = [...crossingTotals.entries()]
+      .filter(([cid]) => !SKIP_LABEL_CROSSINGS.has(cid))
+      .sort((a, b) => b[1].persons - a[1].persons)
     const picked = new Set<CrossingId>()
     for (let i = 0; i < Math.min(TOP_N_GLOBAL, sorted.length); i++) picked.add(sorted[i][0])
-    // Ensure 1 per sector.
+    // Ensure 1 per sector (still skipping the avenue roads).
     const seenSectors = new Set<Sector>()
     for (const cid of picked) seenSectors.add(CROSSINGS[cid].sector)
     for (const [cid] of sorted) {
