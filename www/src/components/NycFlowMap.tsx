@@ -19,7 +19,7 @@ import { pxToHalfDeg, pxToDeg, offsetPath, ribbonArrow, flowFillPaint } from 'ge
 import type { LatLon } from 'geo-sankey'
 import type { CrossingRecord, Direction, TimePeriod } from '../lib/types'
 import { type AppendixIIIRecord, NYC_MODE_ORDER, type NycMode, type Sector } from '../lib/nyc-types'
-import { type AppendixIIIDetailRecord, type CrossingFlow, buildCrossingFlows } from '../lib/nyc-data'
+import { type AppendixIIIDetailRecord, type CrossingFlow, buildCrossingFlows, mergeSubwayFlows } from '../lib/nyc-data'
 import { type CrossingId, CROSSINGS, SIXTIETH_WEST, SIXTIETH_EAST } from '../lib/nyc-crossings'
 import { DEFAULT_SCHEME } from '../lib/colors'
 import Toggle, { type ToggleOption } from './Toggle'
@@ -82,6 +82,10 @@ const dirParam = codeParam<Direction>('entering', [
 const timeParam = codeParam<TimePeriod>('peak_1hr', [
   ['peak_1hr', '1h'], ['peak_period', '3h'], ['24hr', '1d'],
 ])
+type SubwayGrouping = 'merged' | 'split'
+const subwayParam = codeParam<SubwayGrouping>('merged', [
+  ['merged', 'm'], ['split', 's'],
+])
 const DIR_OPTIONS: ToggleOption<Direction>[] = [
   { value: 'entering', label: 'Entering', tooltip: 'Entering CBD' },
   { value: 'leaving',  label: 'Leaving',  tooltip: 'Leaving CBD' },
@@ -90,6 +94,10 @@ const TIME_OPTIONS: ToggleOption<TimePeriod>[] = [
   { value: 'peak_1hr', label: '1hr' },
   { value: 'peak_period', label: '3hr' },
   { value: '24hr', label: 'day' },
+]
+const SUBWAY_OPTIONS: ToggleOption<SubwayGrouping>[] = [
+  { value: 'merged', label: 'merged', tooltip: 'Merge 60th-St express+local pairs into one ribbon per trunk' },
+  { value: 'split',  label: 'split',  tooltip: 'Show each express/local pair as a separate ribbon' },
 ]
 
 type Props = {
@@ -108,6 +116,7 @@ function defaultMapHeight(): number {
 export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Props) {
   const [direction, setDirection] = useUrlState('d', dirParam)
   const [timePeriod, setTimePeriod] = useUrlState('t', timeParam)
+  const [subwayGrouping, setSubwayGrouping] = useUrlState('sub', subwayParam)
   const [widthScale, setWidthScale] = useMapWidthScale()
   const [geoScale, setGeoScale] = useMapGeoScale()
 
@@ -138,10 +147,10 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
     mapRef.current?.getMap()?.scrollZoom.disable()
   }, [])
 
-  const flows = useMemo<CrossingFlow[]>(
-    () => buildCrossingFlows(vehicles, buses, detail, appendixIii as any),
-    [vehicles, buses, detail, appendixIii],
-  )
+  const flows = useMemo<CrossingFlow[]>(() => {
+    const raw = buildCrossingFlows(vehicles, buses, detail, appendixIii as any)
+    return subwayGrouping === 'merged' ? mergeSubwayFlows(raw) : raw
+  }, [vehicles, buses, detail, appendixIii, subwayGrouping])
 
   // Maplibre kicker: occasionally lands on a black canvas under strict mode
   // until we drive resize + repaint. ResizeObserver + poll until carto loads.
@@ -474,6 +483,7 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
         <Toggle options={DIR_OPTIONS} value={direction} onChange={setDirection} />
         <Toggle options={TIME_OPTIONS} value={timePeriod} onChange={setTimePeriod} />
+        <Toggle options={SUBWAY_OPTIONS} value={subwayGrouping} onChange={setSubwayGrouping} />
         <MapControls
           widthScale={widthScale} setWidthScale={setWidthScale}
           geoScale={geoScale} setGeoScale={setGeoScale}

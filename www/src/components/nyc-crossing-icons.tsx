@@ -142,6 +142,11 @@ const NYC_CROSSING_ICONS: Partial<Record<CrossingId, IconSpec>> = {
   '60-sub-lex-exp':  { kind: 'subway', lines: ['4', '5'] },
   '60-sub-bway-loc': { kind: 'subway', lines: ['Q', 'W'] },
 
+  // Merged-trunk variants (subwayGrouping="merged")
+  '60-sub-8av':      { kind: 'subway', lines: ['A', 'B', 'C', 'D'] },
+  '60-sub-7av':      { kind: 'subway', lines: ['1', '2', '3'] },
+  '60-sub-lex':      { kind: 'subway', lines: ['4', '5', '6'] },
+
   // ── 60th Street rail (Metro-North + Empire Service) ─────────────────
   '60-mnr-hudson':   { kind: 'badge', text: 'MNR', color: RAIL_COLOR },
   '60-mnr-harlem':   { kind: 'badge', text: 'MNR', color: RAIL_COLOR },

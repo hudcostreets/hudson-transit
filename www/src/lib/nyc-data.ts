@@ -18,6 +18,7 @@ import {
 import {
   type CrossingId, CROSSINGS,
   VEHICLE_TO_CROSSING, FACILITY_TO_CROSSING, normFacility,
+  MERGE_SUBWAY_PAIRS,
 } from './nyc-crossings'
 
 const TIME_PERIODS: TimePeriod[] = ['peak_1hr', 'peak_period', '24hr']
@@ -207,4 +208,21 @@ export function buildCrossingFlows(
 
 export function flowSector(c: CrossingId): Sector {
   return CROSSINGS[c].sector
+}
+
+/**
+ * Collapse paired local+express subway crossings into their merged-trunk
+ * crossings (per `MERGE_SUBWAY_PAIRS`). Other crossings pass through.
+ * Records sharing the merged crossingId have their persons summed.
+ */
+export function mergeSubwayFlows(flows: CrossingFlow[]): CrossingFlow[] {
+  const acc = new Map<string, CrossingFlow>()
+  for (const f of flows) {
+    const cid = MERGE_SUBWAY_PAIRS[f.crossingId] ?? f.crossingId
+    const k = key(f.year, cid, f.mode, f.direction, f.time_period)
+    const existing = acc.get(k)
+    if (existing) existing.persons += f.persons
+    else acc.set(k, { ...f, crossingId: cid })
+  }
+  return [...acc.values()]
 }

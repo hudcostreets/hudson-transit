@@ -56,6 +56,11 @@ export type CrossingId =
   | '60-sub-8av-loc'   // A/B/C local (CPW)
   | '60-sub-8av-exp'   // A/D express
   | '60-sub-bway-loc'  // Q/W local (Bway)
+  // Merged-trunk ribbons (used when subwayGrouping="merged"; each combines
+  // its express+local pair from above into a single ribbon)
+  | '60-sub-8av'       // 8 Ave trunk: A/B/C/D
+  | '60-sub-7av'       // 7 Ave trunk: 1/2/3
+  | '60-sub-lex'       // Lex trunk: 4/5/6
   // Rail (Metro-North down Park Ave to GCT)
   | '60-mnr-hudson' | '60-mnr-harlem' | '60-mnr-newhaven' | '60-mnr-empire'
 
@@ -270,6 +275,14 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
   '60-sub-lex-loc': { id: '60-sub-lex-loc', name: 'Lex · 4/6',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9645) },
   '60-sub-lex-exp': { id: '60-sub-lex-exp', name: 'Lex · 4/5',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9633) },
   '60-sub-bway-loc':{ id: '60-sub-bway-loc',name: 'Bway · Q/W',  sector: '60th_street', modes: ['Subway'], path: ave(-73.9788) },
+  // Merged-trunk ribbons placed on the actual subway corridors:
+  //   IND 8 Ave (A/B/C/D) under CPW/8 Ave
+  //   IRT 7 Ave (1/2/3) under Bway/Columbus Circle (west of CPW)
+  //   IRT Lex   (4/5/6) under Lex
+  // Lon spread between 8 Ave and 7 Ave is ~340 m → labels stay separable.
+  '60-sub-8av':    { id: '60-sub-8av',    name: '8 Ave · A/B/C/D', sector: '60th_street', modes: ['Subway'], path: ave(-73.9778) },
+  '60-sub-7av':    { id: '60-sub-7av',    name: '7 Ave · 1/2/3',   sector: '60th_street', modes: ['Subway'], path: ave(-73.9820) },
+  '60-sub-lex':    { id: '60-sub-lex',    name: 'Lex · 4/5/6',     sector: '60th_street', modes: ['Subway'], path: ave(-73.9637) },
 
   // Metro-North down Park Ave (all 3 main lines + Empire Service)
   '60-mnr-hudson':   { id: '60-mnr-hudson',   name: 'MNR · Hudson Line',     sector: '60th_street', modes: ['Rail'], path: ave(-73.9670) },
@@ -312,6 +325,21 @@ export const VEHICLE_TO_CROSSING: Record<string, CrossingId> = {
   '60th_street|Central Park Drive / 7th Ave':       '60-bway',
   '60th_street|Central Park Drive From 6th Avenue': '60-5av',
   '60th_street|Ed Koch Queensboro Bridge Ramp':     '60-1av',
+}
+
+/**
+ * Express/local-pair merge map. When the user toggles "merged" view, each
+ * 60th-St subway local+express pair collapses into a single ribbon (so
+ * e.g. A/B/C-local and A/D-express → one A/B/C/D ribbon). Crossings not
+ * in this map pass through unchanged.
+ */
+export const MERGE_SUBWAY_PAIRS: Partial<Record<CrossingId, CrossingId>> = {
+  '60-sub-8av-loc': '60-sub-8av',
+  '60-sub-8av-exp': '60-sub-8av',
+  '60-sub-7av-loc': '60-sub-7av',
+  '60-sub-7av-exp': '60-sub-7av',
+  '60-sub-lex-loc': '60-sub-lex',
+  '60-sub-lex-exp': '60-sub-lex',
 }
 
 /** Map (sector, facility) from `appendix_iii_detail.json` to a CrossingId. */
