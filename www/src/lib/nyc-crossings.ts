@@ -37,7 +37,8 @@ export type CrossingId =
   | 'qn-53'          // E/M
   | 'qn-63'          // F
   | 'qn-60'          // N/Q/R
-  | 'qn-lirr'        // LIRR (NEC tunnels to Penn / GCT-Madison)
+  | 'qn-amtrak'      // Amtrak Empire Service (the only rail facility broken out in detail data — ~500/hr)
+  | 'qn-lirr'        // LIRR (synthetic: queens Section C residual after subtracting qn-amtrak)
 
   // ── Staten Island ─────────────────────────────────────────────────────
   | 'si-ferry'
@@ -87,11 +88,13 @@ function midLatFor(lon: number): number {
   return SIXTIETH_REF_LAT + SIXTIETH_SLOPE * (lon - SIXTIETH_REF_LNG)
 }
 
-// Avenue path is centered on the 60th-St crossing: extends ~0.006° lat
-// north and ~0.0045° lat south, sheared SSW per the grid rotation.
-const AVE_NORTH_DLAT = 0.0060
-const AVE_SOUTH_DLAT = 0.0045
-const AVE_SHEAR = 0.65            // Δlon / Δlat for southbound avenues
+// Avenue path is centered on the 60th-St crossing: extends ~0.003° lat
+// north and ~0.0028° lat south, sheared SSW per the grid rotation.
+// Kept compact so the north endpoints stay clearly in Manhattan (not LIC)
+// and don't clash with the Queens-tunnel ribbons.
+const AVE_NORTH_DLAT = 0.0034
+const AVE_SOUTH_DLAT = 0.0028
+const AVE_SHEAR = 0.55            // Δlon / Δlat for southbound avenues (tan(29°)≈0.55)
 
 const ave = (lon: number, opts?: { topDLat?: number; tipDLat?: number }): LatLon[] => {
   const dn = opts?.topDLat ?? AVE_NORTH_DLAT
@@ -213,9 +216,17 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
     id: 'qn-60', name: '60th St Tunnel · N/Q/R', sector: 'queens', modes: ['Subway'],
     path: [[40.7530, -73.9400], [40.7590, -73.9540], [40.7615, -73.9710]],
   },
+  // East River Tubes — 4 parallel tracks from Sunnyside/Hunters Point to Penn
+  // Station. Both Amtrak Empire Service (broken out in detail data as "N.e.
+  // Corridor") and LIRR (residual, see `buildCrossingFlows`) use them.
+  // Identical paths so the two ribbons stack at the same crossing.
+  'qn-amtrak': {
+    id: 'qn-amtrak', name: 'Amtrak · East River Tubes', sector: 'queens', modes: ['Rail'],
+    path: [[40.7445, -73.9540], [40.7488, -73.9740], [40.7506, -73.9935]],
+  },
   'qn-lirr': {
     id: 'qn-lirr', name: 'LIRR · East River Tubes', sector: 'queens', modes: ['Rail'],
-    path: [[40.7445, -73.9370], [40.7530, -73.9620], [40.7530, -73.9870]],
+    path: [[40.7445, -73.9540], [40.7488, -73.9740], [40.7506, -73.9935]],
   },
 
   // ── Staten Island ──────────────────────────────────────────────────────
@@ -331,7 +342,10 @@ export const FACILITY_TO_CROSSING: Record<string, CrossingId> = {
   'queens|n r q line':              'qn-60',
 
   // ── Queens rail ─────────────────────────────────────────────────────
-  'queens|n.e. corridor':           'qn-lirr',
+  // "N.e. Corridor" in detail is Amtrak Empire Service (~500/hr, gaps between
+  // trains). True LIRR (~25k/hr at peak) is the queens Section C residual,
+  // derived in `buildCrossingFlows` and routed to qn-lirr.
+  'queens|n.e. corridor':           'qn-amtrak',
 
   // ── Queens bus ──────────────────────────────────────────────────────
   'queens|ed koch queensboro bridge':                  'qn-queensboro',

@@ -29,7 +29,22 @@ import MapControls, {
 } from './MapControls'
 
 const REF_LAT = 40.74
-const STACK_GAP = 1.5  // px gap between parallel ribbons at same crossing
+const STACK_GAP = 3    // px gap between parallel ribbons at same crossing
+const MAX_RIBBON_PX = 35 // max ribbon width at widthScale=1 (largest flow ↔ this)
+
+// CBD perimeter (Manhattan south of 60th St). Drawn as a single line under
+// the ribbons to anchor the eye — 60th St (top) is the most informative
+// edge since all 60th-Street-sector flows cross it.
+// Corner order: 60th-and-Hudson → 60th-and-FDR → Battery → back.
+const CBD_OUTLINE: LatLon[] = [
+  [40.7706, -74.0011],  // 60th & WSH (Hudson)
+  [40.7607, -73.9445],  // 60th & FDR (East River)
+  [40.7402, -73.9710],  // E River turn at ~14th St
+  [40.7104, -73.9740],  // E River at ~Houston/Williamsburg Br
+  [40.7008, -74.0144],  // Battery
+  [40.7068, -74.0193],  // Battery → Hudson side
+  [40.7706, -74.0011],  // back to start
+]
 
 const MODE_COLORS: Record<NycMode, string> = {
   Auto: DEFAULT_SCHEME.mode.Autos,
@@ -244,7 +259,7 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
       group.sort((a, b) => NYC_MODE_ORDER.indexOf(a.mode) - NYC_MODE_ORDER.indexOf(b.mode))
       // No hard floor — small flows render thin (down to ~0.4 px) so the
       // bus/auto width ratio reflects actual person counts within a crossing.
-      const widths = group.map(f => Math.max(0.4, (f.persons / maxPersons) * 60 * widthScale))
+      const widths = group.map(f => Math.max(0.4, (f.persons / maxPersons) * MAX_RIBBON_PX * widthScale))
       const totalStack = widths.reduce((a, b) => a + b, 0) + STACK_GAP * Math.max(0, widths.length - 1)
       // Each ribbon's offset = its centerline relative to the path's centerline.
       let running = -totalStack / 2
@@ -368,6 +383,24 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
           }}
           onMouseLeave={() => setHoveredKey(null)}
         >
+          <Source id="cbd-outline" type="geojson" data={{
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: CBD_OUTLINE.map(([lat, lon]) => [lon, lat]),
+            },
+          }}>
+            <Layer
+              id="cbd-outline-line"
+              type="line"
+              paint={{
+                'line-color': 'rgba(255, 255, 255, 0.45)',
+                'line-width': 1.5,
+                'line-dasharray': [2, 3],
+              }}
+            />
+          </Source>
           <Source id="flows" type="geojson" data={geojson}>
             <Layer
               id="flow-fills"

@@ -178,6 +178,30 @@ export function buildCrossingFlows(
     }
   }
 
+  // ── 5. Synthetic LIRR: detail data only breaks out Amtrak Empire Service
+  //      (~500/hr, "N.e. Corridor") in Queens Section C; true LIRR (~25k/hr
+  //      peak) lives only at the sector level. Compute (queens Section C
+  //      total) − (qn-amtrak already accumulated) and route the residual
+  //      to qn-lirr.
+  for (const r of appendixIii) {
+    if (r.measure !== 'passengers') continue
+    if (r.section !== 'C') continue
+    if (r.sector !== 'queens') continue
+    for (const tp of TIME_PERIODS) {
+      const hours = TIME_PERIOD_HOURS[r.direction as Direction][tp]
+      if (!hours.includes(r.hour)) continue
+      ensure(r.year, 'qn-lirr', 'Rail', r.direction as Direction, tp).persons += r.value
+    }
+  }
+  // Subtract Amtrak (already accumulated via the detail-data path in step 3)
+  // from the qn-lirr totals — both attribute Section C, so qn-lirr should
+  // hold only the residual.
+  for (const [, flow] of acc) {
+    if (flow.crossingId !== 'qn-lirr') continue
+    const amtrak = acc.get(key(flow.year, 'qn-amtrak', 'Rail', flow.direction, flow.time_period))
+    if (amtrak) flow.persons = Math.max(0, flow.persons - amtrak.persons)
+  }
+
   return [...acc.values()]
 }
 

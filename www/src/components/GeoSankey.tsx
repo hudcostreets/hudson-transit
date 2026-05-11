@@ -570,7 +570,8 @@ function GeoSankeyInner({ data }: Props) {
 
     // Sort: bumped flows last (in `bumpOrder` recency order) so the most
     // recently hovered/pinned flow draws on top; remaining flows fall back to
-    // widest-first so smaller flows draw on top of larger neighbors.
+    // narrowest-first so larger flows draw on top of (and aren't punctured by
+    // the wings of) smaller neighbors' arrowheads.
     features.sort((a, b) => {
       const ka = a.properties?.key as string | undefined
       const kb = b.properties?.key as string | undefined
@@ -581,7 +582,7 @@ function GeoSankeyInner({ data }: Props) {
         if (bi === -1) return 1
         return ai - bi
       }
-      return (b.properties?.width ?? 0) - (a.properties?.width ?? 0)
+      return (a.properties?.width ?? 0) - (b.properties?.width ?? 0)
     })
     return { type: 'FeatureCollection' as const, features }
   }, [flows, direction, maxPassengers, mapView.zoom, geoScale, widthScale, ferryGS.graph, bumpOrder])
