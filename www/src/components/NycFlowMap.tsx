@@ -27,6 +27,7 @@ import MapControls, {
   ARROW_WING, ARROW_LEN,
   useMapWidthScale, useMapGeoScale, useMapView,
 } from './MapControls'
+import { CrossingIcon } from './nyc-crossing-icons'
 
 const REF_LAT = 40.74
 const STACK_GAP = 3    // px gap between parallel ribbons at same crossing
@@ -434,8 +435,10 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
                     background: 'rgba(0,0,0,0.82)', color: '#eee',
                     padding: '2px 6px', borderRadius: 3, fontSize: 11,
                     whiteSpace: 'nowrap', borderLeft: `3px solid ${MODE_COLORS[s.topMode]}`,
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
                   }}
                 >
+                  <CrossingIcon crossingId={s.crossingId} size={14} />
                   <strong>{s.name}</strong>{' '}
                   <span style={{ opacity: 0.85 }}>{s.persons >= 1000 ? `${(s.persons / 1000).toFixed(0)}k` : Math.round(s.persons).toLocaleString()}</span>
                 </div>
