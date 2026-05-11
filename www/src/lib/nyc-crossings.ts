@@ -157,43 +157,44 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
     id: 'bk-battery', name: 'Battery Tunnel', sector: 'brooklyn', modes: ['Auto', 'Bus'],
     path: [[40.6915, -74.0173], [40.6960, -74.0150], [40.7008, -74.0144]],
   },
-  // Subway tubes (one ribbon per shared right-of-way). Each tube ends at
-  // its first Manhattan station — keeping the arrow tip on the shore
-  // rather than penetrating mid-Manhattan where the cluster gets noisy.
-  'bk-cranberry': {
+  // Subway tubes (one ribbon per shared right-of-way). Each tube
+  // terminates at the line's actual first major Manhattan stop so the
+  // arrows fan out instead of all converging on one shore point.
+  'bk-cranberry': {  // A/C → Chambers/WTC
     id: 'bk-cranberry', name: 'Cranberry · A/C', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6997, -73.9907], [40.7050, -73.9970], [40.7138, -74.0049]],
+    path: [[40.6997, -73.9907], [40.7050, -73.9970], [40.7148, -74.0064]],
   },
-  'bk-clark': {
+  'bk-clark': {  // 2/3 → Park Pl/WTC
     id: 'bk-clark', name: 'Clark St · 2/3', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6976, -73.9930], [40.7045, -74.0000], [40.7128, -74.0084]],
+    path: [[40.6976, -73.9930], [40.7045, -74.0030], [40.7131, -74.0086]],
   },
-  'bk-joralemon': {
+  'bk-joralemon': {  // 4/5 → Bowling Green
     id: 'bk-joralemon', name: 'Joralemon · 4/5', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6918, -73.9922], [40.6990, -74.0030], [40.7045, -74.0114]],
+    path: [[40.6918, -73.9922], [40.6990, -74.0030], [40.7045, -74.0136]],
   },
-  'bk-rutgers': {
+  'bk-rutgers': {  // F → East Broadway
     id: 'bk-rutgers', name: 'Rutgers · F', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6997, -73.9863], [40.7080, -73.9890], [40.7137, -73.9905]],
+    path: [[40.6997, -73.9863], [40.7080, -73.9890], [40.7137, -73.9899]],
   },
-  // L's first Manhattan stop is 1st Ave/14th, which is genuinely a few
-  // blocks inland from the East River — we leave the path at that stop.
-  'bk-canarsie': {
+  // L's first Manhattan stop is 1st Ave/14th, well inland from the river.
+  'bk-canarsie': {  // L → 1 Av/14
     id: 'bk-canarsie', name: 'Canarsie · L', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.7170, -73.9560], [40.7235, -73.9720], [40.7305, -73.9818]],
+    path: [[40.7170, -73.9560], [40.7235, -73.9700], [40.7305, -73.9819]],
   },
-  'bk-montague': {
+  'bk-montague': {  // N/R → Whitehall
     id: 'bk-montague', name: 'Montague · N/R', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6930, -73.9920], [40.6975, -74.0050], [40.7038, -74.0130]],
+    path: [[40.6930, -73.9920], [40.6975, -74.0050], [40.7032, -74.0133]],
   },
-  // Mh Bridge subway: north tracks (B/D → 6th Ave) vs south tracks (N/Q → Bway).
-  'bk-mb-bd': {
+  // Mh Br subway: B/D ride north tracks to Bway-Lafayette via 6 Ave;
+  // N/Q ride south tracks to Canal St via Broadway. Spread their endings
+  // up the route they actually take so they don't share a tip.
+  'bk-mb-bd': {  // B/D → Broadway-Lafayette
     id: 'bk-mb-bd', name: 'Mh Br · B/D', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6985, -73.9892], [40.7080, -73.9928], [40.7180, -73.9970]],
+    path: [[40.6985, -73.9892], [40.7100, -73.9920], [40.7256, -73.9961]],
   },
-  'bk-mb-nq': {
+  'bk-mb-nq': {  // N/Q → Canal St
     id: 'bk-mb-nq', name: 'Mh Br · N/Q', sector: 'brooklyn', modes: ['Subway'],
-    path: [[40.6990, -73.9882], [40.7085, -73.9914], [40.7170, -73.9970]],
+    path: [[40.6990, -73.9882], [40.7085, -73.9914], [40.7187, -73.9985]],
   },
 
   // ── Queens ──────────────────────────────────────────────────────────────
@@ -205,21 +206,24 @@ export const CROSSINGS: Record<CrossingId, CrossingDef> = {
     id: 'qn-qmt', name: 'Queens-Midtown Tunnel', sector: 'queens', modes: ['Auto', 'Bus'],
     path: [[40.7470, -73.9430], [40.7470, -73.9580], [40.7466, -73.9710]],
   },
+  // Queens subway tubes — terminate each at the line's actual first major
+  // Manhattan stop (Grand Central for 7, Lex/53 for E/M, Lex/63 for F,
+  // Lex/59 for N/Q/R) to splay them apart visually.
   'qn-steinway': {
     id: 'qn-steinway', name: 'Steinway Tube · 7', sector: 'queens', modes: ['Subway'],
-    path: [[40.7470, -73.9460], [40.7480, -73.9620], [40.7517, -73.9760]],
+    path: [[40.7427, -73.9476], [40.7510, -73.9690], [40.7527, -73.9772]],
   },
   'qn-53': {
     id: 'qn-53', name: '53rd St Tunnel · E/M', sector: 'queens', modes: ['Subway'],
-    path: [[40.7510, -73.9410], [40.7560, -73.9560], [40.7610, -73.9700]],
+    path: [[40.7474, -73.9530], [40.7530, -73.9620], [40.7575, -73.9694]],
   },
   'qn-63': {
     id: 'qn-63', name: '63rd St Tunnel · F', sector: 'queens', modes: ['Subway'],
-    path: [[40.7560, -73.9430], [40.7615, -73.9540], [40.7650, -73.9670]],
+    path: [[40.7544, -73.9416], [40.7591, -73.9531], [40.7649, -73.9658]],
   },
   'qn-60': {
     id: 'qn-60', name: '60th St Tunnel · N/Q/R', sector: 'queens', modes: ['Subway'],
-    path: [[40.7530, -73.9400], [40.7590, -73.9540], [40.7615, -73.9710]],
+    path: [[40.7506, -73.9405], [40.7565, -73.9530], [40.7625, -73.9669]],
   },
   // East River Tubes — 4 parallel tracks from Sunnyside/Hunters Point to Penn
   // Station. Both Amtrak Empire Service (broken out in detail data as "N.e.
