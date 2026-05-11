@@ -115,7 +115,7 @@ function App() {
         <footer>
           <p className="subtitle">
             Travel into Manhattan&rsquo;s Central Business District (below 60th St), 2014&ndash;2024.
-            From <a href="https://www.nymtc.org/en-us/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel">NYMTC Hub Bound Travel</a> reports.
+            From <a href="https://www.nymtc.org/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel">NYMTC Hub Bound Travel</a> reports.
           </p>
           <p>
             <a href="https://hudcostreets.org">Hudson County Complete Streets</a>

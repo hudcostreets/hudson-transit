@@ -82,7 +82,7 @@ pnpm dev                # Dev server on port 3847
 
 Data sourced from publicly available [NYMTC Hub Bound Travel reports][NYMTC HBT].
 
-[NYMTC HBT]: https://www.nymtc.org/en-us/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel
+[NYMTC HBT]: https://www.nymtc.org/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel
 [Hudson County Complete Streets]: https://hudcostreets.org
 [gdrive]: https://drive.google.com/drive/folders/16YYlcHoCA3scyvCNXfBKEf0P_41IRpJS
 [live]: https://cbd.hudcostreets.org
