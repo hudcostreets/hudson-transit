@@ -243,20 +243,20 @@ Each GIF cycles through peak 1hr, peak period (3hr), and 24hr views. Click to op
 
 [nj-ny-gif]: www/public/screenshots/nj-ny.gif
 [ny-nj-gif]: www/public/screenshots/ny-nj.gif
-[nj-ny-live]: https://cbd.hudcostreets.org
-[ny-nj-live]: https://cbd.hudcostreets.org?d=nynj
+[nj-ny-live]: https://hbt.hccs.dev
+[ny-nj-live]: https://hbt.hccs.dev?d=nynj
 [nj-ny-1h]: www/public/screenshots/bubble-nj-ny-1h.png
 [nj-ny-3h]: www/public/screenshots/bubble-nj-ny-3h.png
 [nj-ny-1d]: www/public/screenshots/bubble-nj-ny-1d.png
 [ny-nj-1h]: www/public/screenshots/bubble-ny-nj-1h.png
 [ny-nj-3h]: www/public/screenshots/bubble-ny-nj-3h.png
 [ny-nj-1d]: www/public/screenshots/bubble-ny-nj-1d.png
-[nj-ny-1h-live]: https://cbd.hudcostreets.org
-[nj-ny-3h-live]: https://cbd.hudcostreets.org?t=3h
-[nj-ny-1d-live]: https://cbd.hudcostreets.org?t=1d
-[ny-nj-1h-live]: https://cbd.hudcostreets.org?d=nynj
-[ny-nj-3h-live]: https://cbd.hudcostreets.org?d=nynj&t=3h
-[ny-nj-1d-live]: https://cbd.hudcostreets.org?d=nynj&t=1d
+[nj-ny-1h-live]: https://hbt.hccs.dev
+[nj-ny-3h-live]: https://hbt.hccs.dev?t=3h
+[nj-ny-1d-live]: https://hbt.hccs.dev?t=1d
+[ny-nj-1h-live]: https://hbt.hccs.dev?d=nynj
+[ny-nj-3h-live]: https://hbt.hccs.dev?d=nynj&t=3h
+[ny-nj-1d-live]: https://hbt.hccs.dev?d=nynj&t=1d
 ```
 
 ## Consolidation

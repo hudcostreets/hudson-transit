@@ -2,7 +2,7 @@
 
 Analysis and visualization of [NYMTC's "Hub Bound Travel" reports][NYMTC HBT] — vehicle and passenger volumes into Manhattan's Central Business District (below 60th St), 2014–2024.
 
-**Live site: [cbd.hudcostreets.org](https://cbd.hudcostreets.org)**
+**Live site: [hbt.hccs.dev](https://hbt.hccs.dev)**
 
 Reports are also mirrored in [Hudson County Complete Streets]' [Google Drive][gdrive].
 
@@ -85,7 +85,7 @@ Data sourced from publicly available [NYMTC Hub Bound Travel reports][NYMTC HBT]
 [NYMTC HBT]: https://www.nymtc.org/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel
 [Hudson County Complete Streets]: https://hudcostreets.org
 [gdrive]: https://drive.google.com/drive/folders/16YYlcHoCA3scyvCNXfBKEf0P_41IRpJS
-[live]: https://cbd.hudcostreets.org
+[live]: https://hbt.hccs.dev
 [Plotly.js]: https://plotly.com/javascript/
 [pltly]: https://github.com/runsascoded/pltly
 [MapLibre GL]: https://maplibre.org/
@@ -93,21 +93,21 @@ Data sourced from publicly available [NYMTC Hub Bound Travel reports][NYMTC HBT]
 [`specs/extraction.md`]: specs/done/extraction.md
 [nj-ny-gif]: www/public/screenshots/nj-ny.gif
 [ny-nj-gif]: www/public/screenshots/ny-nj.gif
-[nj-ny-live]: https://cbd.hudcostreets.org
-[ny-nj-live]: https://cbd.hudcostreets.org?d=nynj
+[nj-ny-live]: https://hbt.hccs.dev
+[ny-nj-live]: https://hbt.hccs.dev?d=nynj
 [nj-ny-1h]: www/public/screenshots/bubble-nj-ny-1h.png
 [nj-ny-3h]: www/public/screenshots/bubble-nj-ny-3h.png
 [nj-ny-1d]: www/public/screenshots/bubble-nj-ny-1d.png
 [ny-nj-1h]: www/public/screenshots/bubble-ny-nj-1h.png
 [ny-nj-3h]: www/public/screenshots/bubble-ny-nj-3h.png
 [ny-nj-1d]: www/public/screenshots/bubble-ny-nj-1d.png
-[nj-ny-1h-live]: https://cbd.hudcostreets.org
-[nj-ny-3h-live]: https://cbd.hudcostreets.org?t=3h
-[nj-ny-1d-live]: https://cbd.hudcostreets.org?t=1d
-[ny-nj-1h-live]: https://cbd.hudcostreets.org?d=nynj
-[ny-nj-3h-live]: https://cbd.hudcostreets.org?d=nynj&t=3h
-[ny-nj-1d-live]: https://cbd.hudcostreets.org?d=nynj&t=1d
+[nj-ny-1h-live]: https://hbt.hccs.dev
+[nj-ny-3h-live]: https://hbt.hccs.dev?t=3h
+[nj-ny-1d-live]: https://hbt.hccs.dev?t=1d
+[ny-nj-1h-live]: https://hbt.hccs.dev?d=nynj
+[ny-nj-3h-live]: https://hbt.hccs.dev?d=nynj&t=3h
+[ny-nj-1d-live]: https://hbt.hccs.dev?d=nynj&t=1d
 [map-nj-ny]: www/public/screenshots/map-nj-ny.png
 [map-ny-nj]: www/public/screenshots/map-ny-nj.png
-[map-nj-ny-live]: https://cbd.hudcostreets.org/#map
-[map-ny-nj-live]: https://cbd.hudcostreets.org/?d=nynj#map
+[map-nj-ny-live]: https://hbt.hccs.dev/#map
+[map-ny-nj-live]: https://hbt.hccs.dev/?d=nynj#map
