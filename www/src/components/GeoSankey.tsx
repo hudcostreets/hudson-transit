@@ -755,7 +755,10 @@ function GeoSankeyInner({ data }: Props) {
     '24hr': '24hr',
   }
 
-  const [fullscreen, setFullscreen] = useState(false)
+  const [fullscreen, setFullscreen] = useUrlState('fs', {
+    encode: (v: boolean) => v ? '1' : undefined,
+    decode: (s: string | undefined) => s === '1',
+  })
   const mapFocusedRef = useRef(false)
   const [mapFocused, setMapFocused] = useState(false)
   const mapContainerRef = useRef<HTMLDivElement>(null)
@@ -1251,7 +1254,7 @@ function GeoSankeyInner({ data }: Props) {
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: '#aaa', fontSize: '13px', lineHeight: 1 }}
               >{inlineLegend ? '☰' : '📍'}</button>
               <button
-                onClick={() => setFullscreen(f => !f)}
+                onClick={() => setFullscreen(!fullscreen)}
                 title={fullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: '#aaa', fontSize: '13px', lineHeight: 1 }}
               >{fullscreen ? '✕' : '⛶'}</button>
