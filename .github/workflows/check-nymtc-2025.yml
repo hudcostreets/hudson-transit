@@ -14,113 +14,24 @@ permissions:
   contents: read
   actions: write  # to self-disable on success
 
-env:
-  NYMTC_URL: 'https://www.nymtc.org/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel'
-  BOT_NAME: 'HBT Data'
-  BOT_EMOJI: ':bullettrain_side:'
-  # Marker string included in the "watching..." parent message so subsequent
-  # runs can find it via `conversations.history` and reply in its thread.
-  WATCH_MARKER: 'Watching NYMTC for 2025 HBT report'
-
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch NYMTC page + grep for 2025 report
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Run check
         id: check
-        run: |
-          set -euo pipefail
-          curl -fsSL "$NYMTC_URL" > page.html
-
-          # Detection: anchor text mentioning "2025 Hub Bound Travel Report"
-          # or filenames like "Hub_Bound_Travel_2025". NYMTC organizes folders
-          # by publication year (2025 folder = 2024 data), so we match on the
-          # data year inside the title/filename, not the folder name.
-          if grep -qiE '2025[ _-]+Hub[ _-]+Bound[ _-]+Travel[ _-]+Report|Hub_Bound_Travel_2025' page.html; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-            {
-              grep -oE '<a[^>]*href="[^"]*"[^>]*>[^<]*2025[^<]*Hub[ _-]+Bound[^<]*</a>' page.html | head -3 || true
-              grep -oE 'href="[^"]*(2025[ _%-]+Hub[ _%-]+Bound|Hub_Bound_Travel_2025)[^"]*"' page.html | head -3 || true
-            } > matches.txt
-          else
-            echo "found=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Post to Slack
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
-          FOUND: ${{ steps.check.outputs.found }}
-          IS_TEST: ${{ inputs.test_post == true }}
         run: |
-          set -euo pipefail
-
-          post() {
-            # post <text> <thread_ts-or-empty>
-            local text=$1 thread_ts=${2:-}
-            local payload
-            payload=$(jq -n \
-              --arg channel "$SLACK_CHANNEL_ID" \
-              --arg username "$BOT_NAME" \
-              --arg emoji "$BOT_EMOJI" \
-              --arg text "$text" \
-              --arg thread_ts "$thread_ts" \
-              '{
-                 channel: $channel,
-                 username: $username,
-                 icon_emoji: $emoji,
-                 text: $text,
-               } + (if $thread_ts == "" then {} else { thread_ts: $thread_ts } end)')
-            local resp
-            resp=$(curl -fsSL -X POST \
-              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-              -H 'Content-Type: application/json; charset=utf-8' \
-              --data "$payload" \
-              'https://slack.com/api/chat.postMessage')
-            echo "$resp" | jq -e '.ok' > /dev/null \
-              || { echo "Slack post failed: $resp" >&2; exit 1; }
-            echo "Posted: ts=$(echo "$resp" | jq -r '.ts')${thread_ts:+ (in thread $thread_ts)}"
-          }
-
-          find_watch_parent_ts() {
-            # Find the most recent top-level bot message containing
-            # WATCH_MARKER. Echoes its ts, or empty if none.
-            local hist
-            hist=$(curl -fsSL -G \
-              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-              --data-urlencode "channel=$SLACK_CHANNEL_ID" \
-              --data-urlencode "limit=50" \
-              'https://slack.com/api/conversations.history')
-            echo "$hist" | jq -e '.ok' > /dev/null \
-              || { echo "history fetch failed: $hist" >&2; exit 1; }
-            echo "$hist" | jq -r \
-              --arg name "$BOT_NAME" \
-              --arg marker "$WATCH_MARKER" \
-              '[.messages[] | select((.username == $name) and ((.text // "") | contains($marker)))] | .[0].ts // ""'
-          }
-
-          TODAY=$(date -u +'%Y-%m-%d')
-
-          if [ "$IS_TEST" = "true" ]; then
-            post ":test_tube: HBT Data Bot smoke test ($TODAY) — wiring works."
-            exit 0
-          fi
-
-          if [ "$FOUND" = "true" ]; then
-            MATCHES=$(head -c 2000 matches.txt 2>/dev/null || true)
-            post "$(printf ':rocket: *NYMTC 2025 Hub Bound Travel report* appears to be published! <%s|page>\n\`\`\`\n%s\n\`\`\`' "$NYMTC_URL" "$MATCHES")"
-            exit 0
-          fi
-
-          # No 2025 report yet — thread under the existing watch parent,
-          # or bootstrap one if this is the first negative run.
-          PARENT_TS=$(find_watch_parent_ts)
-          if [ -n "$PARENT_TS" ]; then
-            post "Still no 2025 HBT report on NYMTC as of $TODAY." "$PARENT_TS"
+          if [ "${{ inputs.test_post }}" = "true" ]; then
+            scripts/check_nymtc_2025.py --test
           else
-            post "$(printf ':hourglass_flowing_sand: %s — not yet published as of %s. Will check <%s|NYMTC> daily and reply in this thread.' "$WATCH_MARKER" "$TODAY" "$NYMTC_URL")"
+            scripts/check_nymtc_2025.py
           fi
 
       - name: Self-disable workflow (real hit only)
