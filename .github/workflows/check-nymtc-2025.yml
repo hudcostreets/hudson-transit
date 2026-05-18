@@ -18,6 +18,9 @@ env:
   NYMTC_URL: 'https://www.nymtc.org/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel'
   BOT_NAME: 'HBT Data'
   BOT_EMOJI: ':bullettrain_side:'
+  # Marker string included in the "watching..." parent message so subsequent
+  # runs can find it via `conversations.history` and reply in its thread.
+  WATCH_MARKER: 'Watching NYMTC for 2025 HBT report'
 
 jobs:
   check:
@@ -46,46 +49,79 @@ jobs:
           fi
 
       - name: Post to Slack
-        if: steps.check.outputs.found == 'true' || inputs.test_post == true
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
-          IS_TEST: ${{ inputs.test_post == true && steps.check.outputs.found != 'true' }}
+          FOUND: ${{ steps.check.outputs.found }}
+          IS_TEST: ${{ inputs.test_post == true }}
         run: |
           set -euo pipefail
-          MATCHES=$(cat matches.txt 2>/dev/null | head -c 2000 || true)
+
+          post() {
+            # post <text> <thread_ts-or-empty>
+            local text=$1 thread_ts=${2:-}
+            local payload
+            payload=$(jq -n \
+              --arg channel "$SLACK_CHANNEL_ID" \
+              --arg username "$BOT_NAME" \
+              --arg emoji "$BOT_EMOJI" \
+              --arg text "$text" \
+              --arg thread_ts "$thread_ts" \
+              '{
+                 channel: $channel,
+                 username: $username,
+                 icon_emoji: $emoji,
+                 text: $text,
+               } + (if $thread_ts == "" then {} else { thread_ts: $thread_ts } end)')
+            local resp
+            resp=$(curl -fsSL -X POST \
+              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+              -H 'Content-Type: application/json; charset=utf-8' \
+              --data "$payload" \
+              'https://slack.com/api/chat.postMessage')
+            echo "$resp" | jq -e '.ok' > /dev/null \
+              || { echo "Slack post failed: $resp" >&2; exit 1; }
+            echo "Posted: ts=$(echo "$resp" | jq -r '.ts')${thread_ts:+ (in thread $thread_ts)}"
+          }
+
+          find_watch_parent_ts() {
+            # Find the most recent top-level bot message containing
+            # WATCH_MARKER. Echoes its ts, or empty if none.
+            local hist
+            hist=$(curl -fsSL -G \
+              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+              --data-urlencode "channel=$SLACK_CHANNEL_ID" \
+              --data-urlencode "limit=50" \
+              'https://slack.com/api/conversations.history')
+            echo "$hist" | jq -e '.ok' > /dev/null \
+              || { echo "history fetch failed: $hist" >&2; exit 1; }
+            echo "$hist" | jq -r \
+              --arg name "$BOT_NAME" \
+              --arg marker "$WATCH_MARKER" \
+              '[.messages[] | select((.username == $name) and ((.text // "") | contains($marker)))] | .[0].ts // ""'
+          }
+
+          TODAY=$(date -u +'%Y-%m-%d')
+
           if [ "$IS_TEST" = "true" ]; then
-            HEADLINE=":test_tube: HBT Data Bot smoke test — wiring works. (No 2025 report on NYMTC yet.)"
-            DETAIL="Workflow: \`check-nymtc-2025.yml\` · Run: <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|view>"
-          else
-            HEADLINE="🚇 *NYMTC 2025 Hub Bound Travel report* appears to be published! <${NYMTC_URL}|page>"
-            DETAIL="\`\`\`${MATCHES}\`\`\`"
+            post ":test_tube: HBT Data Bot smoke test ($TODAY) — wiring works."
+            exit 0
           fi
 
-          PAYLOAD=$(jq -n \
-            --arg channel "$SLACK_CHANNEL_ID" \
-            --arg username "$BOT_NAME" \
-            --arg emoji "$BOT_EMOJI" \
-            --arg headline "$HEADLINE" \
-            --arg detail "$DETAIL" \
-            '{
-               channel: $channel,
-               username: $username,
-               icon_emoji: $emoji,
-               text: $headline,
-               blocks: [
-                 { type: "section", text: { type: "mrkdwn", text: $headline } },
-                 { type: "section", text: { type: "mrkdwn", text: $detail } }
-               ]
-             }')
+          if [ "$FOUND" = "true" ]; then
+            MATCHES=$(head -c 2000 matches.txt 2>/dev/null || true)
+            post "$(printf ':rocket: *NYMTC 2025 Hub Bound Travel report* appears to be published! <%s|page>\n\`\`\`\n%s\n\`\`\`' "$NYMTC_URL" "$MATCHES")"
+            exit 0
+          fi
 
-          RESP=$(curl -fsSL -X POST \
-            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-            -H 'Content-Type: application/json; charset=utf-8' \
-            --data "$PAYLOAD" \
-            'https://slack.com/api/chat.postMessage')
-          echo "$RESP" | jq -e '.ok' > /dev/null || { echo "Slack post failed: $RESP"; exit 1; }
-          echo "Posted: ts=$(echo "$RESP" | jq -r '.ts')"
+          # No 2025 report yet — thread under the existing watch parent,
+          # or bootstrap one if this is the first negative run.
+          PARENT_TS=$(find_watch_parent_ts)
+          if [ -n "$PARENT_TS" ]; then
+            post "Still no 2025 HBT report on NYMTC as of $TODAY." "$PARENT_TS"
+          else
+            post "$(printf ':hourglass_flowing_sand: %s — not yet published as of %s. Will check <%s|NYMTC> daily and reply in this thread.' "$WATCH_MARKER" "$TODAY" "$NYMTC_URL")"
+          fi
 
       - name: Self-disable workflow (real hit only)
         if: steps.check.outputs.found == 'true'
