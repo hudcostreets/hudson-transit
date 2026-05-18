@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["thrds"]
+# dependencies = ["thrds @ git+https://github.com/runsascoded/thrds@3cb9a0f"]
 # ///
 """Daily check for the NYMTC 2025 Hub Bound Travel report.
 
