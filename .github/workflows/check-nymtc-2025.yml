@@ -1,0 +1,94 @@
+name: Check NYMTC for 2025 HBT report
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # 12:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      test_post:
+        description: 'Force a test post to Slack (bypasses the page-content check)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write  # to self-disable on success
+
+env:
+  NYMTC_URL: 'https://www.nymtc.org/Data-and-Modeling/Transportation-Data-and-Statistics/Publications/Hub-Bound-Travel'
+  BOT_NAME: 'HBT Data'
+  BOT_EMOJI: ':bullettrain_side:'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch NYMTC page + grep for 2025 report
+        id: check
+        run: |
+          set -euo pipefail
+          curl -fsSL "$NYMTC_URL" > page.html
+
+          # Detection: anchor text mentioning "2025 Hub Bound Travel Report"
+          # or filenames like "Hub_Bound_Travel_2025". NYMTC organizes folders
+          # by publication year (2025 folder = 2024 data), so we match on the
+          # data year inside the title/filename, not the folder name.
+          if grep -qiE '2025[ _-]+Hub[ _-]+Bound[ _-]+Travel[ _-]+Report|Hub_Bound_Travel_2025' page.html; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            {
+              grep -oE '<a[^>]*href="[^"]*"[^>]*>[^<]*2025[^<]*Hub[ _-]+Bound[^<]*</a>' page.html | head -3 || true
+              grep -oE 'href="[^"]*(2025[ _%-]+Hub[ _%-]+Bound|Hub_Bound_Travel_2025)[^"]*"' page.html | head -3 || true
+            } > matches.txt
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post to Slack
+        if: steps.check.outputs.found == 'true' || inputs.test_post == true
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          IS_TEST: ${{ inputs.test_post == true && steps.check.outputs.found != 'true' }}
+        run: |
+          set -euo pipefail
+          MATCHES=$(cat matches.txt 2>/dev/null | head -c 2000 || true)
+          if [ "$IS_TEST" = "true" ]; then
+            HEADLINE=":test_tube: HBT Data Bot smoke test — wiring works. (No 2025 report on NYMTC yet.)"
+            DETAIL="Workflow: \`check-nymtc-2025.yml\` · Run: <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|view>"
+          else
+            HEADLINE="🚇 *NYMTC 2025 Hub Bound Travel report* appears to be published! <${NYMTC_URL}|page>"
+            DETAIL="\`\`\`${MATCHES}\`\`\`"
+          fi
+
+          PAYLOAD=$(jq -n \
+            --arg channel "$SLACK_CHANNEL_ID" \
+            --arg username "$BOT_NAME" \
+            --arg emoji "$BOT_EMOJI" \
+            --arg headline "$HEADLINE" \
+            --arg detail "$DETAIL" \
+            '{
+               channel: $channel,
+               username: $username,
+               icon_emoji: $emoji,
+               text: $headline,
+               blocks: [
+                 { type: "section", text: { type: "mrkdwn", text: $headline } },
+                 { type: "section", text: { type: "mrkdwn", text: $detail } }
+               ]
+             }')
+
+          RESP=$(curl -fsSL -X POST \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            --data "$PAYLOAD" \
+            'https://slack.com/api/chat.postMessage')
+          echo "$RESP" | jq -e '.ok' > /dev/null || { echo "Slack post failed: $RESP"; exit 1; }
+          echo "Posted: ts=$(echo "$RESP" | jq -r '.ts')"
+
+      - name: Self-disable workflow (real hit only)
+        if: steps.check.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow disable "Check NYMTC for 2025 HBT report" --repo "$GITHUB_REPOSITORY"
