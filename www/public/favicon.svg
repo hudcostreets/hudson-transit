@@ -1,5 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <circle cx="22" cy="22" r="21" fill="#F59E0B"/>
-  <circle cx="44" cy="32" r="17" fill="#9333EA"/>
-  <circle cx="24" cy="48" r="14" fill="#14B8A6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- the Hudson: a bright water channel down the middle -->
+  <path d="M11 0 Q15 8 12 16 Q9 24 14 32 L22 32 Q17 24 20 16 Q23 8 19 0 Z" fill="#2b7fbf"/>
+  <path d="M11 0 Q15 8 12 16 Q9 24 14 32" fill="none" stroke="#5bb4e5" stroke-width="1" opacity="0.7"/>
+  <!-- transit-mode flows crossing NJ -> NY, in the app's mode colors -->
+  <g stroke-linecap="round">
+    <path d="M3 8 H23" stroke="#f5a623" stroke-width="3.4"/>
+    <path d="M24.5 8 l-4.5 -3.2 v6.4 z" fill="#f5a623"/>
+    <path d="M4 16 H25" stroke="#7b5cff" stroke-width="3.4"/>
+    <path d="M26.5 16 l-4.5 -3.2 v6.4 z" fill="#7b5cff"/>
+    <path d="M3 24 H22" stroke="#e5484d" stroke-width="3.4"/>
+    <path d="M23.5 24 l-4.5 -3.2 v6.4 z" fill="#e5484d"/>
+  </g>
 </svg>
