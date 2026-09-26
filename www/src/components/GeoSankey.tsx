@@ -272,6 +272,10 @@ const timeParam = {
   decode: (s: string | undefined): TimePeriod =>
     s === '3h' ? 'peak_period' : s === '1d' ? '24hr' : 'peak_1hr',
 }
+const fsParam = {
+  encode: (v: boolean) => v ? '1' : undefined,
+  decode: (s: string | undefined) => s === '1',
+}
 
 // Terminal name mapping for tunnel crossings (NJ side, Manhattan side)
 const TERMINAL_NAMES: Record<string, [string, string]> = {
@@ -755,10 +759,23 @@ function GeoSankeyInner({ data }: Props) {
     '24hr': '24hr',
   }
 
-  const [fullscreen, setFullscreen] = useUrlState('fs', {
-    encode: (v: boolean) => v ? '1' : undefined,
-    decode: (s: string | undefined) => s === '1',
-  })
+  // Entering fullscreen pushes a history entry, so "back" exits it. Exiting pops
+  // that entry when we pushed it; otherwise (e.g. an embed loaded at `?fs=1`)
+  // it replaces, so "back" doesn't re-enter fullscreen.
+  const [fullscreen, pushFullscreen] = useUrlState('fs', fsParam, { push: true })
+  const [, replaceFullscreen] = useUrlState('fs', fsParam)
+  const fsPushedRef = useRef(false)
+  const setFullscreen = useCallback((on: boolean) => {
+    if (on) {
+      fsPushedRef.current = true
+      pushFullscreen(true)
+    } else if (fsPushedRef.current) {
+      fsPushedRef.current = false
+      history.back()
+    } else {
+      replaceFullscreen(false)
+    }
+  }, [pushFullscreen, replaceFullscreen])
   const mapFocusedRef = useRef(false)
   const [mapFocused, setMapFocused] = useState(false)
   const mapContainerRef = useRef<HTMLDivElement>(null)
