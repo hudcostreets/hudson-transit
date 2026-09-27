@@ -35,4 +35,4 @@ deltas. **Closest to path** of the three — same DVX/hudcostreets-S3 shape.
 - **Data store:** DVX remote is `r2` = `s3://hbt/.dvc/cache` on the HCCS account (`9bafd5b`); its own top-level bucket `hbt`.
 - **Domain:** no separate data host. The FE bundles its JSON at build time (no runtime blob reads, so the playbook's base-URL / HEAD-503 steps don't apply); public blobs are served by the site's own Worker at `hbt.hccs.dev/api/files/*`, browsable at `/files`.
 - **CI:** GHP `deploy.yml` removed; `deploy-worker.yml` never runs `dvx pull` (JSON is tracked), so it needs only `CLOUDFLARE_API_TOKEN`.
-- **Old store:** `s3://hudcostreets/hbt/` (RAC AWS, 9 objects): R2 parity checked 2026-09-27 (same keys + sizes; keys are content hashes) and nothing references it. Left for manual cleanup.
+- **Old store:** `s3://hudcostreets/hbt/` (RAC AWS, 9 objects): R2 parity checked 2026-09-27 (same keys + sizes; keys are content hashes) and nothing references it; deleted the same day.
