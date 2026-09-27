@@ -143,14 +143,15 @@ function labelFontPx(w: number): number {
 }
 
 // Derive the initial { lat, lng, zoom } from viewport + map height, fitting
-// MAP_BB into the content area. Padding reserves LI-label space on the right
-// (labels grow east) and modest gutters elsewhere.
-function defaultView(): { lat: number; lng: number; zoom: number } {
+// MAP_BB into the content area. Padding reserves LI-label space where labels
+// grow (east of termini entering NY, west leaving) and modest gutters elsewhere.
+function defaultView(direction: Direction): { lat: number; lng: number; zoom: number } {
   const W = typeof window !== 'undefined' ? window.innerWidth : 1400
   const H = defaultMapHeight()
   const fontPx = labelFontPx(W)
-  const padLeft = 20
-  const padRight = 14 * fontPx + 20   // ~longest LI width
+  const labelPad = 19 * fontPx + 20   // ~longest LI width (Amtrak/NJT: icon + 2 logos)
+  const padLeft = direction === 'leaving' ? labelPad : 20
+  const padRight = direction === 'leaving' ? 20 : labelPad
   const padTop = 20
   const padBottom = 20
   const contentW = Math.max(100, W - padLeft - padRight)
@@ -162,12 +163,13 @@ function defaultView(): { lat: number; lng: number; zoom: number } {
   const zByLat = Math.log2(contentH * Math.cos(refLat * Math.PI / 180) * 360 / (512 * latDelta))
   const zoom = Math.min(zByLng, zByLat)
   const bbCenterLng = (MAP_BB.lngMin + MAP_BB.lngMax) / 2
-  // When horizontally constrained, shift east so BB sits left in content area
-  // (content area = viewport minus padLeft/padRight). When vertically
-  // constrained there's enough slack that BB-center ≈ viewport-center.
-  const lng = zByLng < zByLat
-    ? bbCenterLng + (padRight - padLeft) / 2 * (360 / (512 * Math.pow(2, zoom)))
-    : bbCenterLng
+  // Center the BB, then shift it away from the label side just enough to leave
+  // `labelPad` there. Horizontally constrained, this is (padRight - padLeft) / 2;
+  // vertically constrained, often 0 (enough slack either side).
+  const pxPerDeg = 512 * Math.pow(2, zoom) / 360
+  const slack = (W - lngDelta * pxPerDeg) / 2
+  const shiftPx = Math.max(0, labelPad - slack)
+  const lng = bbCenterLng + (direction === 'leaving' ? -shiftPx : shiftPx) / pxPerDeg
   return { lat: refLat, lng, zoom }
 }
 
@@ -335,6 +337,8 @@ const MODE_ORDER = ['Autos', 'Bus', 'Rail', 'PATH', 'Ferries']
 
 interface Props {
   data: CrossingRecord[]
+  /** Map only: no info panel or controls (OG-image captures, with `fs=1`). */
+  clean?: boolean
 }
 
 const MAP_HEIGHT_KEY = 'geo-sankey-map-height'
@@ -348,7 +352,7 @@ function defaultMapHeight(): number {
   return Math.min(Math.round(h * 0.9), 900)
 }
 
-function GeoSankeyInner({ data }: Props) {
+function GeoSankeyInner({ data, clean = false }: Props) {
   const [mapHeight, setMapHeight] = useState(() => {
     const stored = sessionStorage.getItem(MAP_HEIGHT_KEY)
     return stored ? parseInt(stored) : defaultMapHeight()
@@ -369,7 +373,7 @@ function GeoSankeyInner({ data }: Props) {
   const [widthScale, setWidthScale] = useMapWidthScale()
   const [hitPad, setHitPad] = useMapHitPad()
 
-  const [mapView, setMapView] = useMapView(defaultView)
+  const [mapView, setMapView] = useMapView(useCallback(() => defaultView(direction), [direction]))
 
   const filtered = useMemo(
     () => filterCrossings(data, direction, timePeriod),
@@ -818,6 +822,14 @@ function GeoSankeyInner({ data }: Props) {
     if (fullscreen) map.scrollZoom.enable()
     else if (!mapFocusedRef.current) map.scrollZoom.disable()
   }, [fullscreen])
+  // The page behind the fullscreen map shouldn't scroll (or show a scrollbar).
+  useEffect(() => {
+    if (!fullscreen) return
+    const root = document.documentElement
+    const prev = root.style.overflow
+    root.style.overflow = 'hidden'
+    return () => { root.style.overflow = prev }
+  }, [fullscreen])
   useEffect(() => {
     if (!fullscreen) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFullscreen(false) }
@@ -1256,7 +1268,7 @@ function GeoSankeyInner({ data }: Props) {
         )}
         {ferryIO.ui}
         {/* Sticky info panel */}
-        <div className="geo-sankey-panel">
+        {!clean && <div className="geo-sankey-panel">
           <div className="geo-sankey-panel-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <strong style={{ fontSize: '14px' }}>Total: {totalPassengers.toLocaleString()}</strong>
             <span style={{ display: 'flex', gap: '4px' }}>
@@ -1331,9 +1343,9 @@ function GeoSankeyInner({ data }: Props) {
               </div>
             )
           })}
-        </div>
+        </div>}
       </div>
-      <div className="controls" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginTop: '0.5rem' }}>
+      {!clean && <div className="controls" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginTop: '0.5rem' }}>
         <Toggle
           options={[
             { value: 'entering', label: 'NJ\u2192NY' },
@@ -1369,7 +1381,7 @@ function GeoSankeyInner({ data }: Props) {
           geoScale={geoScale} setGeoScale={setGeoScale}
           hitPad={hitPad} setHitPad={setHitPad}
         />
-      </div>
+      </div>}
     </div>
   )
 }

@@ -43,8 +43,7 @@ export function useMapView(defaultView: () => MapView) {
         return { lat: parts[0], lng: parts[1], zoom: parts[2] }
       },
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [defaultView])
   return useUrlState('ll', param)
 }
 

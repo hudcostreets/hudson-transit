@@ -80,7 +80,7 @@ function App() {
               draw from `hourly`/`vehicles`/`peak` which span all sectors. */}
           {!showNyc && <>
             <section id="map">
-              <GeoSankey data={crossings} />
+              <GeoSankey data={crossings} clean={clean} />
             </section>
             <section id="chart">
               <UnifiedChart data={crossings} clean={clean} />
