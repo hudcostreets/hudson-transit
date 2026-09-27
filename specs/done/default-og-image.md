@@ -40,3 +40,9 @@ Condition it on the **resolved view equalling the default** (`dir === 'entering'
 - If a test for `resolveOgMeta` exists or gets added, assert the exact `OgMeta` for those three URLs.
 
 [hccs.dev]: https://hccs.dev
+
+## Done
+
+- `resolveOgMeta` (`www/worker/index.ts`): the index view that resolves to the default (`entering` / `peak_1hr` / `crossing`) returns `/og.png?v=<version>` + `STATIC_IMAGE_ALT`, so `/`, `/?t=1h` and unrelated params all get the hero. `/files*` uses the same versioned static URL. Other index views and all `/nyc` views keep their Satori cards.
+- `public/og.png` checked: current (data through '24), not regenerated.
+- No worker test harness exists; verified with `curl` against prod (see commit).

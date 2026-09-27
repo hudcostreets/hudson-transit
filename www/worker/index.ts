@@ -69,6 +69,9 @@ function ogImageUrl(origin: string, view: OgView, version: string): string {
 
 export function resolveOgMeta(url: URL, version: string): OgMeta {
   const pageUrl = `${url.origin}${url.pathname}${url.search}`
+  // `public/og.png` (bubble-chart screenshot). The asset server ignores `v`,
+  // which only busts crawler caches when it's regenerated.
+  const staticImage = `${url.origin}/og.png?v=${version}`
 
   const files = url.pathname.match(/^\/files(?:\/(.*))?$/)
   if (files) {
@@ -77,7 +80,7 @@ export function resolveOgMeta(url: URL, version: string): OgMeta {
       title: path ? `${path} — ${SITE_TITLE} files` : `Files — ${SITE_TITLE}`,
       description: `NYMTC Hub Bound Travel reports (${YEARS}) and the data extracted from them.`,
       url: pageUrl,
-      image: `${url.origin}/og.png`,
+      image: staticImage,
       imageAlt: STATIC_IMAGE_ALT,
     }
   }
@@ -102,6 +105,9 @@ export function resolveOgMeta(url: URL, version: string): OgMeta {
   }
 
   const isDefaultView = view.dir === 'entering' && view.time === 'peak_1hr'
+  // The most-shared link (bare `/`, or explicit defaults) unfurls as the static
+  // bubble-chart hero; other views get their own card.
+  const isHeroView = isDefaultView && view.gran === 'crossing'
   const arrow = view.dir === 'entering' ? 'NJ→NY' : 'NY→NJ'
   return {
     title: isDefaultView ? SITE_TITLE : `${arrow}, ${timeLabel} — ${SITE_TITLE}`,
@@ -109,8 +115,8 @@ export function resolveOgMeta(url: URL, version: string): OgMeta {
       ? `${arrow} transit trends, ${YEARS}. ${SOURCE}`
       : `${arrow} transit trends, ${timeLabel}, ${YEARS}. ${SOURCE}`,
     url: pageUrl,
-    image,
-    imageAlt,
+    image: isHeroView ? staticImage : image,
+    imageAlt: isHeroView ? STATIC_IMAGE_ALT : imageAlt,
   }
 }
 
