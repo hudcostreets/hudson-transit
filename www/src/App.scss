@@ -1,5 +1,6 @@
 // Theme custom properties
 :root {
+  color-scheme: dark;
   --bg: #1a1a2e;
   --bg-surface: #16213e;
   --bg-hover: #0f3460;
@@ -36,6 +37,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --bg: #fff;
   --bg-surface: #fff;
   --bg-hover: #f0f4f8;
@@ -73,6 +75,7 @@
 
 @media (prefers-color-scheme: light) {
   [data-theme="system"] {
+    color-scheme: light;
     --bg: #fff;
     --bg-surface: #fff;
     --bg-hover: #f0f4f8;
@@ -119,6 +122,19 @@ body {
   background: var(--bg);
   color: var(--text);
   transition: background 0.2s, color 0.2s;
+}
+
+// `/files/*` (`FilesPage.tsx`): `@rdub/file-tree` ships no CSS and inherits
+// text color + `color-scheme` from here.
+.files-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1em 1.5em;
+  a { color: var(--link); }
+}
+.files-intro {
+  color: var(--text-muted);
+  margin: 0 0 1em;
 }
 
 .app {

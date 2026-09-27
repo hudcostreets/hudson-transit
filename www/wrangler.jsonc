@@ -18,7 +18,7 @@
     "not_found_handling": "single-page-application",
     // Only SPA navigation routes hit the Worker (for `<title>` / OG rewriting);
     // hashed `/assets/*` and other static files go to the asset server directly.
-    "run_worker_first": ["/", "/nyc", "/nyc/*"],
+    "run_worker_first": ["/", "/nyc", "/nyc/*", "/files", "/files/*", "/api/*"],
   },
   "r2_buckets": [
     { "binding": "HBT_BUCKET", "bucket_name": "hbt" },

@@ -71,6 +71,14 @@ Supersedes `specs/s3-to-r2-hccs.md` (whose FE/CI assumptions don't hold for hbt;
 - OG for `/files/*`: `@rdub/file-tree/og` (`renderOgCard` / `injectOgTags`) → per-path cards.
 - Link it from the site header/footer and README.
 
+### Implemented (2026-09-27)
+
+- `www/worker/index.ts`: `/api/files/*` → `createHandlers(R2Store(env.HBT_BUCKET, { prefixes: ['raw/', 'data/'], bucketName: 'hbt' }), { basePath: '/api/files', corsOrigin: null })` (same-origin; downloads via Worker proxy — largest object is 20MB). `/files*` gets per-path `<title>` / OG tags (e.g. "raw/2024 — Hub Bound Travel files"); `og:image` is still the static one (§4 can use `@rdub/file-tree/og` cards). `run_worker_first` += `/files`, `/files/*`, `/api/*`.
+- PDF workaround: `/get` always sends `Content-Disposition: attachment`, which made `PdfViewer`'s `<iframe>` download; the Worker rewrites it to `inline` for `*.pdf` (same-origin `<a download>` still downloads). Upstream: `$c/js/file-tree/specs/http-store-pdf-inline-and-prefix-403.md` (also: out-of-prefix requests like `.dvc/` are refused, but as a 500 rather than a 4xx).
+- FE: `src/main.tsx` lazy-loads `FilesPage` for `/files*` and `App` otherwise, so `/files` is a 62KB chunk instead of the ~18MB data-laden `App`. `src/FilesPage.tsx`: `<BrowserRouter>` (file-tree needs a router; the rest of the app routes on `location.pathname`) + `<FileTree store={HttpStore('/api/files', { describe: 'r2://hbt/' })} routeBase="/files" />`. `App.scss`: `color-scheme` per theme (file-tree inherits UA colors), `.files-page` styles. Footer links `/files`.
+- Deps: `@rdub/file-tree` via `pds` (GH dist `a685b4b`), `react-router-dom`. Its dist `package.json` lost `peerDependenciesMeta` (only 3 of 12 peers optional), so pnpm tried to auto-install `@rdub/treemap` (not on npm → 404); worked around with `pnpm.packageExtensions` re-marking them optional. Upstream: `$c/js/npm-dist/specs/preserve-peer-dependencies-meta.md`.
+- Verified with `wrangler dev --remote` (real R2 binding): root lists `data/` + `raw/` only; `raw/2024/` 11 entries; PDF renders in the viewer (`inline`, `application/pdf`, 130 pages); `crossings.json` renders; `.dvc/` list/get refused; `/`, `/?d=nynj`, `/nyc` unchanged (chart/map/6 sections), no console errors.
+
 ## 4. Dynamic OGIs
 
 - Route: `GET /og/<page>.png?<the page's own query params>` (e.g. `/og/index.png?d=nynj&t=3h&yr=2019`, `/og/nyc.png?…`). The HTMLRewriter pass points `og:image` there.
