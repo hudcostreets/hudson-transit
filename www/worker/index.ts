@@ -132,17 +132,7 @@ async function handleFiles(request: Request, env: Env): Promise<Response> {
     R2Store(env.HBT_BUCKET, { prefixes: FILES_PREFIXES, bucketName: 'hbt' }),
     { basePath: FILES_API, corsOrigin: null },
   )
-  const response = await handlers.handle(request) ?? new Response('not found', { status: 404 })
-  // `/get` sends `Content-Disposition: attachment`, which makes the PDF
-  // viewer's `<iframe>` download instead of render. Same-origin `<a download>`
-  // still downloads with `inline`, so PDFs lose nothing.
-  const disposition = response.headers.get('content-disposition')
-  if (disposition?.startsWith('attachment') && /\.pdf$/i.test(new URL(request.url).searchParams.get('path') ?? '')) {
-    const headers = new Headers(response.headers)
-    headers.set('content-disposition', disposition.replace(/^attachment/, 'inline'))
-    return new Response(response.body, { status: response.status, headers })
-  }
-  return response
+  return await handlers.handle(request) ?? new Response('not found', { status: 404 })
 }
 
 export default {

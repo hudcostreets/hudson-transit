@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
-    "@rdub/file-tree": "https://github.com/runsascoded/file-tree#a685b4bbb33a41632a9e79318f5263dedaf16582",
+    "@rdub/file-tree": "https://github.com/runsascoded/file-tree#ca0c1d8a2b9234e0084655182605e197b9a11d10",
     "geo-sankey": "https://github.com/runsascoded/geo-sankey#3af38f772fd03a5455a24f222d90a66e52f93f52",
     "maplibre-gl": "^5.20.0",
     "plotly.js": "https://github.com/runsascoded/plotly.js#4b74cad1dc53d5c14b46a7ce3fbe4a85be8ed709",

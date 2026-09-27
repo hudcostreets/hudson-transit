@@ -14,8 +14,8 @@ importers:
         specifier: ^0.27.19
         version: 0.27.19(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@rdub/file-tree':
-        specifier: https://github.com/runsascoded/file-tree#a685b4bbb33a41632a9e79318f5263dedaf16582
-        version: https://codeload.github.com/runsascoded/file-tree/tar.gz/a685b4bbb33a41632a9e79318f5263dedaf16582(react-dom@19.2.4(react@19.2.4))(react-router-dom@7.18.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(use-prms@0.5.0(react@19.2.4))
+        specifier: https://github.com/runsascoded/file-tree#ca0c1d8a2b9234e0084655182605e197b9a11d10
+        version: https://codeload.github.com/runsascoded/file-tree/tar.gz/ca0c1d8a2b9234e0084655182605e197b9a11d10(react-dom@19.2.4(react@19.2.4))(react-router-dom@7.18.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(use-prms@0.5.0(react@19.2.4))
       geo-sankey:
         specifier: https://github.com/runsascoded/geo-sankey#3af38f772fd03a5455a24f222d90a66e52f93f52
         version: https://codeload.github.com/runsascoded/geo-sankey/tar.gz/3af38f772fd03a5455a24f222d90a66e52f93f52(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1207,9 +1207,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@rdub/file-tree@https://codeload.github.com/runsascoded/file-tree/tar.gz/a685b4bbb33a41632a9e79318f5263dedaf16582':
-    resolution: {tarball: https://codeload.github.com/runsascoded/file-tree/tar.gz/a685b4bbb33a41632a9e79318f5263dedaf16582}
-    version: 0.0.1-dist.a0c7128
+  '@rdub/file-tree@https://codeload.github.com/runsascoded/file-tree/tar.gz/ca0c1d8a2b9234e0084655182605e197b9a11d10':
+    resolution: {tarball: https://codeload.github.com/runsascoded/file-tree/tar.gz/ca0c1d8a2b9234e0084655182605e197b9a11d10}
+    version: 0.0.1-dist.d6fe2aa
     peerDependencies:
       '@rdub/treemap': '*'
       highlight.js: ^11
@@ -4899,7 +4899,7 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@rdub/file-tree@https://codeload.github.com/runsascoded/file-tree/tar.gz/a685b4bbb33a41632a9e79318f5263dedaf16582(react-dom@19.2.4(react@19.2.4))(react-router-dom@7.18.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(use-prms@0.5.0(react@19.2.4))':
+  '@rdub/file-tree@https://codeload.github.com/runsascoded/file-tree/tar.gz/ca0c1d8a2b9234e0084655182605e197b9a11d10(react-dom@19.2.4(react@19.2.4))(react-router-dom@7.18.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(use-prms@0.5.0(react@19.2.4))':
     dependencies:
       aws4fetch: 1.0.20
     optionalDependencies:
