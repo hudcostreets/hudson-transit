@@ -89,6 +89,16 @@ Supersedes `specs/s3-to-r2-hccs.md` (whose FE/CI assumptions don't hold for hbt;
 - Normalize params (sort; drop UI-only ones like `fs`, `ws`/`gs`/`hp`; round `ll`) so near-identical links share a render. Cache in R2 `og/<hash(normalized params + build id)>.jpg` + the edge cache. Invalid params → the static `og.png`.
 - Fallback: if a render fails or exceeds a crawler-friendly budget (~5s), 302 to the static `og.png` and render in `ctx.waitUntil` so the next fetch is warm.
 
+### Implemented (2026-09-27): Satori
+
+- Renderer decision: Satori (`workers-og`) to start; Browser Rendering (map views) can come later.
+- `/og/index.png` and `/og/nyc.png`, params `d` / `t` / `g` (same encodings as the pages). Card: eyebrow + title ("NJ→NY passengers by crossing", "Entering Manhattan's CBD, by sector") + subtitle ("8-9am, Fall business day · 2014–2024"), stacked bars of passengers per year (SVG data-URI `<img>`, shapes only), y/x labels and a legend (stack order, latest-year values) as HTML. `/`: by crossing (default) or mode (`g=m`); `/nyc`: by mode (default) or sector (`g=s`).
+- Data: `scripts/og-data.ts` (`pnpm og-data`, run by `typecheck:worker` + `deploy:worker`) reuses the FE's own aggregation (`buildNycRecords`), labels (`CROSSING_LABELS`, `SECTOR_LABELS`) and colors (`DEFAULT_SCHEME`, `lib/nyc-colors.ts`, moved out of `NycBubbleChart`) → `worker/og-data.json` (~17KB, gitignored), instead of bundling ~4MB of source JSON into the Worker. 2024 values match the site (e.g. Lincoln (Bus) 28,883).
+- Font: full Inter v3.19 woff (regular + bold) from jsDelivr (`rsms/inter`); the `@fontsource` "latin" subset lacks `→`. Fetched once per isolate, `cf.cacheTtl` 30d.
+- Caching: `caches.default` keyed on the request URL; `Cache-Control: public, max-age=604800`. `og:image` URLs carry only non-default params in fixed order plus `v=<version id prefix>` (`version_metadata` binding), so each deploy busts crawler/edge caches. `og:image:alt` = card title + subtitle.
+- Renders in ~0.3–0.9s uncached (via `wrangler dev --remote`).
+- `/files/*` keeps the static `og.png`: `@rdub/file-tree/og` `renderOgCard` needs `@rdub/treemap` (not on npm).
+
 ## Related
 
 - `.github/workflows/check-nymtc-2025.yml`: on a hit, also mirror the 2025 report into `raw/2025/` (needs the R2 token in GH secrets).

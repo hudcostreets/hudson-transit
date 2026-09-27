@@ -1,20 +1,24 @@
 /**
  * FE Worker (Workers + static Assets): serves the SPA from `env.ASSETS`, and
  * rewrites `<title>` + OG meta on HTML responses per route and view params.
- * Also serves `/api/files/*` (`@rdub/file-tree` list/get over the R2 bucket
- * `hbt`), backing the `/files/*` browser.
+ * Also serves:
+ * - `/og/{index,nyc}.png?d=&t=&g=`: per-view OG images (`og.ts`, Satori).
+ * - `/api/files/*`: `@rdub/file-tree` list/get over the R2 bucket `hbt`,
+ *   backing the `/files/*` browser.
  *
- * `run_worker_first` (see `wrangler.jsonc`) sends only SPA navigation routes
- * and `/api/*` here; hashed `/assets/*` and other static files go straight to
- * the asset server. Anything that reaches the Worker and isn't HTML passes
- * through.
+ * `run_worker_first` (see `wrangler.jsonc`) sends only SPA navigation routes,
+ * `/og/*` and `/api/*` here; hashed `/assets/*` and other static files go
+ * straight to the asset server. Anything that reaches the Worker and isn't
+ * HTML passes through.
  */
 import { createHandlers } from '@rdub/file-tree/server'
 import { R2Store } from '@rdub/file-tree/stores/r2'
+import { ogImage, titles, TIME_LABELS, type Direction, type OgPage, type OgView, type TimePeriod } from './og'
 
 interface Env {
   ASSETS: Fetcher
   HBT_BUCKET: R2Bucket
+  CF_VERSION_METADATA: WorkerVersionMetadata
 }
 
 interface OgMeta {
@@ -22,33 +26,48 @@ interface OgMeta {
   description: string
   url: string
   image: string
-}
-
-type Direction = 'entering' | 'leaving'
-type TimePeriod = 'peak_1hr' | 'peak_period' | '24hr'
-
-// Same encodings as the FE's `useUrlState` params (`d`, `t`).
-const direction = (p: URLSearchParams): Direction => p.get('d') === 'nynj' ? 'leaving' : 'entering'
-const timePeriod = (p: URLSearchParams): TimePeriod => {
-  const t = p.get('t')
-  return t === '3h' ? 'peak_period' : t === '1d' ? '24hr' : 'peak_1hr'
-}
-
-const TIME_LABELS: Record<Direction, Record<TimePeriod, string>> = {
-  entering: { peak_1hr: '8-9am', peak_period: '7-10am', '24hr': '24hr' },
-  leaving: { peak_1hr: '5-6pm', peak_period: '4-7pm', '24hr': '24hr' },
+  imageAlt: string
 }
 
 const YEARS = '2014-2024'
 const SOURCE = 'From NYMTC Hub Bound Travel reports.'
 const SITE_TITLE = 'Hub Bound Travel'
+const STATIC_IMAGE_ALT = 'NJ→NY passengers by mode/crossing, 8-9am, Fall business day, 2014-2024'
 
 const FILES_API = '/api/files'
 // Top-level prefixes of the `hbt` bucket that are public (`.dvc/cache` isn't).
 const FILES_PREFIXES = ['raw/', 'data/']
 
-export function resolveOgMeta(url: URL): OgMeta {
-  const image = `${url.origin}/og.png`
+// Same encodings as the FE's `useUrlState` params (`d`, `t`, `g`).
+const direction = (p: URLSearchParams): Direction => p.get('d') === 'nynj' ? 'leaving' : 'entering'
+const timePeriod = (p: URLSearchParams): TimePeriod => {
+  const t = p.get('t')
+  return t === '3h' ? 'peak_period' : t === '1d' ? '24hr' : 'peak_1hr'
+}
+// `/` (`UnifiedChart`): `g=m` → by mode, default by crossing.
+// `/nyc` (`NycBubbleChart`): `g=s` → by sector, default by mode.
+const granularity = (page: OgPage, p: URLSearchParams): string =>
+  page === 'nyc'
+    ? (p.get('g') === 's' ? 'sector' : 'mode')
+    : (p.get('g') === 'm' ? 'mode' : 'crossing')
+
+export function ogView(page: OgPage, params: URLSearchParams): OgView {
+  return { page, dir: direction(params), time: timePeriod(params), gran: granularity(page, params) }
+}
+
+/** Canonical query for a view's OG image: only non-default params, fixed order,
+ *  plus the deployed version so a deploy busts crawler / edge caches. */
+function ogImageUrl(origin: string, view: OgView, version: string): string {
+  const q = new URLSearchParams()
+  if (view.dir === 'leaving') q.set('d', 'nynj')
+  if (view.time !== 'peak_1hr') q.set('t', view.time === 'peak_period' ? '3h' : '1d')
+  const defaultGran = view.page === 'nyc' ? 'mode' : 'crossing'
+  if (view.gran !== defaultGran) q.set('g', view.gran === 'sector' ? 's' : 'm')
+  q.set('v', version)
+  return `${origin}/og/${view.page}.png?${q}`
+}
+
+export function resolveOgMeta(url: URL, version: string): OgMeta {
   const pageUrl = `${url.origin}${url.pathname}${url.search}`
 
   const files = url.pathname.match(/^\/files(?:\/(.*))?$/)
@@ -58,27 +77,32 @@ export function resolveOgMeta(url: URL): OgMeta {
       title: path ? `${path} — ${SITE_TITLE} files` : `Files — ${SITE_TITLE}`,
       description: `NYMTC Hub Bound Travel reports (${YEARS}) and the data extracted from them.`,
       url: pageUrl,
-      image,
+      image: `${url.origin}/og.png`,
+      imageAlt: STATIC_IMAGE_ALT,
     }
   }
 
   const params = url.searchParams
-  const dir = direction(params)
-  const time = timePeriod(params)
-  const isDefaultView = dir === 'entering' && time === 'peak_1hr'
-  const timeLabel = TIME_LABELS[dir][time]
+  const page: OgPage = /^\/nyc\/?$/.test(url.pathname) ? 'nyc' : 'index'
+  const view = ogView(page, params)
+  const timeLabel = TIME_LABELS[view.dir][view.time]
+  const card = titles(view)
+  const image = ogImageUrl(url.origin, view, version)
+  const imageAlt = `${card.title}, ${card.subtitle}`
 
-  if (/^\/nyc\/?$/.test(url.pathname)) {
-    const verb = dir === 'entering' ? 'into' : 'out of'
+  if (page === 'nyc') {
+    const verb = view.dir === 'entering' ? 'into' : 'out of'
     return {
       title: `All sectors — ${SITE_TITLE}`,
       description: `Travel ${verb} Manhattan's Central Business District from all sectors, ${timeLabel}, ${YEARS}. ${SOURCE}`,
       url: pageUrl,
       image,
+      imageAlt,
     }
   }
 
-  const arrow = dir === 'entering' ? 'NJ→NY' : 'NY→NJ'
+  const isDefaultView = view.dir === 'entering' && view.time === 'peak_1hr'
+  const arrow = view.dir === 'entering' ? 'NJ→NY' : 'NY→NJ'
   return {
     title: isDefaultView ? SITE_TITLE : `${arrow}, ${timeLabel} — ${SITE_TITLE}`,
     description: isDefaultView
@@ -86,12 +110,22 @@ export function resolveOgMeta(url: URL): OgMeta {
       : `${arrow} transit trends, ${timeLabel}, ${YEARS}. ${SOURCE}`,
     url: pageUrl,
     image,
+    imageAlt,
   }
 }
 
 const setContent = (value: string): HTMLRewriterElementContentHandlers => ({
   element(el) { el.setAttribute('content', value) },
 })
+
+async function handleOg(request: Request, page: OgPage, ctx: ExecutionContext): Promise<Response> {
+  const cache = caches.default
+  const hit = await cache.match(request)
+  if (hit) return hit
+  const response = await ogImage(ogView(page, new URL(request.url).searchParams))
+  ctx.waitUntil(cache.put(request, response.clone()))
+  return response
+}
 
 async function handleFiles(request: Request, env: Env): Promise<Response> {
   const handlers = createHandlers(
@@ -112,21 +146,28 @@ async function handleFiles(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
-    if (new URL(request.url).pathname.startsWith(`${FILES_API}/`)) {
+  async fetch(request, env, ctx): Promise<Response> {
+    const url = new URL(request.url)
+    if (url.pathname.startsWith(`${FILES_API}/`)) {
       return handleFiles(request, env)
+    }
+    const og = url.pathname.match(/^\/og\/(index|nyc)\.png$/)
+    if (og) {
+      return handleOg(request, og[1] as OgPage, ctx)
     }
     const response = await env.ASSETS.fetch(request)
     if (!(response.headers.get('content-type') || '').includes('text/html')) {
       return response
     }
-    const og = resolveOgMeta(new URL(request.url))
+    // `wrangler dev` has no version id.
+    const meta = resolveOgMeta(url, env.CF_VERSION_METADATA.id.slice(0, 8) || 'dev')
     return new HTMLRewriter()
-      .on('title', { element(el) { el.setInnerContent(og.title) } })
-      .on('meta[property="og:title"]', setContent(og.title))
-      .on('meta[property="og:description"]', setContent(og.description))
-      .on('meta[property="og:url"]', setContent(og.url))
-      .on('meta[property="og:image"]', setContent(og.image))
+      .on('title', { element(el) { el.setInnerContent(meta.title) } })
+      .on('meta[property="og:title"]', setContent(meta.title))
+      .on('meta[property="og:description"]', setContent(meta.description))
+      .on('meta[property="og:url"]', setContent(meta.url))
+      .on('meta[property="og:image"]', setContent(meta.image))
+      .on('meta[property="og:image:alt"]', setContent(meta.imageAlt))
       .transform(response)
   },
 } satisfies ExportedHandler<Env>
