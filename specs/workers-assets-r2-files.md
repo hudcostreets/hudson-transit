@@ -25,10 +25,19 @@ Supersedes `specs/s3-to-r2-hccs.md` (whose FE/CI assumptions don't hold for hbt;
 - Layout:
   - `raw/<year>/…` — NYMTC originals, mirrored from `20??/` with the original filenames.
   - `data/…` — extracted/processed outputs (`data/*.json`, and any future parquet/CSV).
-  - `dvc/…` — DVX cache (`.dvc/config` remote `url = s3://hbt/dvc`, `endpointurl = $R2_ENDPOINT`).
-- Move the DVX cache S3 → local → R2 (per the `path` playbook, `$c/hccs/path/specs/s3-to-r2-hccs-playbook.md` step 2); verify key+size parity; prove a cold `dvx pull` from R2.
+  - `.dvc/cache/…` — DVX cache (`.dvc/config` remote `r2`: `url = s3://hbt/.dvc/cache` + `endpointurl`, same shape as `path`).
 - No public r2.dev / bucket custom domain needed: the Worker reads the bucket via a binding and serves listings + downloads.
 - Retire `s3://hudcostreets/hbt` after a few green days.
+
+### Done (2026-09-27)
+
+- Bucket `hbt` created (HCCS account `2363…937e`, Automatic location, Standard, private).
+- Tokens (Account API tokens, HCCS):
+  - `hbt RW` — R2 Object Read & Write, bucket `hbt` only. Local: `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_TOKEN` in `hbt/.envrc`, `R2_ENDPOINT` in `$hccs/.envrc`. GH secrets `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY`. Verified: lists `hbt`, denied on `path`.
+  - `hbt deploy` — zone `hccs.dev`: Workers Routes Write, DNS Write, Zone Read; account: Workers Scripts Write, Workers Tail Read, Workers Observability Edit, Account Settings Read. Local `CLOUDFLARE_API_TOKEN` in `hbt/.envrc`; GH secret `CLOUDFLARE_API_TOKEN`, GH var `CLOUDFLARE_ACCOUNT_ID`. Verified: DNS/routes OK on `hccs.dev`, denied on `ctbk.dev`; R2 denied. Add Browser Rendering when §4 needs it.
+- Uploaded (with the `hbt RW` keys): `.dvc/cache/files/**` (9 objects; identical set to `s3://hudcostreets/hbt/.dvc/cache`, so pushed from the local cache instead of mirroring S3), `raw/20??/**` (123: 13 PDFs + 110 xlsx, original paths), `data/*.json` (8). Key+size parity with local: 140/140.
+- `.dvc/config` → remote `r2`. Cold `dvx pull` in a fresh clone (empty cache, JSON deleted, `AWS_*` = the `hbt RW` keys) fetched all 8 files; md5s match.
+- Local `dvx` needs `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` = the R2 keys (and `AWS_PROFILE` unset).
 
 ## 2. W+A Worker `hbt-www`
 
