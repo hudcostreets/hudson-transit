@@ -79,11 +79,11 @@ function App() {
               construction (`crossings.json` is NJ sector); the NYC views
               draw from `hourly`/`vehicles`/`peak` which span all sectors. */}
           {!showNyc && <>
-            <section id="chart">
-              <UnifiedChart data={crossings} clean={clean} />
-            </section>
             <section id="map">
               <GeoSankey data={crossings} />
+            </section>
+            <section id="chart">
+              <UnifiedChart data={crossings} clean={clean} />
             </section>
           </>}
           {showNyc && <>
