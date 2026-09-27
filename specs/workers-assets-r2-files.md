@@ -99,6 +99,14 @@ Supersedes `specs/s3-to-r2-hccs.md` (whose FE/CI assumptions don't hold for hbt;
 - Renders in ~0.3–0.9s uncached (via `wrangler dev --remote`).
 - `/files/*` keeps the static `og.png`: `@rdub/file-tree/og` `renderOgCard` needs `@rdub/treemap` (not on npm).
 
+### Map cards (2026-09-27, pending layout review)
+
+- Browser Rendering dropped: the flow map only varies by direction × time period (6 views, latest year; data changes ~yearly), so the map is pre-rendered and Satori composes it. (ctbk's per-station cards have no map; its homepage OGI is a static mosaic regenerated in CI.)
+- Captures: `pnpm og-maps` (`scripts/og-maps.sh`, headful scrns against the dev server) → `public/og-maps/{1200,780}/<nj-ny|ny-nj>-<1h|3h|1d>.jpg` (12, ~2.8MB, committed). Page mode `?fs=1&clean` = map only (GeoSankey `clean` hides the info panel + controls; fullscreen now locks page scroll).
+- The Worker reads a capture via `env.ASSETS` and inlines it as a data URI. Layouts (`&layout=`, `OG_LAYOUTS` in `worker/og.ts`): `chart` (default, unchanged), `full` (1200 map + caption chip), `map` (780 map + title / total / % vs. 2019), `mosaic` (780 map + title / mini stacked bars). `/nyc` stays `chart`.
+- `/og/review`: live grid of layouts × a few views, plus notes on how OGIs are built. Pick a default there; then map layouts can drop `g` from canonical `og:image` URLs (the map ignores grouping).
+- Found along the way: the map's initial fit reserved label space only on the east, so NY→NJ labels clipped at narrow widths; `defaultView(direction)` now reserves it on the label side (only as much as needed), and re-centers on direction toggle when `ll` is unset.
+
 ## Related
 
 - `.github/workflows/check-nymtc-2025.yml`: on a hit, also mirror the 2025 report into `raw/2025/` (needs the R2 token in GH secrets).

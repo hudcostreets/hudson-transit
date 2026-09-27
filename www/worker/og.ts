@@ -1,8 +1,12 @@
 /**
  * Dynamic OG images (Satori, via `workers-og`): `/og/index.png` and
  * `/og/nyc.png`, parameterized by the page's own view params (`d`, `t`, `g`).
- * Each is a 1200×630 card: title + subtitle, a stacked-bar chart of
- * passengers per year, and a legend with the latest year's values.
+ * All are 1200×630. Layouts (`OG_LAYOUTS`; compare them at `/og/review`):
+ * - `chart`: title + subtitle, stacked bars of passengers per year, and a
+ *   legend with the latest year's values. The only layout for `/nyc`.
+ * - `full` / `map` / `mosaic`: the `/` flow map, from pre-rendered captures
+ *   (`public/og-maps/<width>/<dir>-<time>.jpg`, `pnpm og-maps`), alone or
+ *   beside a text / mini-chart column.
  *
  * Satori requires `display:flex` on every multi-child element and treats
  * inter-tag whitespace as child nodes, so markup is built whitespace-free.
@@ -39,6 +43,28 @@ const CHART_W = 680
 const CHART_H = 330
 const AXIS_W = 64
 const LEGEND_W = W - 2 * PAD - AXIS_W - CHART_W - 40
+
+/** Width of the narrow map captures; the column beside them gets the rest. */
+export const MAP_COL_W = 780
+const SIDE_W = W - MAP_COL_W
+
+export type OgLayout = 'chart' | 'full' | 'map' | 'mosaic'
+export const OG_LAYOUTS: [OgLayout, string][] = [
+  ['chart', 'Stacked bars + legend'],
+  ['full', 'Full-bleed map'],
+  ['map', 'Map + title / total'],
+  ['mosaic', 'Map + title / mini chart'],
+]
+export const isOgLayout = (s: string | null): s is OgLayout => OG_LAYOUTS.some(([l]) => l === s)
+/** `/og/index.png` default; `/nyc` is always `chart`. */
+export const DEFAULT_LAYOUT: OgLayout = 'chart'
+
+/** Map capture for a view (the map varies only by direction and time period). */
+export function mapCapture(view: OgView, width: number): string {
+  const dir = view.dir === 'entering' ? 'nj-ny' : 'ny-nj'
+  const time = view.time === 'peak_period' ? '3h' : view.time === '24hr' ? '1d' : '1h'
+  return `/og-maps/${width}/${dir}-${time}.jpg`
+}
 
 export const TIME_LABELS: Record<Direction, Record<TimePeriod, string>> = {
   entering: { peak_1hr: '8-9am', peak_period: '7-10am', '24hr': '24hr' },
@@ -101,9 +127,15 @@ export function titles(view: OgView): { title: string; subtitle: string } {
   return { title: `${arrow} passengers by ${view.gran}`, subtitle }
 }
 
-function chart(series: OgSeries[]): string {
+interface ChartDims { w: number; h: number; axisW: number; fontPx: number }
+const BIG_CHART: ChartDims = { w: CHART_W, h: CHART_H, axisW: AXIS_W, fontPx: 18 }
+
+const yearTotals = (series: OgSeries[]): number[] =>
+  ogData.years.map((_, i) => series.reduce((s, x) => s + x.values[i], 0))
+
+function chart(series: OgSeries[], { w: CHART_W, h: CHART_H, axisW: AXIS_W, fontPx }: ChartDims = BIG_CHART): string {
   const years = ogData.years
-  const totals = years.map((_, i) => series.reduce((s, x) => s + x.values[i], 0))
+  const totals = yearTotals(series)
   const step = niceStep(Math.max(...totals))
   const top = Math.ceil(Math.max(...totals) / step) * step
   const y = (v: number): number => CHART_H - (v / top) * CHART_H
@@ -129,10 +161,10 @@ function chart(series: OgSeries[]): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${CHART_W}" height="${CHART_H}" viewBox="0 0 ${CHART_W} ${CHART_H}">${grid}${bars}</svg>`
 
   const yLabels = ticks.map(v =>
-    `<span style="display:flex;position:absolute;right:12px;top:${(y(v) - 12).toFixed(1)}px;font-size:18px;color:${MUTED};">${esc(fmtCount(v))}</span>`,
+    `<span style="display:flex;position:absolute;right:${fontPx * 2 / 3}px;top:${(y(v) - fontPx * 2 / 3).toFixed(1)}px;font-size:${fontPx}px;color:${MUTED};">${esc(fmtCount(v))}</span>`,
   ).join('')
   const xLabels = years.map(yr =>
-    `<span style="display:flex;justify-content:center;width:${band.toFixed(1)}px;font-size:18px;color:${MUTED};">'${String(yr).slice(2)}</span>`,
+    `<span style="display:flex;justify-content:center;width:${band.toFixed(1)}px;font-size:${fontPx}px;color:${MUTED};">'${String(yr).slice(2)}</span>`,
   ).join('')
 
   return div(
@@ -162,15 +194,17 @@ function legend(series: OgSeries[]): string {
   )
 }
 
-export function renderCard(view: OgView): string {
+const eyebrow = (): string =>
+  span(`font-size:20px;color:${MUTED};letter-spacing:3px;`, 'HUB BOUND TRAVEL')
+
+function chartCard(view: OgView): string {
   const series = seriesFor(view)
   const { title, subtitle } = titles(view)
   const header = div(
     'flex-direction:column;',
     div(
       'flex-direction:row;justify-content:space-between;',
-      span(`font-size:20px;color:${MUTED};letter-spacing:3px;`, 'HUB BOUND TRAVEL') +
-        span(`font-size:20px;color:${MUTED};`, 'hbt.hccs.dev'),
+      eyebrow() + span(`font-size:20px;color:${MUTED};`, 'hbt.hccs.dev'),
     ) +
       span(`font-size:50px;font-weight:700;color:${TEXT};margin-top:14px;line-height:1.1;`, title) +
       span(`font-size:26px;color:${MUTED};margin-top:8px;`, subtitle),
@@ -182,9 +216,92 @@ export function renderCard(view: OgView): string {
   )
 }
 
-export async function ogImage(view: OgView): Promise<Response> {
+/** Map titles name the direction + time, not a grouping (the map shows both). */
+function mapTitles(view: OgView): { title: string; subtitle: string } {
+  const years = ogData.years
+  const arrow = view.dir === 'entering' ? 'NJ→NY' : 'NY→NJ'
+  return {
+    title: `${arrow} passenger flows`,
+    subtitle: `${TIME_LABELS[view.dir][view.time]}, Fall business day, ${years[years.length - 1]}`,
+  }
+}
+
+const img = (src: string, w: number, h: number, style = ''): string =>
+  `<img src="${src}" width="${w}" height="${h}" style="${style}"/>`
+
+/** Full-bleed map; a small caption chip bottom-left (clear of labels in both directions). */
+function fullCard(view: OgView, mapUri: string): string {
+  const { title, subtitle } = mapTitles(view)
+  const chip = div(
+    `position:absolute;left:20px;bottom:18px;flex-direction:column;padding:10px 16px;border-radius:10px;background:rgba(26,26,46,0.88);`,
+    span(`font-size:15px;color:${MUTED};letter-spacing:2px;`, 'HUB BOUND TRAVEL') +
+      span(`font-size:26px;font-weight:700;color:${TEXT};margin-top:2px;`, title) +
+      span(`font-size:18px;color:${MUTED};margin-top:2px;`, subtitle),
+  )
+  return div(
+    `position:relative;width:${W}px;height:${H}px;background:${BG};font-family:'Inter';`,
+    img(mapUri, W, H, 'position:absolute;left:0;top:0;') + chip,
+  )
+}
+
+/** Narrow map on the left, a column on the right. */
+function sideCard(mapUri: string, column: string): string {
+  return div(
+    `width:${W}px;height:${H}px;background:${BG};flex-direction:row;font-family:'Inter';`,
+    img(mapUri, MAP_COL_W, H) +
+      div(`width:${SIDE_W}px;height:${H}px;flex-direction:column;padding:${PAD - 8}px 36px;`, column),
+  )
+}
+
+function sideHeader(view: OgView): string {
+  const { title, subtitle } = mapTitles(view)
+  return eyebrow() +
+    span(`font-size:44px;font-weight:700;color:${TEXT};margin-top:18px;line-height:1.1;`, title) +
+    span(`font-size:21px;color:${MUTED};margin-top:10px;`, subtitle)
+}
+
+const footer = (): string =>
+  div('flex-grow:1;flex-direction:column;justify-content:flex-end;', span(`font-size:20px;color:${MUTED};`, 'hbt.hccs.dev'))
+
+function mapCard(view: OgView, mapUri: string): string {
+  const years = ogData.years
+  const last = years.length - 1
+  const totals = yearTotals(seriesFor({ ...view, page: 'index', gran: 'crossing' }))
+  const i19 = years.indexOf(2019)
+  const vs19 = i19 >= 0 ? Math.round((totals[last] / totals[i19] - 1) * 100) : null
+  const stat = div(
+    'flex-direction:column;margin-top:44px;',
+    span(`font-size:18px;color:${MUTED};letter-spacing:2px;`, 'TOTAL PASSENGERS') +
+      span(`font-size:72px;font-weight:700;color:${TEXT};line-height:1.05;`, totals[last].toLocaleString('en-US')) +
+      (vs19 === null ? '' : span(
+        `font-size:24px;color:${MUTED};margin-top:6px;`,
+        `${vs19 >= 0 ? '+' : '−'}${Math.abs(vs19)}% vs. 2019`,
+      )),
+  )
+  return sideCard(mapUri, sideHeader(view) + stat + footer())
+}
+
+function mosaicCard(view: OgView, mapUri: string): string {
+  const series = seriesFor({ ...view, page: 'index', gran: 'crossing' })
+  const years = ogData.years
+  const mini = div(
+    'flex-direction:column;margin-top:30px;',
+    span(`font-size:16px;color:${MUTED};letter-spacing:2px;margin-bottom:8px;`, `${years[0]}–${years[years.length - 1]}, BY CROSSING`) +
+      chart(series, { w: SIDE_W - 72 - 44, h: 190, axisW: 44, fontPx: 14 }),
+  )
+  // No room for the `hbt.hccs.dev` footer under the chart.
+  return sideCard(mapUri, sideHeader(view) + mini)
+}
+
+export function renderCard(view: OgView, layout: OgLayout = DEFAULT_LAYOUT, mapUri?: string): string {
+  if (view.page === 'nyc' || layout === 'chart') return chartCard(view)
+  if (!mapUri) throw new Error(`layout ${layout} needs a map capture`)
+  return layout === 'full' ? fullCard(view, mapUri) : layout === 'map' ? mapCard(view, mapUri) : mosaicCard(view, mapUri)
+}
+
+export async function ogImage(view: OgView, layout: OgLayout = DEFAULT_LAYOUT, mapUri?: string): Promise<Response> {
   const [regular, bold] = await loadFonts()
-  return new ImageResponse(renderCard(view), {
+  return new ImageResponse(renderCard(view, layout, mapUri), {
     width: W,
     height: H,
     fonts: [

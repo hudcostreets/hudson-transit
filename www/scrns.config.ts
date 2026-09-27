@@ -64,6 +64,24 @@ for (const dir of dirs) {
   screenshots[`map-${dir.key}`] = mapShot(dir.params)
 }
 
+// OG-card map captures (`og-maps/<width>/<dir>-<time>.jpg`, composed into
+// `/og/index.png` cards by the Worker): fullscreen + clean = map only.
+// Headful for WebGL, as above.
+// Two widths: 1200 (full-bleed card) and 780 (map beside a text/chart column).
+for (const width of [1200, 780]) {
+  for (const dir of dirs) {
+    for (const time of times) {
+      screenshots[`og-maps/${width}/${dir.key}-${time.key}`] = {
+        query: `?${join('fs=1', 'clean', dir.params, time.params)}`,
+        width,
+        height: 630,
+        preScreenshotSleep: 4000,
+        headless: false,
+      }
+    }
+  }
+}
+
 // og:image — canonical bubble chart, clean mode (no toggles/SpeedDial, larger text)
 // Standard og:image is 1200x630
 screenshots['og'] = {
@@ -76,5 +94,6 @@ screenshots['og'] = {
 
 // Usage:
 //   scrns -h 3847 -o public/scrns                    # all bubble views
-//   scrns -h 3847 -o public -i og                    # og:image → public/og.png
+//   scrns -h 3847 -o public -i '^og$'                 # og:image → public/og.png
+//   pnpm og-maps                                     # OG-card map captures → public/og-maps/*/*.jpg
 export default screenshots

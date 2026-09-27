@@ -13,7 +13,8 @@
     "scrns": "scrns",
     "deploy:worker": "pnpm og-data && pnpm build && cp worker/_headers dist/_headers && wrangler deploy",
     "typecheck:worker": "pnpm og-data && tsc -p worker/tsconfig.json",
-    "og-data": "tsx scripts/og-data.ts"
+    "og-data": "tsx scripts/og-data.ts",
+    "og-maps": "scripts/og-maps.sh"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
