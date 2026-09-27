@@ -17,7 +17,7 @@ import {
   NYC_MODE_ORDER, SECTOR_LABELS,
 } from '../lib/nyc-types'
 import { buildNycRecords } from '../lib/nyc-data'
-import { DEFAULT_SCHEME } from '../lib/colors'
+import { MODE_COLORS, SECTOR_COLORS, SECTOR_ORDER } from '../lib/nyc-colors'
 import Toggle, { type ToggleOption } from './Toggle'
 import JitteredPlot, { type JitterOffsets } from './JitteredPlot'
 
@@ -47,23 +47,6 @@ const GRAN_OPTIONS: ToggleOption<Granularity>[] = [
   { value: 'sector', label: 'sector' },
 ]
 
-const MODE_COLORS: Record<NycMode, string> = {
-  Auto: DEFAULT_SCHEME.mode.Autos,
-  Bus: DEFAULT_SCHEME.mode.Bus,
-  Subway: DEFAULT_SCHEME.mode.PATH,
-  Rail: DEFAULT_SCHEME.mode.Rail,
-  Ferry: DEFAULT_SCHEME.mode.Ferries,
-}
-const SECTOR_COLORS: Record<Sector, string> = {
-  nj: '#EF8D2E',
-  queens: '#9333EA',
-  brooklyn: '#14B8A6',
-  '60th_street': '#4F46E5',
-  staten_island: '#FFA500',
-  roosevelt_island: '#FECB52',
-}
-
-const SECTOR_ORDER: Sector[] = ['60th_street', 'queens', 'brooklyn', 'nj', 'staten_island', 'roosevelt_island']
 
 // Horizontal jitter — small (≤ ±0.18) so Plotly's `x unified` hover still
 // snaps every trace into the same year tooltip.
