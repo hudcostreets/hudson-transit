@@ -58,11 +58,11 @@ Supersedes `specs/s3-to-r2-hccs.md` (whose FE/CI assumptions don't hold for hbt;
 - Fixed along the way: `NycFlowMap`'s map-kick poll called `isSourceLoaded('carto')` before the style added the source, which throws (and killed the poll); now guarded with `getSource('carto')`.
 - `wrangler deploy` warns it can't auto-provision-check `HBT_BUCKET` (the deploy token has no R2 perms); harmless, the bucket exists.
 
-### Remaining cutover steps
+### Cutover (2026-09-27, 04:14:31–04:15:03 UTC)
 
-1. Add `"routes": [{ "pattern": "hbt.hccs.dev", "custom_domain": true }]` to `wrangler.jsonc`; remove the GHP custom domain (repo Settings → Pages) and `www/public/CNAME`; deploy. Expect a short gap while the hostname moves.
-2. Verify on `hbt.hccs.dev` (curl OG sweep, CIC).
-3. Delete `deploy.yml` (GHP) and the `404.html` copy in `build`; disable Pages.
+- Deleted the DNS-only `CNAME hbt.hccs.dev → hudcostreets.github.io` (record `ad968cd5…`; re-create it to roll back), then `wrangler deploy` with `routes: [{ pattern: "hbt.hccs.dev", custom_domain: true }]` (CF created the record + cert). ~30s gap; first 200 from CF at 04:15:03.
+- OG sweep on `hbt.hccs.dev`: `/`, `/?d=nynj`, `/?t=3h`, `/nyc`, `/nyc?d=nynj&t=3h`, `/nonexistent/x`, `/og.png`, `/favicon.svg` all 200 from `server: cloudflare`, tags as on `workers.dev` (with `hbt.hccs.dev` origins).
+- GHP: custom domain cleared (`cname: null`), `www/public/CNAME` + `.github/workflows/deploy.yml` deleted, `404.html` copy dropped from `build`. The Pages site itself (at `hudcostreets.github.io/hudson-transit`) can be unpublished once the Worker has a few green days.
 
 ## 3. `/files`
 

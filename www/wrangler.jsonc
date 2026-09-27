@@ -8,6 +8,9 @@
   "compatibility_date": "2026-09-01",
   "account_id": "2363642879f18d37d52dca114059937e",
   "workers_dev": true,
+  "routes": [
+    { "pattern": "hbt.hccs.dev", "custom_domain": true },
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

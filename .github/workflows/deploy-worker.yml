@@ -1,7 +1,7 @@
 name: Deploy Worker (hbt-www)
 
-# Workers + static Assets (see `www/wrangler.jsonc`, `specs/workers-assets-r2-files.md`).
-# Runs alongside the GHP deploy until `hbt.hccs.dev` moves to the Worker.
+# Workers + static Assets (see `www/wrangler.jsonc`, `specs/workers-assets-r2-files.md`);
+# serves `hbt.hccs.dev` (custom domain) + `hbt-www.hccs-ctbk.workers.dev`.
 on:
   push:
     branches: [main]
