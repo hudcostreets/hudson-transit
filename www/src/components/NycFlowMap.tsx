@@ -173,7 +173,8 @@ export default function NycFlowMap({ vehicles, buses, detail, appendixIii }: Pro
       if (cancelled) return
       kick()
       const m = mapRef.current?.getMap()
-      if (m && m.isSourceLoaded?.('carto')) return
+      // `isSourceLoaded` throws until the style has added the source.
+      if (m?.getSource('carto') && m.isSourceLoaded('carto')) return
       setTimeout(poll, 200)
     }
     setTimeout(poll, 50)
