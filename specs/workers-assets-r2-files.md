@@ -47,6 +47,23 @@ Supersedes `specs/s3-to-r2-hccs.md` (whose FE/CI assumptions don't hold for hbt;
 - Custom domain `hbt.hccs.dev` → Worker (`hccs.dev` is already a CF zone; no second-domain complications like `crashes.hudcostreets.org`). Expect a short gap when the hostname moves from GHP.
 - CI: replace `deploy.yml`'s Pages steps with build + `wrangler deploy` (`cloudflare/wrangler-action`). Remove `www/public/CNAME` and disable GHP after cutover.
 
+### Implemented (2026-09-27; `workers.dev` only, GHP still serves `hbt.hccs.dev`)
+
+- `www/wrangler.jsonc`: `hbt-www`, HCCS `account_id`, `workers_dev: true`, assets `./dist` + SPA fallback, `run_worker_first: ["/", "/nyc", "/nyc/*"]` (extend with `/files*`, `/og/*`, `/api/*` in §3/§4), R2 binding `HBT_BUCKET` → `hbt`, observability on.
+- `www/worker/index.ts`: `env.ASSETS.fetch` + `HTMLRewriter` for `<title>`, `og:title`, `og:description`, `og:url`, `og:image` (origin-relative, so `workers.dev` previews are self-consistent). `resolveOgMeta` decodes `d` / `t` with the FE's encodings: `/` with no view params keeps today's tags exactly; e.g. `/?d=nynj` → "NY→NJ, 5-6pm — Hub Bound Travel"; `/nyc?d=nynj&t=3h` → "All sectors — …", "Travel out of Manhattan's CBD from all sectors, 4-7pm, …". `og:image` stays `/og.png` until §4.
+- `www/worker/_headers` (copied into `dist/` by `pnpm deploy:worker`): `/assets/*` immutable (verified `max-age=31536000, immutable`).
+- `www/package.json`: `wrangler` + `@cloudflare/workers-types` devDeps; `deploy:worker` (build + `_headers` + `wrangler deploy`), `typecheck:worker`.
+- `.github/workflows/deploy-worker.yml`: typecheck + `pnpm deploy:worker` on push (secret `CLOUDFLARE_API_TOKEN`, var `CLOUDFLARE_ACCOUNT_ID`), alongside `deploy.yml` (GHP) until cutover.
+- Deployed → <https://hbt-www.hccs-ctbk.workers.dev>. Curl sweep (`/`, `/?d=nynj`, `/?t=3h`, `/?d=nynj&t=1d&yr=2019`, `/?fs=1`, `/nyc`, `/nyc?d=nynj&t=3h`, `/nonexistent/x`): all 200 (GHP: `/nyc*` and unknown paths are 404s). CIC: `/` renders chart + map, `/nyc` all 6 sections; Carto basemap style/tiles.json/sprites 200 from `workers.dev` (no domain allowlist, unlike crashes' Stadia).
+- Fixed along the way: `NycFlowMap`'s map-kick poll called `isSourceLoaded('carto')` before the style added the source, which throws (and killed the poll); now guarded with `getSource('carto')`.
+- `wrangler deploy` warns it can't auto-provision-check `HBT_BUCKET` (the deploy token has no R2 perms); harmless, the bucket exists.
+
+### Remaining cutover steps
+
+1. Add `"routes": [{ "pattern": "hbt.hccs.dev", "custom_domain": true }]` to `wrangler.jsonc`; remove the GHP custom domain (repo Settings → Pages) and `www/public/CNAME`; deploy. Expect a short gap while the hostname moves.
+2. Verify on `hbt.hccs.dev` (curl OG sweep, CIC).
+3. Delete `deploy.yml` (GHP) and the `404.html` copy in `build`; disable Pages.
+
 ## 3. `/files`
 
 - Server: `createHandlers(R2Store(env.HBT_BUCKET, { prefixes: ["raw/", "data/"] }), { basePath: "/api/files" })` from `@rdub/file-tree` (same shape as `crashes/cells-api` `/v1/files/*`, but same-origin, so no CORS).
